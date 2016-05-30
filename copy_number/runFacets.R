@@ -84,6 +84,7 @@ cat("\n")
 preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, cval = opt$pre_cval, chromlevels = chromLevels)
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)
 
+print ("Completed preProc and proc")
 cval <- opt$cval2
 success <- F
 while (!success && cval < opt$max_cval) {
@@ -104,7 +105,7 @@ while (!success && cval < opt$max_cval) {
 }
 if (!success) {
     stop("Failed to segment data\n")
-}
+} else { print ("Completed segmentation")}
 
 formatSegmentOutput <- function(out,sampID) {
 	seg=list()
