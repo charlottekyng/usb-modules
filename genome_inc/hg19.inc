@@ -7,14 +7,17 @@ REF_FASTA ?= $(REF_DIR)/ion_reference/hg19.fasta
 ifeq ($(PANEL),CHPv2)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
+CAPTURE_METHOD = PCR
 endif
 ifeq ($(PANEL),CCP)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/AmpliSeq.CCP.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/AmpliSeq.CCP.20131001.hotspots.bed
+CAPTURE_METHOD = PCR
 endif
 ifeq ($(PANEL),EXOME)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/AmpliSeqExome.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/AmpliSeqExome.20131001.designed.bed
+CAPTURE_METHOD = PCR
 endif
 else
 GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/hg19

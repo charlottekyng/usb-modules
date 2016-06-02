@@ -1,42 +1,29 @@
 ifndef CONFIG_INC
-REF ?= b37
-SEQ_PLATFORM ?= illumina
-SAMPLE_SET_FILE ?= sample_sets.txt
-SAMPLE_FILE ?= samples.txt
-SAMPLE_SPLIT_FILE ?= samples.split.txt # generate using scripts/prepareFastq.sh [remove underscores from sample names]
 
 ##Interpreters
+SHELL = /bin/bash
+
 #ANACONDA_PYTHON ?= $(HOME)/share/usr/anaconda/bin/python
 #PYTHON ?= $(ANACONDA_PYTHON)
 PERL_MODULE ?= Perl/5.22.2-goolf-1.7.20
-PERL ?= "module load $(PERL_MODULE); perl"
+PERL ?= module load $(PERL_MODULE); perl
 
 R_MODULE ?= R/3.2.4-goolf-1.7.20
-R ?= "module load $(R_MODULE); R"
-RSCRIPT ?= "module load $(R_MODULE); Rscript"
+R ?= module load $(R_MODULE); R
+RSCRIPT ?= module load $(R_MODULE); Rscript
 
-
+JAVA_ARGS = -Djava.io.tmpdir=$(TMPDIR)
 JAVA7_MODULE ?= Java/1.7.0_75
 JAVA8_MODULE ?= Java/1.8.0_74
-JAVA7 ?= "module load JAVA7_MODULE; java"
-JAVA8 ?= "module load JAVA8_MODULE; java"
-
-
-#JAVA_BIN ?= /usr/bin/java
-#JAVA_TMP := $(HOME)/tmp
-#JAVA_BIN ?=  /opt/common/CentOS_6/java/jdk1.6.0_45/bin/java
-#JAVA6_BIN ?= /opt/common/CentOS_6/java/jdk1.6.0_45/bin/java
-#JAVA7_BIN ?= /opt/common/CentOS_6/java/jdk1.7.0_75/bin/java
-#JAVA8_BIN ?= $(HOME)/usr/jdk1.8.0_74/bin/java
-#JAVA ?= /usr/bin/java $(JAVA_ARGS)
-
+JAVA7 ?= module load $(JAVA7_MODULE); java $(JAVA_ARGS)
+JAVA8 ?= module load $(JAVA8_MODULE); java $(JAVA_ARGS)
+JARDIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/lib/java
 
 # General python 2.7 environment
 #ANACONDA_27_ENV ?= /home/debruiji/share/usr/anaconda-envs/anaconda-2.7
 # SUFAM python environment
 #SUFAM_ENV ?= /home/debruiji/share/usr/anaconda-envs/sufam-0.4.2
 
-JARDIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/lib/java
 # jrflab modules environment
 #JRFLAB_MODULES_ENV ?= $(HOME)/share/usr/anaconda-envs/jrflab-modules-0.0.2
 
@@ -76,27 +63,57 @@ VCFTOOLS ?= "module load $(VCFTOOLS_MODULE); vcftools"
 VCF_SORT ?= $(PERL) $(HOME)/share/usr/bin/vcfsorter.pl ##### NOT UPDATED
 
 SNP_EFF_JAR ?= $(JARDIR)/snpEff-4.1.jar
+SNP_EFF = $(JAVA7) -Xmx$(DEFAULT_JAVA_MEM) -jar $(SNP_EFF_JAR)
 SNP_SIFT_JAR ?= $(JARDIR)/snpSift-4.1.jar
+SNP_SIFT = $(JAVA) -Xmx$(DEFAULT_JAVA_MEM) -jar $(SNP_SIFT_JAR)
 SNP_EFF_CONFIG ?= $(HOME)/share/usr/snpEff-4.1/snpEff.config
 #DB_NSFP ?= $(HOME)/share/reference/snpEff/dbNSFP2.4.txt.gz
 DB_NSFP ?= $(HOME)/share/reference/snpEff-4.1/dbNSFP3.0b1a.hg19.txt.gz
 NSFP_FIELDS ?= Uniprot_acc_Polyphen2 Uniprot_id_Polyphen2 Polyphen2_HVAR_score Polyphen2_HVAR_pred 1000Gp3_AF ESP6500_AA_AF ESP6500_EA_AF MutationAssessor_pred MutationAssessor_score MutationTaster_pred MutationTaster_score PROVEAN_pred ExAC_Adj_AF clinvar_rs clinvar_clnsig Interpro_domain
 
+VCF_EFF_ONE_PER_LINE = $(HOME)/share/usr/snpEff-4.1/scripts/vcfEffOnePerLine.pl
+VCF_JOIN_EFF = usb-modules/scripts/joinEff.pl
+
 CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
 CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
-#SNVMIX ?= $(HOME)/share/usr/bin/SNVMix2
-#BAM2FASTQ ?= $(HOME)/share/usr/bin/bam2fastq
-#QUALIMAP ?= $(HOME)/share/usr/qualimap/qualimap
 TOPHAT ?= $(HOME)/share/usr/bin/tophat2-2.0.13
 DEFUSE ?= $(PERL) $(HOME)/share/usr/defuse-0.6.1/scripts/defuse.pl
 
 #VARSCAN
-ONCOFUSE_JAR ?= $(HOME)/share/usr/oncofuse-1.0.9b2/Oncofuse.jar
-VARSCAN_JAR ?= $(JARDIR)/VarScan.v2.4.1.jar
+ONCOFUSE_JAR ?= $(JARDIR)/Oncofuse.jar
+VARSCAN_JAR ?= $(JARDIR)/VarScan.v2.4.2.jar
+VARSCAN = $(JAVA8) -Xmx(VARSCAN_MEM) -jar $(VARSCAN_JAR)
 
 # PICARD tools
-PICARD_DIR ?= $(JARDIR)/picard-1.92
-PICARD_JAR ?= $(JARDIR)/picard-tools-1.141/picard.jar
+PICARD_MEM = 10G
+PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
+PICARD_JAR ?= $(JARDIR)/picard-tools-2.4.1/picard.jar
+PICARD = $(JAVA8) -Xmx$(PICARD_MEM) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
+
+SORT_SAM = $(call PICARD, SortSam)
+REORDER_SAM = $(call PICARD, ReorderSam)
+MARK_DUP = $(call PICARD, MarkDuplicates)
+MARK_DUP_CIGAR = $(call PICARD, MarkDuplicatesWithMateCigar)
+MERGE_SAMS = $(call PICARD, MergeSamFiles)
+FIX_MATE = $(call PICARD, FixMateInformation)
+SAM_TO_FASTQ = $(call PICARD, SamToFastq)
+CLEANBAM = $(call PICARD, CleanSam)
+ADD_RG = $(call PICARD, AddOrReplaceReadGroups)
+VALIDATE_SAM = $(call PICARD, ValidateSamFile)
+
+INTERVAL_LIST_TOOL = $(call PICARD, IntervalListTools)
+CREATE_SEQ_DICT = $(call PICARD, CreateSequenceDictionary)
+
+CALC_HS_METRICS = $(call PICARD, CalculateHsMetrics)
+COLLECT_HS_METRICS = $(call PICARD, CollectHsMetrics)
+COLLECT_MULT_METRICS = $(call PICARD, CollectMultipleMetrics)
+COLLECT_TARGETED_METRICS = $(call PICARD, CollectTargetedPcrMetrics)
+COLLECT_ALIGNMENT_METRICS = $(call PICARD, CollectAlignmentSummaryMetrics)
+COLLECT_ILMN_LANE_METRICS = $(call PICARD, CollectIlluminaLaneMetrics)
+COLLECT_OXOG_METRICS = $(call PICARD, CollectOxoGMetrics)
+COLLECT_RNA_METRICS = $(call PICARD, CollectRnaSeqMetrics)
+COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD, CollectSequencingArtifactMetrics)
+COLLECT_WGS_METRICS = $(call PICARD, CollectWgsMetrics)
 
 # scripts
 SCRIPTS_DIR ?= usb-modules/scripts
@@ -106,14 +123,6 @@ INTRON_POSN_LOOKUP ?= $(SCRIPTS_DIR)/posnGeneLookup.pl
 RBIND ?= $(SCRIPTS_DIR)/rbind.R
 NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
 SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
-FACETS ?= $(RSCRIPT) modules/copy_number/runFacets.R
-
-#JAVA_TMP := $(HOME)/tmp
-JAVA_BIN ?=  /opt/common/CentOS_6/java/jdk1.6.0_45/bin/java
-JAVA6_BIN ?= /opt/common/CentOS_6/java/jdk1.6.0_45/bin/java
-JAVA7_BIN ?= /opt/common/CentOS_6/java/jdk1.7.0_75/bin/java
-JAVA8_BIN ?= $(HOME)/usr/jdk1.8.0_74/bin/java
-#JAVA ?= /usr/bin/java $(JAVA_ARGS)
 
 GET_INSERT_SIZE ?= $(HOME)/share/usr/bin/getInsertSize.py
 

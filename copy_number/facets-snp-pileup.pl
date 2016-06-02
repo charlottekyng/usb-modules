@@ -19,7 +19,7 @@ my $max_ndepth = $ARGV[6];
 
 # prefix for the pileup command
 #my $cmdprefix = 'source /etc/profile.d/lmod.sh; module purge; source $HOME/.bashrc; module load SAMtools/1.3-goolf-1.7.20; ';
-my $cmdprefix = 'module purge; module load SAMtools/1.3-goolf-1.7.20; ';
+my $cmdprefix = 'module load SAMtools/1.3-goolf-1.7.20; ';
 $cmdprefix .= "samtools mpileup -q15 -Q20 -B -f $reference -l $bedfile -r ";
 
 # chromosomes

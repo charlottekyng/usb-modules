@@ -77,7 +77,7 @@ bam_metrics :
 
 TARGETS += bam_interval_metrics
 bam_interval_metrics :
-	$(call RUN_MAKE,modules/qc/bamIntervalMetrics.mk)
+	$(call RUN_MAKE,usb-modules/qc/bamIntervalMetrics.mk)
 
 TARGETS += rnaseq_metrics
 rnaseq_metrics :

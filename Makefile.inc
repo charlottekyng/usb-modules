@@ -5,17 +5,44 @@ endif
 ifneq ("$(wildcard project_config.inc)", "")
 include project_config.inc
 endif
-include usb-modules/config.inc
 
-# default reference: 
+##Set environment variables
+export TMPDIR := /scicore/scratch
+PATH := $(HOME)/usr_nobackup:$(PATH)
+#PATH := $(PATH):$(HOME)/share/usr/ensembl-git-tools/bin
+export PATH
+export R_LIBS := $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
+
+#LD_LIBRARY_PATH := $(HOME)/share/usr/mysql/lib:$(LD_LIBRARY_PATH)
+#export LD_LIBRARY_PATH
+
+#PERL5LIB := $(HOME)/share/usr/perl5/lib/perl5:$(HOME)/share/usr/ActivePerl-5.18/lib
+#PERL5LIB := $(HOME)/share/usr/src/bioperl-live:$(PERL5LIB)
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl/modules
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-compara/modules
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-variation/modules
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-funcgen/modules
+PERL5LIB := $(HOME)/perl5/lib
+export PERL5LIB
+
+# default reference:
+# possible values: mm10, hg19, b37
 REF ?= b37
-include usb-modules/genome_inc/$(REF).inc
-
-ifndef MAKEFILE_INC
+# possible values: ILLUMINA, IONTORRENT
+SEQ_PLATFORM ?= ILLUMINA
+# possible values: NONE, BAITS, PCR
+CAPTURE_METHOD ?= NONE
+# possible values: NONE, EXOME, IMPACTv5, CCP, CHPv2
+PANEL ?= NONE
 
 SAMPLE_SET_FILE ?= sample_sets.txt
 SAMPLE_FILE ?= samples.txt
 SAMPLE_SPLIT_FILE ?= samples.split.txt # generate using scripts/prepareFastq.sh [remove underscores from sample names]
+
+include usb-modules/genome_inc/$(REF).inc
+include usb-modules/config.inc
+
+ifndef MAKEFILE_INC
 
 PROJECT_NAME = $(shell pwd | sed 's:.*/projects/::; s:.*/data/::; s:.*kinglab/::; s:/:_:g')
 
@@ -82,65 +109,9 @@ ifneq ($(wildcard $(SAMPLE_SPLIT_FILE)),)
   SPLIT_SAMPLES = $(shell cut -f1 $(SAMPLE_SPLIT_FILE) | sort | uniq)
 endif
 
-
 ALL_SAMPLES = $(SAMPLE_PAIRS) $(SAMPLES)
 
-SHELL = /bin/bash
-
-#VARSCAN
-VARSCAN_MEM = $(JAVA) -Xmx$1 -jar $(VARSCAN_JAR)
-VARSCAN = $(call VARSCAN_MEM,8G)
-
-# PICARD tools
-PICARD_MEM = 10G
-PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000
-PICARD_DIR ?= $(HOME)/share/usr/lib/java
-
-ANALYZE_COV = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/AnalyzeCovariates.jar $(PICARD_OPTS)
-SORT_SAM = $(call SORT_SAM_MEM,$(PICARD_MEM))
-SORT_SAM_MEM = $(JAVA) -Xmx$1 -jar $(PICARD_DIR)/SortSam.jar $(PICARD_OPTS) TMP_DIR=$(TMPDIR)
-REORDER_SAM = $(call REORDER_SAM_MEM,$(PICARD_MEM))
-REORDER_SAM_MEM = $(JAVA) -Xmx$(1) -jar $(PICARD_DIR)/ReorderSam.jar $(PICARD_OPTS)
-MARK_DUP = $(call $(MARK_DUP_MEM,$(PICARD_MEM)))
-MARK_DUP_MEM = $(JAVA) -Xmx$(1) -jar $(PICARD_DIR)/MarkDuplicates.jar $(PICARD_OPTS)
-MERGE_SAMS = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/MergeSamFiles.jar $(PICARD_OPTS)
-INTERVAL_LIST_TOOL = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/IntervalListTools.jar $(PICARD_OPTS)
-CREATE_SEQ_DICT = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/CreateSequenceDictionary.jar $(PICARD_OPTS)
-CALC_HS_METRICS = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/CalculateHsMetrics.jar $(PICARD_OPTS)
-COLLECT_MULT_METRICS = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/CollectMultipleMetrics.jar $(PICARD_OPTS)
-COLLECT_TARGETED_METRICS = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/CollectTargetedPcrMetrics.jar $(PICARD_OPTS)
-
-FIX_MATE = $(call FIX_MATE_MEM,$(PICARD_MEM))
-FIX_MATE_MEM = $(JAVA) -Xmx$(1) -jar $(PICARD_DIR)/FixMateInformation.jar $(PICARD_OPTS) TMP_DIR=$(TMPDIR)
-SAM_TO_FASTQ = $(call SAM_TO_FASTQ_MEM,$(PICARD_MEM))
-SAM_TO_FASTQ_MEM = $(JAVA) -Xmx$(1) -jar $(PICARD_DIR)/SamToFastq.jar $(PICARD_OPTS)
-CLEANBAM = $(call CLEANBAM_MEM,$(PICARD_MEM))
-CLEANBAM_MEM = $(JAVA) -Xmx$(1) -jar $(PICARD_DIR)/CleanSam.jar $(PICARD_OPTS)
-
-ADD_RG = $(call ADD_RG_MEM,$(PICARD_MEM))
-ADD_RG_MEM = $(JAVA) -Xmx$(1) -jar $(PICARD_DIR)/AddOrReplaceReadGroups.jar $(PICARD_OPTS)
-VALIDATE_SAM = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_DIR)/ValidateSamFile.jar $(PICARD_OPTS)
-
-PICARD = $(JAVA8) -Xmx$2 -jar $(PICARD2_JAR) $1 $(PICARD_OPTS)
-
-# SNP EFF
-SNP_EFF = $(call SNP_EFF_MEM,$(DEFAULT_JAVA_MEM))
-SNP_EFF_MEM = $(JAVA7) -Xmx$1 -jar $(SNP_EFF_JAR)
-SNP_SIFT_MEM = $(JAVA7) -Xmx$1 -jar $(SNP_SIFT_JAR)
-SNP_SIFT = $(call SNP_SIFT_MEM,$(DEFAULT_JAVA_MEM))
-VCF_EFF_ONE_PER_LINE = $(HOME)/share/usr/snpEff-4.1/scripts/vcfEffOnePerLine.pl
-VCF_JOIN_EFF = modules/scripts/joinEff.pl
-
 COUNT_SAMPLES = $(shell expr `sed 's/\..*//; s:.*/::' <<< $1 | grep -o "_" | wc -l` + 1)
-
-
-JAVA_ARGS = -Djava.io.tmpdir=$(TMPDIR)
-#JAVA_TMP := $(HOME)/tmp
-JAVA := $(JAVA_BIN) $(JAVA_ARGS)
-JAVA6 := $(JAVA6_BIN) $(JAVA_ARGS)
-JAVA7 := $(JAVA7_BIN) $(JAVA_ARGS)
-JAVA8 := $(JAVA8_BIN) $(JAVA_ARGS)
-#JAVA = /usr/bin/java $(JAVA_ARGS)
 
 NO_RM ?= false
 ifeq ($(NO_RM),true)
@@ -172,7 +143,7 @@ LOG = $(LOGDIR)/$(@).log
 # SGE variables
 #QUEUE ?= jrf.q
 #SGE_RREQ = -q $(QUEUE) -N X$(@F) -V -cwd
-SGE_RREQ = -N X$(@F) -V -cwd
+SGE_RREQ = -N X$(@F) -cwd
 PARALLEL_ENV = smp
 #MEM_FREE = -l virtual_free=$1,h_vmem=$2
 MEM_BY_CORE = -l membycore=$1
@@ -182,12 +153,10 @@ REQ_PARALLEL_MEM = SGE_RREQ="$(SGE_RREQ) $(call MEM_BY_CORE,$2) -pe $(PARALLEL_E
 REQ_MEM = SGE_RREQ="$(SGE_RREQ) $(call MEM_BY_CORE,$1) $(call RUN_TIME,$1)"
 UMASK = 002
 #ACTIVATE_JRFLAB_MODULES_ENV = unset PYTHONPATH; source $(JRFLAB_MODULES_ENV)/bin/activate $(JRFLAB_MODULES_ENV)
-INIT = $(MKDIRS); umask $(UMASK); set -o pipefail; ####echo $(ACTIVATE_JRFLAB_MODULES_ENV);
-INIT_NOCLUSTER = echo "umask $(UMASK); set -o pipefail"; #####$(ACTIVATE_JRFLAB_MODULES_ENV);";
-# $(call INIT_MEM,mem_free,h_vmem)
-INIT_MEM = $(MKDIRS); umask $(UMASK); $(call REQ_MEM,$1,$2);
-# $(call INIT_PARALLEL_MEM,ncpus,mem_free,h_vmem)
-INIT_PARALLEL_MEM = $(MKDIRS); umask $(UMASK); $(call REQ_PARALLEL_MEM,$1,$2,$3);
+INIT = module purge; $(MKDIRS); umask $(UMASK); set -o pipefail; ####echo $(ACTIVATE_JRFLAB_MODULES_ENV);
+INIT_NOCLUSTER = echo "module purge; umask $(UMASK); set -o pipefail"; #####$(ACTIVATE_JRFLAB_MODULES_ENV);";
+INIT_MEM = module purge; $(MKDIRS); umask $(UMASK); $(call REQ_MEM,$1,$2);
+INIT_PARALLEL_MEM = module purge; $(MKDIRS); umask $(UMASK); $(call REQ_PARALLEL_MEM,$1,$2,$3);
 
 # openMPI
 #MPIRUN = /opt/bin/mpirun
@@ -201,13 +170,15 @@ QRSH = /scicore/soft/UGE/current/bin/lx-amd64/qrsh
 #LAUNCH = $(INIT) $(QRSH) -N X$(@F) -V -cwd -q $(QUEUE) -now n -notify
 #LAUNCH_PARALLEL_MEM = $(INIT) $(LAUNCH) -pe $(PARALLEL_ENV) $1 $(call MEM_FREE,$2,$3)
 #LAUNCH_MEM = $(INIT) $(LAUNCH) $(call MEM_FREE,$1,$2)
-LAUNCH = $(INIT) $(QRSH) -N X$(@F) -V -cwd -now n -notify
+#LAUNCH = $(INIT) $(QRSH) -N X$(@F) -V -cwd -now n -notify
+LAUNCH = $(INIT) $(QRSH) -N X$(@F) -cwd -now n -notify
 LAUNCH_PARALLEL_MEM = $(INIT) $(LAUNCH) -pe $(PARALLEL_ENV) $1 $(call MEM_BY_CORE,$2) $(call RUN_TIME $3)
 LAUNCH_MEM = $(INIT) $(LAUNCH) $(call MEM_BY_CORE,$1)
 
 # launch read script from stdin
 QSUB_PRIORITY ?= 0
-override QSUB_ARGS = -V -wd $(PWD) -now n -notify -o $(LOG) -j y -S $(SHELL) -p $(QSUB_PRIORITY) -b n
+#override QSUB_ARGS = -V -wd $(PWD) -now n -notify -o $(LOG) -j y -S $(SHELL) -p $(QSUB_PRIORITY) -b n
+override QSUB_ARGS = -wd $(PWD) -now n -notify -o $(LOG) -j y -S $(SHELL) -p $(QSUB_PRIORITY) -b n
 QMAKE_BIN = /scicore/soft/UGE/current/bin/lx-amd64/qmake
 QMAKE_QUEUE = $(QMAKE_BIN) -q $1
 QMAKE = $(call QSUB_QUEUE,$(QUEUE))
@@ -251,32 +222,32 @@ LSCRIPT_CHECK_NAMED_PARALLEL_MEM = $(LSCRIPT_NAMED_PARALLEL_MEM)
 LSCRIPT_CHECK_NAMED_MEM = $(LSCRIPT_MEM)
 
 else ## use cluster
+LSCRIPT_NAMED = ($(INIT) echo "umask $(UMASK);" $2) | $(QSUB) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) $(call MEM_BY_CORE,1G) $(call RUN_TIME,00:29:59)
+LSCRIPT_NAMED_PARALLEL_MEM = ($(INIT) echo "umask $(UMASK);" $5) | $(QSUB) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) -pe $(PARALLEL_ENV) $2 $(call MEM_BY_CORE,$3) $(call RUN_TIME,$4)
+LSCRIPT_NAMED_MEM = ($(INIT) echo "umask $(UMASK);" $4) | $(QSUB) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3)
+
 LSCRIPT = $(call LSCRIPT_NAMED_MEM,$(@F),1G,2G,$1)
 LSCRIPT_PARALLEL_MEM = $(call LSCRIPT_NAMED_PARALLEL_MEM,$(@F),$1,$2,$3,$4)
 LSCRIPT_MEM = $(call LSCRIPT_NAMED_MEM,$(@F),$1,$2,$3)
 
-LSCRIPT_NET = ($(INIT) echo "umask $(UMASK);" $1) | $(call QSUB_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -l internet=1
-LSCRIPT_BIG = ($(INIT) echo "umask $(UMASK);" $1) | $(call QSUB_QUEUE,big.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS)
-LSCRIPT_PARALLEL_MEM_NET = ($(INIT) echo "umask $(UMASK);" $4) | $(call QSUB_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -pe $(PARALLEL_ENV) $1 $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3) -l internet=1
-LSCRIPT_PARALLEL_MEM_BIG = ($(INIT) echo "umask $(UMASK);" $4) | $(call QSUB_QUEUE,big.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -pe $(PARALLEL_ENV) $1 $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3)
-LSCRIPT_MEM_NET = ($(INIT) echo "umask $(UMASK);" $3) | $(call QSUB_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) $(call MEM_BY_CORE,$1) $(call RUN_TIME,$2) -l internet=1
-LSCRIPT_MEM_BIG = ($(INIT) echo "umask $(UMASK);" $3) | $(call QSUB_QUEUE,big.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) $(call MEM_BY_CORE,$1) $(call RUNTIME,$2)
-
-LSCRIPT_NAMED = ($(INIT) echo "umask $(UMASK);" $2) | $(QSUB) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) $(call MEM_BY_CORE,1G) $(call RUN_TIME,00:29:59)
-LSCRIPT_NAMED_PARALLEL_MEM = ($(INIT) echo "umask $(UMASK);" $5) | $(QSUB) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) -pe $(PARALLEL_ENV) $2 $(call MEM_BY_CORE,$3) $(call RUN_TIME,$4)
-LSCRIPT_NAMED_MEM = ($(INIT) echo "umask $(UMASK);" $4) | $(QSUB) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) $(call MEM_FREE,$2) $(call RUN_TIME,$3)
+LSCRIPT_CHECK_NAMED = $(INIT) echo "umask $(UMASK);" $2 | $(QSUB_CHECK) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS)
+LSCRIPT_CHECK_NAMED_PARALLEL_MEM = ($(INIT) echo "umask $(UMASK);" $5) | $(QSUB_CHECK) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) -pe $(PARALLEL_ENV) $2 $(call MEM_BY_CORE,$3) $(call RUN_TIME,$4)
+LSCRIPT_CHECK_NAMED_MEM = ($(INIT) echo "umask $(UMASK);" $4) | $(QSUB_CHECK) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3)
 
 LSCRIPT_CHECK = $(call LSCRIPT_CHECK_NAMED,$(@F),$1)
 LSCRIPT_CHECK_PARALLEL_MEM = $(call LSCRIPT_CHECK_NAMED_PARALLEL_MEM,$(@F),$1,$2,$3,$4)
 LSCRIPT_CHECK_MEM = $(call LSCRIPT_CHECK_NAMED_MEM,$(@F),$1,$2,$3)
 
+#LSCRIPT_NET = ($(INIT) echo "umask $(UMASK);" $1) | $(call QSUB_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -l internet=1
+#LSCRIPT_BIG = ($(INIT) echo "umask $(UMASK);" $1) | $(call QSUB_QUEUE,big.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS)
+##LSCRIPT_PARALLEL_MEM_NET = ($(INIT) echo "umask $(UMASK);" $4) | $(call QSUB_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -pe $(PARALLEL_ENV) $1 $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3) -l internet=1
+#LSCRIPT_PARALLEL_MEM_BIG = ($(INIT) echo "umask $(UMASK);" $4) | $(call QSUB_QUEUE,big.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -pe $(PARALLEL_ENV) $1 $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3)
+#LSCRIPT_MEM_NET = ($(INIT) echo "umask $(UMASK);" $3) | $(call QSUB_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) $(call MEM_BY_CORE,$1) $(call RUN_TIME,$2) -l internet=1
+#LSCRIPT_MEM_BIG = ($(INIT) echo "umask $(UMASK);" $3) | $(call QSUB_QUEUE,big.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) $(call MEM_BY_CORE,$1) $(call RUNTIME,$2)
 #LSCRIPT_CHECK_NET = ($(INIT) echo "umask $(UMASK);" $1) | $(call QSUB_CHECK_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -l internet=1
 #LSCRIPT_CHECK_PARALLEL_MEM_NET = ($(INIT) echo "umask $(UMASK);" $4) | $(call QSUB_CHECK_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) -pe $(PARALLEL_ENV) $1 $(call MEM_FREE,$2,$3) -l internet=1
 #LSCRIPT_CHECK_MEM_NET = $(INIT) echo "umask $(UMASK);" $3 | $(call QSUB_CHECK_QUEUE,out.q) -N $(PROJECT_NAME)_$(@F) $(QSUB_ARGS) $(call MEM_FREE,$1,$2) -l internet=1
 
-LSCRIPT_CHECK_NAMED = $(INIT) echo "umask $(UMASK);" $2 | $(QSUB_CHECK) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS)
-LSCRIPT_CHECK_NAMED_PARALLEL_MEM = ($(INIT) echo "umask $(UMASK);" $5) | $(QSUB_CHECK) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) -pe $(PARALLEL_ENV) $2 $(call MEM_BY_CORE,$3) $(call RUN_TIME,$4)
-LSCRIPT_CHECK_NAMED_MEM = ($(INIT) echo "umask $(UMASK);" $4) | $(QSUB_CHECK) -N $(PROJECT_NAME)_$1 $(QSUB_ARGS) $(call MEM_BY_CORE,$2) $(call RUN_TIME,$3)
 endif
 
 #MD5 = md5sum $(1:.md5=) > $1
@@ -308,25 +279,6 @@ define R_INIT
 dir.create('$(@D)', showWarnings = F, recursive = T)
 qw <- function(x) unlist(strsplit(x, "[[:space:]]+"))
 endef
-
-##Set environment variables
-export TMPDIR := /scicore/scratch
-PATH := $(HOME)/usr_nobackup:$(PATH)
-#PATH := $(PATH):$(HOME)/share/usr/ensembl-git-tools/bin
-export PATH
-export R_LIBS := $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
-
-#LD_LIBRARY_PATH := $(HOME)/share/usr/mysql/lib:$(LD_LIBRARY_PATH)
-#export LD_LIBRARY_PATH
-
-#PERL5LIB := $(HOME)/share/usr/perl5/lib/perl5:$(HOME)/share/usr/ActivePerl-5.18/lib
-#PERL5LIB := $(HOME)/share/usr/src/bioperl-live:$(PERL5LIB)
-#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl/modules
-#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-compara/modules
-#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-variation/modules
-#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-funcgen/modules
-PERL5LIB := $(HOME)/perl5/lib
-export PERL5LIB
 
 endif
 MAKEFILE_INC = true
