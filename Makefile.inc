@@ -7,7 +7,7 @@ include project_config.inc
 endif
 
 ##Set environment variables
-export TMPDIR := /scicore/scratch
+TMPDIR = /scicore/scratch
 PATH := $(HOME)/usr_nobackup:$(PATH)
 #PATH := $(PATH):$(HOME)/share/usr/ensembl-git-tools/bin
 export PATH
