@@ -81,8 +81,8 @@ DEFUSE ?= $(PERL) $(HOME)/share/usr/defuse-0.6.1/scripts/defuse.pl
 
 #VARSCAN
 ONCOFUSE_JAR ?= $(JARDIR)/Oncofuse.jar
-VARSCAN_JAR ?= $(JARDIR)/VarScan.v2.4.2.jar
-VARSCAN = $(JAVA8) -Xmx(VARSCAN_MEM) -jar $(VARSCAN_JAR)
+VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.2.jar
+VARSCAN = $(JAVA8) -Xmx6G -jar $(VARSCAN_JAR)
 
 # PICARD tools
 PICARD_MEM = 10G
@@ -104,7 +104,6 @@ VALIDATE_SAM = $(call PICARD, ValidateSamFile)
 INTERVAL_LIST_TOOL = $(call PICARD, IntervalListTools)
 CREATE_SEQ_DICT = $(call PICARD, CreateSequenceDictionary)
 
-CALC_HS_METRICS = $(call PICARD, CalculateHsMetrics)
 COLLECT_HS_METRICS = $(call PICARD, CollectHsMetrics)
 COLLECT_MULT_METRICS = $(call PICARD, CollectMultipleMetrics)
 COLLECT_TARGETED_METRICS = $(call PICARD, CollectTargetedPcrMetrics)

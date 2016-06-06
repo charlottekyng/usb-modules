@@ -103,7 +103,7 @@ mutect :
 
 TARGETS += varscan_cnv
 varscan_cnv :
-	$(call RUN_MAKE,modules/copy_number/varscanCNV.mk)
+	$(call RUN_MAKE,usb-modules/copy_number/varscanCNV.mk)
 
 TARGETS += varscan_fpfilter
 varscan_fpfilter :

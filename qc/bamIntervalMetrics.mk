@@ -30,7 +30,7 @@ endif
 
 non_ref_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_nonref_freq.txt)
 hs_metrics : metrics/hs_metrics.txt metrics/interval_hs_metrics.txt
-amplicon_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics.txt)
+amplicon_metrics : metrics/amplicon_metrics.txt metrics/interval_amplicon_metrics.txt
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
 interval_report : metrics/interval_report/index.html
 
@@ -38,7 +38,7 @@ interval_report : metrics/interval_report/index.html
 metrics/%.hs_metrics.txt metrics/%.interval_hs_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,10G,00:59:59,"TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(CALC_HS_METRICS) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt METRIC_ACCUMULATION_LEVEL=ALL_READS PER_TARGET_COVERAGE=metrics/$*.interval_hs_metrics.txt TARGET_INTERVALS=\$$TMP BAIT_SET_NAME=hs BAIT_INTERVALS=\$$TMP")
+	$(COLLECT_HS_METRICS) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt METRIC_ACCUMULATION_LEVEL=ALL_READS PER_TARGET_COVERAGE=metrics/$*.interval_hs_metrics.txt TARGET_INTERVALS=\$$TMP BAIT_SET_NAME=hs BAIT_INTERVALS=\$$TMP")
 
 # not sure how this differs from above, see picard doc
 metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.bam bam/%.bam.bai
@@ -67,6 +67,30 @@ metrics/interval_hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).
 		samplename=$$(basename $${metrics%%.interval_hs_metrics.txt}); \
 		sed '/^#/d; /^$$/d' $$metrics | cut -f 7,8 | \
 		sed "s/mean_coverage/$${samplename}_mean_coverage/; s/normalized_coverage/$${samplename}_normalized_coverage/" | \
+		paste $@.tmp - > $@; \
+		cp $@ $@.tmp; \
+	done; \
+	rm -f $@.tmp
+
+# summarize metrics into one file
+metrics/amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics.txt)
+	$(INIT) \
+	{ \
+	sed '/^$$/d; /^#/d; s/CUSTOM_AMPLICON_SET/SAMPLE/; s/\s$$//' $< | head -1; \
+	for metrics in $^; do \
+		samplename=$$(basename $${metrics%%.amplicon_metrics.txt}); \
+		head -8 $$metrics | sed "/^#/d; /^CUSTOM_AMPLICON_SET/d; /^\$$/d; s/^tmp/$$samplename/; s/\t\+$$//" ; \
+	done; \
+	} > $@
+
+# summarize interval metrics into one file
+metrics/interval_amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_amplicon_metrics.txt)
+	$(INIT) \
+	sed '/^#/d; /^$$/d' $< | cut -f 1-6 > $@.tmp; \
+	for metrics in $^; do \
+	samplename=$$(basename $${metrics%%.interval_amplicon_metrics.txt}); \
+	sed '/^#/d; /^$$/d' $$metrics | cut -f 7,8 | \
+	sed "s/mean_coverage/$${samplename}_mean_coverage/; s/normalized_coverage/$${samplename}_normalized_coverage/" | \
 		paste $@.tmp - > $@; \
 		cp $@ $@.tmp; \
 	done; \
