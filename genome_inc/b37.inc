@@ -47,8 +47,7 @@ CHIMERASCAN_REF = $(REF_DIR)/chimerascan_index
 RIBOSOMAL_INTERVALS = $(REF_DIR)/rrna_intervals.txt
 GENE_REF_FLAT = $(REF_DIR)/b37_genes.refFlat.txt
 
-CENTROMERE_TABLE = $(REF_DIR)/centromere.txt
-CENTROMERE_TABLE2 = $(REF_DIR)/centromere2.txt
+CENTROMERE_TABLE = $(REF_DIR)/annotation_data/centromeres_b37_hg19.txt
 
 ENSEMBL_TXDB = $(REF_DIR)/hsapiens_ensembl_biomart.sqlite
 

@@ -37,12 +37,16 @@ interval_report : metrics/interval_report/index.html
 # interval metrics per sample
 metrics/%.hs_metrics.txt metrics/%.interval_hs_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,10G,00:59:59,"TMP=`mktemp`.intervals; \
-	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(COLLECT_HS_METRICS) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt METRIC_ACCUMULATION_LEVEL=ALL_READS PER_TARGET_COVERAGE=metrics/$*.interval_hs_metrics.txt TARGET_INTERVALS=\$$TMP BAIT_SET_NAME=hs BAIT_INTERVALS=\$$TMP")
+	$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
+	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
+	$(COLLECT_HS_METRICS) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt METRIC_ACCUMULATION_LEVEL=ALL_READS \
+	PER_TARGET_COVERAGE=metrics/$*.interval_hs_metrics.txt TARGET_INTERVALS=\$$TMP BAIT_SET_NAME=hs BAIT_INTERVALS=\$$TMP")
 
 # not sure how this differs from above, see picard doc
 metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,10G,00:59:59,"TMP=`mktemp`.intervals; \
+	$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP && grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
 	$(COLLECT_TARGETED_METRICS) INPUT=$< OUTPUT=$@ AMPLICON_INTERVALS=\$$TMP TARGET_INTERVALS=\$$TMP \
@@ -100,7 +104,8 @@ metrics/interval_report/index.html : metrics/hs_metrics.txt
 	$(call LSCRIPT_MEM,3G,00:29:29,"$(PLOT_HS_METRICS) --outDir $(@D) $<")
 
 metrics/%.interval_nonref_freq.txt : bam/%.bam
-	$(call LSCRIPT_MEM,2G,01:59:29,"$(SAMTOOLS) mpileup -l $(TARGETS_FILE_INTERVALS) -f $(REF_FASTA) $< | \
+	$(call LSCRIPT_MEM,2G,01:59:29,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+	$(SAMTOOLS) mpileup -l $(TARGETS_FILE_INTERVALS) -f $(REF_FASTA) $< | \
 	$(NON_REF_FREQ) -b $(NON_REF_FREQ_BIN_SIZE) > $@")
 
 include usb-modules/bam_tools/processBam.mk

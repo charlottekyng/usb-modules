@@ -33,6 +33,7 @@ if (length(arguments$args) != 1) {
 chroms <- c(1:22, "X")
 
 cn <- read.table(cnFile, header=T, as.is=T)
+cn[,1] <- gsub("chr", "", cn[,1])
 keep <- which(cn[,1] %in% chroms)
 if (length(rm) > 0) { cn <- cn[keep,]}
 cn[which(cn[,1]=="X"),1] <- 23

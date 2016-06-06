@@ -48,7 +48,7 @@ endif
 ifeq ($(MERGE_SPLIT_BAMS),true)
 define bam-header
 unprocessed_bam/$1.header.sam : $$(foreach split,$2,unprocessed_bam/$$(split).bam)
-	$$(INIT) $$(SAMTOOLS) view -H $$< | grep -v '^@RG' > $$@.tmp; \
+	$$(INIT) $$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) view -H $$< | grep -v '^@RG' > $$@.tmp; \
 	for bam in $$(^M); do $$(SAMTOOLS) view -H $$$$bam | grep '^@RG' >> $$@.tmp; done; \
 	uniq $$@.tmp > $$@ && $(RM) $$@.tmp
 endef
@@ -56,7 +56,7 @@ $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call bam-header,$(sample),$(split.$(s
 
 define merged-bam
 unprocessed_bam/$1.bam : unprocessed_bam/$1.header.sam $$(foreach split,$2,unprocessed_bam/$$(split).bam)
-	$$(call LSCRIPT_MEM,12G,15G,"$$(SAMTOOLS) merge -f -h $$< $$@ $$(filter %.bam,$$^)")
+	$$(call LSCRIPT_MEM,12G,15G,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$@ $$(filter %.bam,$$^)")
 endef
 $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call merged-bam,$(sample),$(split.$(sample)))))
 endif
@@ -68,7 +68,7 @@ BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 index : $(BAMS) $(addsuffix .bai,$(BAMS))
 
 %.bam.bai : %.bam
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(SAMTOOLS) index $<")
+	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $<")
 
 %.bai : %.bam.bai
 	$(INIT) cp $< $@
@@ -79,7 +79,7 @@ index : $(BAMS) $(addsuffix .bai,$(BAMS))
 
 # filter
 %.filtered.bam : %.bam
-	$(call LSCRIPT_MEM,6G,00:59:59,"$(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
+	$(call LSCRIPT_MEM,6G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
 
 %.fixmate.bam : %.bam
 	$(call LSCRIPT_MEM,9G,01:59:59,"$(call FIX_MATE_MEM,8G) I=$< O=$@ && $(RM) $<")
@@ -87,9 +87,6 @@ index : $(BAMS) $(addsuffix .bai,$(BAMS))
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
 	$(call LSCRIPT_MEM,11G,02:59:59,"$(call GATK_MEM,10G) -T BaseRecalibrator -R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
-
-#%.sorted.bam : %.bam
-#	$(call LSCRIPT_PARALLEL_MEM,4,3G,3G,"$(SAMTOOLS2) sort -m 2.8G -o $@ -O bam --reference $(REF_FASTA) -@ 4 $<")
 
 %.sorted.bam : %.bam
 	$(call LSCRIPT_MEM,20G,03:59:59,"$(call SORT_SAM_MEM,19G,02:59:59) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")

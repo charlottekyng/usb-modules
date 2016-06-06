@@ -8,16 +8,16 @@ SHELL = /bin/bash
 PERL_MODULE ?= Perl/5.22.2-goolf-1.7.20
 PERL ?= module load $(PERL_MODULE); perl
 
-R_MODULE ?= R/3.2.4-goolf-1.7.20
-LOAD_R_MODULE ?= module load $(R_MODULE); 
+R_MODULE ?= R/3.3.0-goolf-1.7.20
+LOAD_R_MODULE ?= module load $(R_MODULE)
 R ?= R
 RSCRIPT ?= Rscript
 
 JAVA_ARGS = -Djava.io.tmpdir=$(TMPDIR)
 JAVA7_MODULE ?= Java/1.7.0_75
 JAVA8_MODULE ?= Java/1.8.0_74
-LOAD_JAVA7_MODULE ?= module load $(JAVA7_MODULE);
-LOAD_JAVA8_MODULE ?= module load $(JAVA8_MODULE); 
+LOAD_JAVA7_MODULE ?= module load $(JAVA7_MODULE)
+LOAD_JAVA8_MODULE ?= module load $(JAVA8_MODULE) 
 JAVA7 ?= java $(JAVA_ARGS)
 JAVA8 ?= java $(JAVA_ARGS)
 JARDIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/lib/java
@@ -34,31 +34,31 @@ JARDIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/lib/java
 UNZIP ?= /usr/bin/unzip
 
 FASTQC_MODULE ?= FastQC/0.11.4-Java-1.7.0_21
-LOAD_FASTQC_MODULE ?= module load $FASTQC_MODULE);
+LOAD_FASTQC_MODULE ?= module load $FASTQC_MODULE)
 FASTQC ?= $(PERL) fastqc ####### BROKEN
 
 MUTECT_JAR ?= $(JARDIR)/muTect-1.1.4.jar ##### NOT UPDATED
 
 BOWTIE2_MODULE ?= Bowtie2/2.2.6-goolf-1.4.10
-LOAD_BOWTIE2_MODULE ?= module load $(BOWTIE_MODULE);
+LOAD_BOWTIE2_MODULE ?= module load $(BOWTIE_MODULE)
 BOWTIE2 ?= bowtie2 
 
 BWA_MODULE ?= BWA/0.7.12-goolf-1.4.10
-LOAD_BWA_MODULE ?= module load BWA_MODULE;
+LOAD_BWA_MODULE ?= module load $(BWA_MODULE)
 BWA ?= bwa
 
 SAMTOOLS_MODULE ?= SAMtools/1.2-goolf-1.4.10
-LOAD_SAMTOOLS_MODULE ?= module load $(SAMTOOLS_MODULE);
+LOAD_SAMTOOLS_MODULE ?= module load $(SAMTOOLS_MODULE)
 SAMTOOLS ?= samtools
 
 VCFUTILS ?= $(HOME)/share/usr/bin/vcfutils.pl ##### NOT UPDATED
 
 BCFTOOLS_MODULE ?= BCFtools/1.2-goolf-1.4.10
-LOAD_BCFTOOLS_MODULE ?= module load $(BCFTOOLS_MODULE);
+LOAD_BCFTOOLS_MODULE ?= module load $(BCFTOOLS_MODULE)
 BCFTOOLS ?= bcftools
 
 BEDTOOLS_MODULE ?= BEDTools/2.25.0-goolf-1.4.10
-LOAD_BEDTOOLS_MODULE ?= module load $(BEDTOOLS_MODULE);
+LOAD_BEDTOOLS_MODULE ?= module load $(BEDTOOLS_MODULE)
 BEDTOOLS ?= bedtools
 
 BGZIP ?= $(HOME)/share/usr/bin/bgzip #### NOT UPDATED
@@ -68,7 +68,7 @@ LOAD_IGVTOOLS_MODULE ?= module load $(IGVTOOLS_MODULE)
 IGVTOOLS ?= igvtools
 
 VCFTOOLS_MODULE ?= VCFtools/0.1.14-goolf-1.4.10-Perl-5.16.3
-LOAD_VCFTOOLS_MODULE ?= module load $(VCFTOOLS_MODULE);
+LOAD_VCFTOOLS_MODULE ?= module load $(VCFTOOLS_MODULE)
 VCFTOOLS ?= vcftools
 
 VCF_SORT ?= $(PERL) $(HOME)/share/usr/bin/vcfsorter.pl ##### NOT UPDATED
