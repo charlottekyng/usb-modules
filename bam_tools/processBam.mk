@@ -6,21 +6,8 @@
 ifndef PROCESS_BAM_MK
 
 include usb-modules/Makefile.inc
-include usb-modules/variant_callers/gatk.inc
-include usb-modules/aligners/align.inc
-
 
 LOGDIR ?= log/process_bam.$(NOW)
-
-MERGE_SPLIT_BAMS ?= false  # merge processed split bams
-
-BAM_CHR1_BASE_RECAL ?= false
-BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) $(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES)))
-
-ifneq ($(KNOWN_INDELS),)
-BAM_REALN_OPTS = --knownAlleles $(KNOWN_INDELS)
-BAM_REALN_TARGET_OPTS = --known $(KNOWN_INDELS)
-endif
 
 # not primary alignment
 # read fails platform/vendor quality checks
@@ -28,8 +15,6 @@ BAM_FILTER_FLAGS ?= 768
 
 .DELETE_ON_ERROR:
 .SECONDARY: 
-
-BAM_REPROCESS ?= false
 
 BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 ifeq ($(BAM_REPROCESS),true)
@@ -44,7 +29,6 @@ bam/%.bam : unprocessed_bam/%$(if $(findstring true,$(BAM_FIX_RG)),.rg).bam
 endif
 endif
 
-
 ifeq ($(MERGE_SPLIT_BAMS),true)
 define bam-header
 unprocessed_bam/$1.header.sam : $$(foreach split,$2,unprocessed_bam/$$(split).bam)
@@ -56,7 +40,7 @@ $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call bam-header,$(sample),$(split.$(s
 
 define merged-bam
 unprocessed_bam/$1.bam : unprocessed_bam/$1.header.sam $$(foreach split,$2,unprocessed_bam/$$(split).bam)
-	$$(call LSCRIPT_MEM,12G,15G,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$@ $$(filter %.bam,$$^)")
+	$$(call LSCRIPT_MEM,12G,01:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$@ $$(filter %.bam,$$^)")
 endef
 $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call merged-bam,$(sample),$(split.$(sample)))))
 endif
@@ -99,11 +83,13 @@ index : $(BAMS) $(addsuffix .bai,$(BAMS))
 
 # clean sam files
 %.clean.bam : %.bam
-	$(call LSCRIPT_MEM,6G,12G,"$(call CLEANBAM_MEM,6G) I=$< O=$@")
+	$(call LSCRIPT_MEM,6G,01:59:59,"$(call CLEANBAM_MEM,6G) I=$< O=$@")
 
 # add rg
 %.rg.bam : %.bam
-	$(call LSCRIPT_MEM,12G,16G,"$(call ADD_RG_MEM,10G) I=$< O=$@ RGLB=$(call strip-suffix,$(@F)) RGPL=$(SEQ_PLATFORM) RGPU=00000000 RGSM=$(call strip-suffix,$(@F)) RGID=$(call strip-suffix,$(@F)) VERBOSITY=ERROR && $(RM) $<")
+	$(call LSCRIPT_MEM,12G,00:59:59,"$(LOAD_JAVA8_MODULE); $(ADD_RG) I=$< O=$@ RGLB=$(call strip-suffix,$(@F)) \
+		RGPL=$(SEQ_PLATFORM) RGPU=00000000 RGSM=$(call strip-suffix,$(@F)) RGID=$(call strip-suffix,$(@F)) \
+		VERBOSITY=ERROR && $(RM) $<")
 
 # if SPLIT_CHR is set to true, we will split realn processing by chromosome
 ifeq ($(SPLIT_CHR),true)

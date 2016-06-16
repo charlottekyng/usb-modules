@@ -1,13 +1,28 @@
 #### MAKE INCLUDES #####
-include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
+include usb-modules/Makefile.inc
+include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
+LOGDIR ?= log/mutect.$(NOW)
+
+PHONY += mutect mutect_vcfs mutect_tables ext_output #mut_report
+..DUMMY := $(shell mkdir -p version; echo "$(MUTECT) &> version/mutect.txt")
+
+mutect : mutect_vcfs mutect_tables ext_output
+mutect_vcfs : $(call SOMATIC_VCFS,mutect) $(addsuffix .idx,$(call SOMATIC_VCFS,mutect))
+mutect_tables : $(call SOMATIC_TABLES,mutect)
+ext_output : $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
+#mut_report : mutect/report/index.html mutect/lowAFreport/index.html mutect/highAFreport/index.html
+
+.DELETE_ON_ERROR:
+.SECONDARY:
+.PHONY : $(PHONY)
 
 # run mutect on each chromosome
 #$(call mutect-tumor-normal-chr,tumor,normal,chr)
 define mutect-tumor-normal-chr
 mutect/chr_vcf/$1_$2.$3.mutect%vcf mutect/chr_tables/$1_$2.$3.mutect%txt : bam/$1%bam bam/$2%bam
-	$$(MKDIR) mutect/chr_tables mutect/chr_vcf; $$(call LSCRIPT_CHECK_MEM,12G,16G,"$$(MUTECT) --enable_extended_output \
+	$$(MKDIR) mutect/chr_tables mutect/chr_vcf; $$(call LSCRIPT_CHECK_MEM,12G,01:59:59,"$$(LOAD_JAVA8_MODULE); $$(MUTECT) \
+		--enable_extended_output $$(MUTECT_OPTS) \
 		--intervals $3 --reference_sequence $$(REF_FASTA) --dbsnp $$(DBSNP) --input_file:tumor $$< --input_file:normal\
 		$$(word 2,$$^) -vcf mutect/chr_vcf/$1_$2.$3.mutect.vcf --out mutect/chr_tables/$1_$2.$3.mutect.txt")
 endef
@@ -22,14 +37,14 @@ mutect/tables/$1.mutect.txt : $$(foreach chr,$$(CHROMOSOMES),mutect/chr_tables/$
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call ext-mutect-tumor-normal,$(pair))))
 
-mutect/report/index.html: $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
-	$(call LSCRIPT_NAMED_MEM,mutect_report,6G,35G,"$(KNIT) $(MUT_FREQ_REPORT) $(@D) $^")
+#mutect/report/index.html: $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
+#	$(call LSCRIPT_NAMED_MEM,mutect_report,6G,35G,"$(KNIT) $(MUT_FREQ_REPORT) $(@D) $^")
 
-mutect/lowAFreport/index.html: $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
-	$(call LSCRIPT_NAMED_MEM,mutect_lowaf_report,6G,35G,"$(KNIT) $(MUT_FREQ_REPORT) $(@D) --lowAF $^")
+#mutect/lowAFreport/index.html: $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
+#	$(call LSCRIPT_NAMED_MEM,mutect_lowaf_report,6G,35G,"$(KNIT) $(MUT_FREQ_REPORT) $(@D) --lowAF $^")
 
-mutect/highAFreport/index.html: $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
-	$(call LSCRIPT_NAMED_MEM,mutect_highaf_report,6G,35G,"$(KNIT) $(MUT_FREQ_REPORT) $(@D) --highAF $^")
+#mutect/highAFreport/index.html: $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
+#	$(call LSCRIPT_NAMED_MEM,mutect_highaf_report,6G,35G,"$(KNIT) $(MUT_FREQ_REPORT) $(@D) --highAF $^")
 
 # merge variants 
 #$$(INIT) grep '^##' $$< > $$@; echo "##PEDIGREE=<Derived=$1,Original=$2>" >> $$@; grep '^#[^#]' $$< >> $$@; cat $$^ | grep -v '^#' | $$(VCF_SORT) $$(REF_DICT) - >> $$@ 2> $$(LOG)
@@ -40,5 +55,4 @@ endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 		$(eval $(call mutect-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
-include modules/vcf_tools/vcftools.mk
-
+include usb-modules/vcf_tools/vcftools.mk

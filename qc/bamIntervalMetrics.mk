@@ -1,38 +1,28 @@
 # generate bam interval metrics per sample
 
-#NO_RM := true
-
 include usb-modules/Makefile.inc
-include usb-modules/variant_callers/gatk.inc
-# picard format intervals file, needs requires sam format header
-
-VPATH ?= bam
 
 LOGDIR ?= log/metrics.$(NOW)
 
-PLOT_HS_METRICS = $(RSCRIPT) usb-modules/qc/plotHsMetrics.R
-NON_REF_FREQ = usb-modules/qc/nonRefFreqFromPileup.pl
-NON_REF_FREQ_BIN_SIZE = 0.01
-
 .DELETE_ON_ERROR:
 .SECONDARY: 
-.PHONY: bam_interval_metrics hs_metrics amplicon_metrics wgs_metrics interval_report non_ref_metrics
+.PHONY: bam_interval_metrics hs_metrics amplicon_metrics wgs_metrics interval_report #non_ref_metrics
 
 ifeq ($(CAPTURE_METHOD),NONE)
-bam_interval_metrics : wgs_metrics non_ref_metrics
+bam_interval_metrics : wgs_metrics #non_ref_metrics
 endif
 ifeq ($(CAPTURE_METHOD),BAITS)
-bam_interval_metrics : hs_metrics non_ref_metrics
+bam_interval_metrics : hs_metrics #non_ref_metrics
 endif
 ifeq ($(CAPTURE_METHOD),PCR)
-bam_interval_metrics : amplicon_metrics non_ref_metrics
+bam_interval_metrics : amplicon_metrics #non_ref_metrics
 endif
 
-non_ref_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_nonref_freq.txt)
+#non_ref_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_nonref_freq.txt)
 hs_metrics : metrics/hs_metrics.txt metrics/interval_hs_metrics.txt
 amplicon_metrics : metrics/amplicon_metrics.txt metrics/interval_amplicon_metrics.txt
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
-interval_report : metrics/interval_report/index.html
+#interval_report : metrics/interval_report/index.html
 
 # interval metrics per sample
 metrics/%.hs_metrics.txt metrics/%.interval_hs_metrics.txt : bam/%.bam bam/%.bam.bai
@@ -100,12 +90,12 @@ metrics/interval_amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sa
 	done; \
 	rm -f $@.tmp
 
-metrics/interval_report/index.html : metrics/hs_metrics.txt
-	$(call LSCRIPT_MEM,3G,00:29:29,"$(PLOT_HS_METRICS) --outDir $(@D) $<")
+#metrics/interval_report/index.html : metrics/hs_metrics.txt
+#	$(call LSCRIPT_MEM,3G,00:29:29,"$(PLOT_HS_METRICS) --outDir $(@D) $<")
 
-metrics/%.interval_nonref_freq.txt : bam/%.bam
-	$(call LSCRIPT_MEM,2G,01:59:29,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
-	$(SAMTOOLS) mpileup -l $(TARGETS_FILE_INTERVALS) -f $(REF_FASTA) $< | \
-	$(NON_REF_FREQ) -b $(NON_REF_FREQ_BIN_SIZE) > $@")
+#metrics/%.interval_nonref_freq.txt : bam/%.bam
+#	$(call LSCRIPT_MEM,2G,01:59:29,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+#	$(SAMTOOLS) mpileup -l $(TARGETS_FILE_INTERVALS) -f $(REF_FASTA) $< | \
+#	$(NON_REF_FREQ) -b $(NON_REF_FREQ_BIN_SIZE) > $@")
 
 include usb-modules/bam_tools/processBam.mk

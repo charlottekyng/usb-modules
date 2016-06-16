@@ -1,7 +1,6 @@
 # run pyrohmmvar: realignment-based variant calling method for 454 and ion torrent
 
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 
 .SECONDARY:
 .DELETE_ON_ERROR: 

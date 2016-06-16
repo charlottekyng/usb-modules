@@ -4,7 +4,6 @@
 ifndef VCFTOOLS_MK
 
 include usb-modules/Makefile.inc
-#include modules/variant_callers/gatk.inc
 
 LOGDIR ?= log/vcf.$(NOW)
 
@@ -46,7 +45,7 @@ ADD_GENE_LIST_ANNOTATION = $(RSCRIPT) modules/vcf_tools/addGeneListAnnotationToV
 NON_SILENT_EFF = START_GAINED SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
 NON_SILENT_CODING_EFF = START_GAINED START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
 
-NORMAL_VCF ?= $(HOME)/share/reference/spowellnormal.gatk_variants.vcf
+#NORMAL_VCF ?= $(HOME)/share/reference/spowellnormal.gatk_variants.vcf
 ifdef NORMAL_VCF
 %.nft.vcf : %.vcf
 	$(call LSCRIPT_CHECK_MEM,8G,12G,"$(call GATK_MEM,8G) -T VariantFiltration -R $(REF_FASTA) -V $< -o $@ --maskName 'normal' --mask $(NORMAL_VCF) && $(RM) $< $<.idx")
@@ -54,11 +53,11 @@ endif
 
 # run snp eff
 %.eff.vcf : %.vcf %.vcf.idx
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,14G,"$(call SNP_EFF_MEM,8G) ann $(SNP_EFF_OPTS) $(SNP_EFF_GENOME) -s $*.eff_summary.html $< > $@ && $(RM) $^"))
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$(LOAD_SNP_EFF_MODULE); $(SNP_EFF) ann $(SNP_EFF_OPTS) $(SNP_EFF_GENOME) -s $*.eff_summary.html $< > $@ && $(RM) $^"))
 
 # run snp sift to annotated with dbnsfp
 %.nsfp.vcf : %.vcf %.vcf.idx
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,12G,"$(call SNP_SIFT_MEM,8G) dbnsfp $(SNP_SIFT_OPTS) -f $(subst $( ),$(,),$(NSFP_FIELDS)) -db $(DB_NSFP) $< | sed '/^##INFO=<ID=dbNSFP/ s/Character/String/' > $@ && $(RM) $^"))
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,12G,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) dbnsfp $(SNP_SIFT_OPTS) -f $(subst $( ),$(,),$(NSFP_FIELDS)) -db $(DB_NSFP) $< | sed '/^##INFO=<ID=dbNSFP/ s/Character/String/' > $@ && $(RM) $^"))
 
 # run gatk snp eff
 %.gatk_eff.vcf : %.vcf %.vcf.idx

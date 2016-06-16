@@ -6,7 +6,6 @@ LOGDIR = log/pindel.$(NOW)
 
 ##### MAKE INCLUDES #####
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 
 PINDEL = $(HOME)/share/usr/bin/pindel
 PINDEL2VCF = $(HOME)/share/usr/bin/pindel2vcf

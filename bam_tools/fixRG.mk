@@ -1,8 +1,6 @@
 # various bam processing steps
 ##### MAKE INCLUDES #####
-include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
-include modules/aligners/align.inc
+include usb-modules/Makefile.inc
 
 LOGDIR ?= log/fixRG.$(NOW)
 
@@ -13,4 +11,4 @@ bam/%.bam : unprocessed_bam/%.rg.bam
 	$(INIT) ln -f $(<) $(@)
 
 
-include modules/bam_tools/processBam.mk
+include usb-modules/bam_tools/processBam.mk

@@ -5,23 +5,9 @@
 # 		   BAM_NO_RECAL = true/false (default: false)
 
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
-include modules/aligners/align.inc
 
 ALIGNER := tmap
 LOGDIR := log/tmap.$(NOW)
-
-SAMTOOLS_SORT_MEM = 2000000000
-
-FASTQ_CHUNKS := 10
-FASTQ_CHUNK_SEQ := $(shell seq 1 $(FASTQ_CHUNKS))
-FASTQUTILS = $(HOME)/share/usr/ngsutils/bin/fastqutils
-
-TMAP = $(HOME)/share/usr/bin/tmap
-TMAP_MODE ?= map3
-TMAP_OPTS =
-
-SEQ_PLATFORM = IONTORRENT
 
 .SECONDARY:
 .DELETE_ON_ERROR: 

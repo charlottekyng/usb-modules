@@ -2,7 +2,6 @@
 # vim: set ft=make :
 
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 include modules/variant_callers/somatic/scalpel.inc
 include modules/variant_callers/somatic/somaticVariantCaller.inc
 

@@ -99,7 +99,7 @@ jsm :
 
 TARGETS += mutect
 mutect :
-	$(call RUN_MAKE,modules/variant_callers/somatic/mutectVariantCaller.mk)
+	$(call RUN_MAKE,usb-modules/variant_callers/somatic/mutect.mk)
 
 TARGETS += varscan_cnv
 varscan_cnv :
@@ -312,7 +312,7 @@ virus_detection_bowtie2 :
 
 TARGETS += fix_rg
 fix_rg :
-	$(call RUN_MAKE,modules/bam_tools/fixRG.mk)
+	$(call RUN_MAKE,usb-modules/bam_tools/fixRG.mk)
 
 TARGETS += gatk_validation
 gatk_validation :

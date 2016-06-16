@@ -5,8 +5,6 @@
 # 		   BAM_NO_RECAL = true/false (default: false)
 
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
-include modules/aligners/align.inc
 
 ALIGNER := bwa
 LOGDIR ?= log/bwa.$(NOW)
@@ -41,7 +39,7 @@ ifdef SPLIT_SAMPLES
 .SECONDEXPANSION:
 define sai-split-fastq-pair
 bwa/sai/$1.$3.sai : $2
-	$$(call LSCRIPT_PARALLEL_MEM,8,1G,1.2G,"$$(BWA) aln $$(BWA_ALN_OPTS) -t 8 $$(REF_FASTA) $$(<) > $$(@)")
+	$$(call LSCRIPT_PARALLEL_MEM,8,1G,1.2G,"$$(LOAD_BWA_MODULE); $$(BWA_ALN) $$(BWA_ALN_OPTS) -t 8 $$(REF_FASTA) $$(<) > $$(@)")
 endef
 $(foreach ss,$(SPLIT_SAMPLES), \
 	$(if $(fq.$(ss)),\
@@ -50,7 +48,7 @@ $(foreach ss,$(SPLIT_SAMPLES), \
 
 define align-split-fastq
 bwa/bam/$2.bwa.bam : bwa/sai/$2.1.sai bwa/sai/$2.2.sai $3
-	$$(call LSCRIPT_MEM,4G,10G,"$$(BWA) sampe -P -r \"@RG\tID:$2\tLB:$1\tPL:$${SEQ_PLATFORM}\tSM:$1\" $$(REF_FASTA) $$^ | $$(SAMTOOLS) view -bhS - > $$@")
+	$$(call LSCRIPT_MEM,4G,10G,"$$(LOAD_BWA_MODULE); $$(BWA_SAMPE) -P -r \"@RG\tID:$2\tLB:$1\tPL:$${SEQ_PLATFORM}\tSM:$1\" $$(REF_FASTA) $$^ | $$(SAMTOOLS) view -bhS - > $$@")
 endef
 $(foreach ss,$(SPLIT_SAMPLES),\
 	$(if $(fq.$(ss)),\
@@ -58,11 +56,11 @@ $(foreach ss,$(SPLIT_SAMPLES),\
 endif
 
 bwa/sai/%.sai : fastq/%.fastq.gz
-	$(call LSCRIPT_PARALLEL_MEM,8,1G,1.2G,"$(BWA) aln $(BWA_ALN_OPTS) -t 8 $(REF_FASTA) $(<) > $(@) ")
+	$(call LSCRIPT_PARALLEL_MEM,8,1G,1.2G,"$(LOAD_BWA_MODULE); $(BWA_ALN) $(BWA_ALN_OPTS) -t 8 $(REF_FASTA) $(<) > $(@) ")
 
 bwa/bam/%.bwa.bam : bwa/sai/%.1.sai bwa/sai/%.2.sai fastq/%.1.fastq.gz fastq/%.2.fastq.gz
 	LBID=`echo "$*" | sed 's/_[A-Za-z0-9]\+//'`; \
-	$(call LSCRIPT_MEM,4G,10G,"$(BWA) sampe -P -r \"@RG\tID:$*\tLB:$${LBID}\tPL:${SEQ_PLATFORM}\tSM:$${LBID}\" $(REF_FASTA) $(^) | $(SAMTOOLS) view -bhS - > $(@) ")
+	$(call LSCRIPT_MEM,4G,10G,"$(LOAD_BWA_MODULE); $(BWA_SAMPE) -P -r \"@RG\tID:$*\tLB:$${LBID}\tPL:${SEQ_PLATFORM}\tSM:$${LBID}\" $(REF_FASTA) $(^) | $(SAMTOOLS) view -bhS - > $(@) ")
 
 fastq/%.fastq.gz : fastq/%.fastq
 	$(call LSCRIPT,"gzip -c $< > $(@) && $(RM) $< ")

@@ -65,13 +65,6 @@ ILMN_EXOME_BED ?= $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr_noAnn.bed
 ILMN_EXOME_BED_NOHEADER ?= $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr_noAnn_noheader.bed
 MAP_BIGWIG ?= $(REF_DIR)/wgEncodeCrgMapabilityAlign100mer.nochr.bigWig
 
-EXOME ?= false
-ifeq ($(EXOME),true)
-TARGETS_FILE = $(EXOME_BED_NOHEADER)
-QUALIMAP_TARGETS_FILE = $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr.bed
-EMU_TARGETS_FILE = $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr_noAnn_noheader_numchr_spacedelim.bed
-endif
-
 INCLUDE_CHR_Y ?= false
 ifneq ($(and $(TARGETS_FILE),$(findstring false,$(EXOME))),)
 CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE) | cut -f1 | sort | uniq)

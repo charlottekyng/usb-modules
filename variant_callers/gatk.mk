@@ -13,7 +13,6 @@
 ifndef GATK_MK
 
 include usb-modules/Makefile.inc
-include usb-modules/variant_callers/gatk.inc
 
 GATK_HARD_FILTER_SNPS ?= true
 GATK_POOL_SNP_RECAL ?= false

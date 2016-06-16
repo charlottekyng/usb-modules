@@ -17,20 +17,6 @@ include modules/aligners/align.inc
 
 LOGDIR = log/tophat.$(NOW)
 
-TOPHAT_NUM_CORES ?= 4
-NO_NOVEL_SPLICING ?= false 
-
-TOPHAT_OPTS = --keep-fasta-order --no-sort-bam -G $(GENES_GTF) -p ${TOPHAT_NUM_CORES} --tmp-dir $(TMPDIR)/$*
-
-SEQ_PLATFORM ?= illumina
-
-ifeq ($(BAM_PHRED64),true)
-	TOPHAT_OPTS += --solexa1.3-quals
-endif
-ifeq ($(NO_NOVEL_SPLICING),true)
-	TOPHAT_OPTS += --no-novel-juncs
-endif
-
 ..DUMMY := $(shell mkdir -p version; $(TOPHAT) --version &> version/tophat.txt; echo "options: $(TOPHAT_OPTS)" >> version/tophat.txt)
 .SECONDARY:
 .DELETE_ON_ERROR:

@@ -19,9 +19,17 @@ endif
 endif
 
 ifeq ($(SEQ_PLATFORM),ILLUMINA)
-ifeq ($PANEL),EXOME)
+ifeq ($(PANEL),EXOME)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/
+endif
+ifeq ($(PANEL),IMPACT410)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/impact410_b37.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/impact410_b37.bed
+endif
+ifeq ($(PANEL),IMPACT341)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/impact341_b37.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/impact341_b37.bed
 endif
 endif
 
@@ -57,11 +65,10 @@ MAPSPLICE_REF_BASENAME = $(REF_DIR)/GATK_bundle/2.3/mapsplice_ref/hg19
 GISTIC_REF ?= $(HOME)/share/usr/gistic_2_0_21/refgenefiles/hg19.mat
 
 
-REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37.fasta.gz
 #REF_2BIT ?= $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37.2bit
-DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.excluding_sites_after_129.vcf.gz
-KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
-OMNI ?= $(GSA_REF_DIR)/1000G_omni2.5.b37.vcf.gz
+DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.excluding_sites_after_129.vcf
+KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.b37.vcf
+OMNI ?= $(GSA_REF_DIR)/1000G_omni2.5.b37.vcf
 #HAPMAP ?= $(REF_DIR)/hapmap_3.3.b37.vcf.gz
 
 COSMIC ?= $(REF_DIR)/CosmicCodingMuts_v69.vcf
@@ -69,13 +76,6 @@ BOWTIE_REF = $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37
 ILMN_EXOME_BED ?= $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr_noAnn.bed
 ILMN_EXOME_BED_NOHEADER ?= $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr_noAnn_noheader.bed
 MAP_BIGWIG ?= $(REF_DIR)/wgEncodeCrgMapabilityAlign100mer.nochr.bigWig
-
-EXOME ?= false
-ifeq ($(EXOME),true)
-TARGETS_FILE = $(EXOME_BED_NOHEADER)
-QUALIMAP_TARGETS_FILE = $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr.bed
-EMU_TARGETS_FILE = $(REF_DIR)/SureSelect_50MB_S02972011_Regions_nochr_noAnn_noheader_numchr_spacedelim.bed
-endif
 
 INCLUDE_CHR_Y ?= false
 ifneq ($(and $(TARGETS_FILE),$(findstring false,$(EXOME))),)
@@ -86,11 +86,10 @@ endif
 
 KNOWN_CNVS = $(REF_DIR)/GRCh37_hg19_variants_2013-07-23.txt
 
-
 REF_NAME := 1000GenomesPilot-NCBI37
 REF_DATE := 20100517
 REF_DICT = $(REF_FASTA:.fasta=.dict)
-SNP_EFF_GENOME = hg19
+SNP_EFF_GENOME = GRCh37.75
 
 EMU_REF_DIR ?= $(REF_DIR)/GATK_bundle/2.3/emu_ref
 EMU_REF_MUTATIONS ?= $(REF_DIR)/emu_ref/exome_ref/Breast_clean_somatic_mutations_for_signature_analysis.emu.mutations.txt

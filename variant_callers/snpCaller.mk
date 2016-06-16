@@ -4,7 +4,6 @@ LOGDIR = log/snpCaller.$(NOW)
 
 ##### MAKE INCLUDES #####
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 VPATH ?= bam
 
 .DELETE_ON_ERROR:

@@ -1,11 +1,3 @@
-# vim: set ft=make:
-ifneq ("$(wildcard config.inc)", "")
-include config.inc
-endif
-ifneq ("$(wildcard project_config.inc)", "")
-include project_config.inc
-endif
-
 ##Set environment variables
 TMPDIR = /scicore/scratch
 PATH := $(HOME)/usr_nobackup:$(PATH)
@@ -25,6 +17,13 @@ export R_LIBS := $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
 PERL5LIB := $(HOME)/perl5/lib
 export PERL5LIB
 
+ifneq ("$(wildcard config.inc)", "")
+include config.inc
+endif
+ifneq ("$(wildcard project_config.inc)", "")
+include project_config.inc
+endif
+
 # default reference:
 # possible values: mm10, hg19, b37
 REF ?= b37
@@ -32,7 +31,7 @@ REF ?= b37
 SEQ_PLATFORM ?= ILLUMINA
 # possible values: NONE, BAITS, PCR
 CAPTURE_METHOD ?= NONE
-# possible values: NONE, EXOME, IMPACTv5, CCP, CHPv2
+# possible values: NONE, EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
 PANEL ?= NONE
 
 SAMPLE_SET_FILE ?= sample_sets.txt

@@ -16,7 +16,6 @@ LOGDIR ?= log/gatk.$(NOW)
 
 ##### MAKE INCLUDES #####
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 include modules/variant_callers/variantCaller.inc
 
 VPATH ?= bam

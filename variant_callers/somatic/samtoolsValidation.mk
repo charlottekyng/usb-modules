@@ -1,6 +1,5 @@
 # use samtools/bcftools to gather allelic depths at somatic positions
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 include modules/variant_callers/somatic/somaticVariantCaller.inc
 
 LOGDIR ?= log/samtools_validation.$(NOW)

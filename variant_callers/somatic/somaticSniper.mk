@@ -4,7 +4,6 @@
 
 ##### MAKE INCLUDES #####
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 
 SOMATIC_SNIPER = /opt/common/somaticsniper/somaticsniper-1.0.2.2/bam-somaticsniper
 SOMATIC_SNIPER_OPTS ?= -q 1 -p

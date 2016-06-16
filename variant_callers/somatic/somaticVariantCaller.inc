@@ -1,9 +1,4 @@
 ifndef SOMATIC_VARIANT_CALLER_INC
-DEPTH_FILTER ?= 5
-HRUN ?= false
-FFPE_NORMAL_FILTER ?= false
-VALIDATION ?= false
-ANN_FACETS ?= false
 
 # apply depth filter to varscan and mutect
 # fix vcf sample header for strelka

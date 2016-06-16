@@ -1,5 +1,4 @@
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
 
 DINDEL = LD_LIBRARY_PATH=/ifs/opt/common/boost/boost_1_45_0/lib/ /opt/common/dindel/dindel-1.01-src/dindel
 MAKE_WINDOWS = LD_LIBRARY_PATH=/ifs/opt/common/boost/boost_1_45_0/lib/ /opt/common/dindel/dindel-1.01-python

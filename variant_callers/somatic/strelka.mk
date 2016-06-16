@@ -1,9 +1,8 @@
 # Run strelka on tumour-normal matched pairs
 
 include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
-include modules/variant_callers/somatic/strelka.inc
 include modules/variant_callers/somatic/somaticVariantCaller.inc
+
 ##### DEFAULTS ######
 
 
@@ -18,7 +17,8 @@ strelka_tables : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_TABLES,$(type)))
 
 define strelka-tumor-normal
 strelka/$1_$2/Makefile : bam/$1.bam bam/$2.bam
-	$$(call LSCRIPT_NAMED,strelka_$1_$2,"rm -rf $$(@D) && $$(CONFIGURE_STRELKA) --tumor=$$< --normal=$$(<<) --ref=$$(REF_FASTA) --config=$$(STRELKA_CONFIG) --output-dir=$$(@D)")
+	$$(call LSCRIPT_NAMED,strelka_$1_$2,"rm -rf $$(@D) && $$(CONFIGURE_STRELKA) --tumor=$$< --normal=$$(<<) \
+		--ref=$$(REF_FASTA) --config=$$(STRELKA_CONFIG) --output-dir=$$(@D)")
 
 #$$(INIT) qmake -inherit -q jrf.q -- -j 20 -C $$< > $$(LOG) && touch $$@
 strelka/$1_$2/task.complete : strelka/$1_$2/Makefile

@@ -1,4 +1,3 @@
-#!/scicore/soft/apps/Perl/5.22.2-goolf-1.7.20/bin/perl
 use strict;
 use warnings;
 use Cwd 'abs_path';

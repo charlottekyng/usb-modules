@@ -5,7 +5,6 @@
 # 		   LOCAL = true/false (preform local alignments)
 # 		   RMDUP = true/false
 include modules/Makefile.inc
-include modules/aligners/align.inc
 
 VPATH ?= unprocessed_bam
 

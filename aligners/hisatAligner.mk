@@ -9,20 +9,8 @@ BAM_DUP_TYPE = none
 
 ALIGNER := hisat
 
-include modules/aligners/align.inc
-
 LOGDIR = log/hisat.$(NOW)
 
-HISAT_NUM_CORES ?= 8
-HISAT_OPTS = -q -p $(HISAT_NUM_CORES) -x $(HISAT_REF)
-
-SEQ_PLATFORM ?= illumina
-ifeq ($(SEQ_PLATFORM),true)
-	HISAT_OPTS += --fr
-endif
-
-ifeq ($(PHRED64),true)
-	HISAT_OPTS += --phred64
 endif
 
 ..DUMMY := $(shell mkdir -p version; $(HISAT) --version &> version/hisat.txt; echo "options: $(HISAT_OPTS)" >> version/hisat.txt)

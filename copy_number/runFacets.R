@@ -1,4 +1,3 @@
-#!/scicore/soft/apps/R/3.3.0-goolf-1.7.20/bin/Rscript
 # run the facets library
 
 suppressPackageStartupMessages(library("optparse"));
