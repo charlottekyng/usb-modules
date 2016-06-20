@@ -1,5 +1,76 @@
 ifndef CONFIG_INC
 
+
+JARDIR ?= $(HOME)/usr_nobackup/local/lib/java
+SCRIPTSDIR ?= $(HOME)/usr_nobackup/local/scripts
+BINDIR ?= $(HOME)/usr_nobackup/local/bin
+
+############################################################
+########## OPTIONS MOST LIKELY NEED TO CUSTOMIZED ##########
+############################################################
+
+# default reference:
+# possible values: mm10, hg19, b37
+REF ?= b37
+# possible values: ILLUMINA, IONTORRENT
+SEQ_PLATFORM ?= ILLUMINA
+# possible values: NONE, BAITS, PCR
+CAPTURE_METHOD ?= NONE
+# possible values: NONE, EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
+PANEL ?= NONE
+
+
+MERGE_SPLIT_BAMS ?= false  # merge processed split bams
+BAM_REPROCESS ?= false
+
+BAM_DUP_TYPE ?= markdup
+BAM_NO_FILTER ?= false
+BAM_NO_RECAL ?= false
+BAM_NO_REALN ?= false
+
+INCLUDE_CHR_Y ?= false
+
+### VARIANT FILTERS
+MIN_NORMAL_DEPTH ?= 10
+MIN_TUMOR_DEPTH ?= 20
+MIN_TUMOR_AD ?= 5
+MIN_TN_AD_RATIO ?= 5.0
+
+HRUN ?= false
+HRUN_FILTER ?= 4
+
+ANN_FACETS ?= true ## useful mostly for exomes
+
+include usb-modules/genome_inc/$(REF).inc
+
+##################################
+####### Environmental var ########
+##################################
+
+export TMPDIR := /scicore/scratch
+PATH "= $(HOME)/usr_nobackup:$(PATH)
+export PATH
+R_LIBS = $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
+
+#LD_LIBRARY_PATH := $(HOME)/share/usr/mysql/lib:$(LD_LIBRARY_PATH)
+#export LD_LIBRARY_PATH
+
+#PERL5LIB := $(HOME)/share/usr/perl5/lib/perl5:$(HOME)/share/usr/ActivePerl-5.18/lib
+#PERL5LIB := $(HOME)/share/usr/src/bioperl-live:$(PERL5LIB)
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl/modules
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-compara/modules
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-variation/modules
+#PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-funcgen/modules
+PERL5LIB := $(HOME)/perl5/lib
+export PERL5LIB
+
+ifneq ("$(wildcard config.inc)", "")
+include config.inc
+endif
+ifneq ("$(wildcard project_config.inc)", "")
+include project_config.inc
+endif
+
 ##################################
 ########## Interpreters ##########
 ##################################
@@ -16,8 +87,10 @@ R ?= R
 RSCRIPT ?= Rscript
 
 JAVA_ARGS = -Djava.io.tmpdir=$(TMPDIR)
-JAVA7_MODULE ?= Java/1.7.0_75
-JAVA8_MODULE ?= Java/1.8.0_74
+JAVA6_MODULE ?= Java/1.6.0_24
+JAVA7_MODULE ?= Java/1.7.0_80
+JAVA8_MODULE ?= Java/1.8.0_92
+LOAD_JAVA6_MODULE ?= module load $(JAVA6_MODULE)
 LOAD_JAVA7_MODULE ?= module load $(JAVA7_MODULE)
 LOAD_JAVA8_MODULE ?= module load $(JAVA8_MODULE) 
 JAVA ?= java $(JAVA_ARGS)
@@ -43,8 +116,22 @@ UNZIP ?= /usr/bin/unzip
 #### BAM/FASTQ OPTIONS ###########
 ##################################
 
-MERGE_SPLIT_BAMS ?= false  # merge processed split bams
-BAM_REPROCESS ?= false
+BAM_PHRED64 ?= false
+SPLIT_CHR ?= true
+SPLIT_FASTQ ?= false
+BAM_NO_SORT ?= false
+BAM_FIX_RG ?= false # fix the readgroups so that it corresponds with the bam filename
+
+BAM_SUFFIX := $(subst $( ),.,$(strip \
+        $(if $(findstring false,$(BAM_NO_SORT)),sorted)\
+        $(if $(findstring false,$(BAM_NO_FILTER)),filtered)\
+        $(if $(findstring true,$(BAM_FIX_RG)),rg)\
+        $(if $(findstring false,$(BAM_NO_REALN)),realn)\
+        $(if $(findstring rmdup,$(BAM_DUP_TYPE)),rmdup)\
+        $(if $(findstring markdup,$(BAM_DUP_TYPE)),markdup)\
+        $(if $(findstring false,$(BAM_NO_RECAL)),recal)\
+        bam))
+
 
 ##################################
 #### General MPS tools ###########
@@ -76,19 +163,19 @@ VCFTOOLS_MODULE ?= VCFtools/0.1.14-goolf-1.4.10-Perl-5.16.3
 LOAD_VCFTOOLS_MODULE ?= module load $(VCFTOOLS_MODULE)
 VCFTOOLS ?= vcftools
 
-VCF_SORT ?= $(PERL) $(HOME)/share/usr/bin/vcfsorter.pl ##### NOT UPDATED
+VCF_SORT ?= $(PERL) $(SCRIPTSDIR)/vcfsorter.pl 
 
-VCF2MAF ?= $(PERL) $(HOME)/share/usr/vcf2maf.pl
-MAF2MAF ?= $(PERL) $(HOME)/share/usr/maf2maf.pl
-MAF2VCF ?= $(PERL) $(HOME)/share/usr/maf2vcf.pl
+VCF2MAF ?= $(PERL) $(SCRIPTSDIR)/vcf2maf.pl
+MAF2MAF ?= $(PERL) $(SCRIPTSDIR)/maf2maf.pl
+MAF2VCF ?= $(PERL) $(SCRIPTSDIR)/maf2vcf.pl
 VEP_PATH ?= /opt/common/CentOS_6/vep/v82
 VEP_DATA ?= /opt/common/CentOS_6/vep/v82
 
-SCRIPTS_DIR ?= usb-modules/scripts
-MERGE ?= $(SCRIPTS_DIR)/merge.R
-VCF_TO_TABLE ?= $(SCRIPTS_DIR)/vcfToTable.R
-INTRON_POSN_LOOKUP ?= $(SCRIPTS_DIR)/posnGeneLookup.pl
-RBIND ?= $(SCRIPTS_DIR)/rbind.R
+MODULE_SCRIPTS_DIR ?= usb-modules/scripts
+MERGE ?= $(MODULE_SCRIPTS_DIR)/merge.R
+VCF_TO_TABLE ?= $(MODULE_SCRIPTS_DIR)/vcfToTable.R
+INTRON_POSN_LOOKUP ?= $(MODULE_SCRIPTS_DIR)/posnGeneLookup.pl
+RBIND ?= $(MODULE_SCRIPTS_DIR)/rbind.R
 
 GET_INSERT_SIZE ?= $(HOME)/share/usr/bin/getInsertSize.py
 
@@ -101,16 +188,15 @@ TABIX ?= $(HOME)/share/usr/bin/tabix
 ##################################
 
 FASTQC_MODULE ?= FastQC/0.11.4-Java-1.7.0_21
-LOAD_FASTQC_MODULE ?= module load $FASTQC_MODULE)
+LOAD_FASTQC_MODULE ?= module load $(FASTQC_MODULE)
 FASTQC ?= $(PERL) fastqc ####### BROKEN
 
 #NON_REF_FREQ = usb-modules/qc/nonRefFreqFromPileup.pl
 #NON_REF_FREQ_BIN_SIZE = 0.01
 
 CONTEST_JAR ?= $(JAR_DIR)/ContEst.jar
-CONTEST_REF_VCF ?= ~/share/reference/hg19_population_stratified_af_hapmap_3.3.vcf
 CONTEST_OPTS ?= -T Contamination -BTI genotypes
-CONTEST = $(JAVA7) -Xmx4G -jar $(CONTEST_JAR) -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
+CONTEST = $(JAVA) -Xmx4G -jar $(CONTEST_JAR) -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 
 ##################################
@@ -163,25 +249,6 @@ ifeq ($(PHRED64),true)
 endif
 
 
-BAM_PHRED64 ?= false
-BAM_DUP_TYPE ?= markdup
-BAM_NO_FILTER ?= false
-BAM_NO_RECAL ?= false
-BAM_NO_REALN ?= false
-SPLIT_CHR ?= true
-SPLIT_FASTQ ?= false
-BAM_NO_SORT ?= false
-BAM_FIX_RG ?= false # fix the readgroups so that it corresponds with the bam filename
-
-BAM_SUFFIX := $(subst $( ),.,$(strip \
-        $(if $(findstring false,$(BAM_NO_SORT)),sorted)\
-        $(if $(findstring false,$(BAM_NO_FILTER)),filtered)\
-        $(if $(findstring true,$(BAM_FIX_RG)),rg)\
-        $(if $(findstring false,$(BAM_NO_REALN)),realn)\
-        $(if $(findstring rmdup,$(BAM_DUP_TYPE)),rmdup)\
-        $(if $(findstring markdup,$(BAM_DUP_TYPE)),markdup)\
-        $(if $(findstring false,$(BAM_NO_RECAL)),recal)\
-        bam))
 
 ##################################
 ########## Picard ################
@@ -221,11 +288,12 @@ COLLECT_WGS_METRICS = $(call PICARD, CollectWgsMetrics)
 ########## GATK ### ##############
 ##################################
 
-GATK_MEM ?= 18G
 GATK_JAR ?= $(JARDIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
-GATK ?= $(JAVA7) -Xmx$(GATK_MEM) -jar $(GATK_JAR) -S LENIENT -T $(1)
+GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1)
 
-INDEL_REALIGN ?= $(call GATK, IndelRealigner)
+INDEL_REALIGN ?= $(call GATK,IndelRealigner,18G)
+VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,6G)
+VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,8G)
 
 BAM_CHR1_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) $(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES)))
@@ -277,9 +345,6 @@ REPORT_STRATIFICATION := Filter
 ########## Variant callers #######
 ##################################
 
-DEPTH_FILTER ?= 5
-HRUN ?= false
-FFPE_NORMAL_FILTER ?= false
 VALIDATION ?= false
 
 MUTECT_JAR ?= $(JARDIR)/muTect-1.1.4.jar
@@ -293,12 +358,12 @@ MUTECT = $(JAVA) -Xmx$(MUTECT_MEM) -jar $(MUTECT_JAR) --analysis_type MuTect
 VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.2.jar
 VARSCAN = $(JAVA8) -Xmx6G -jar $(VARSCAN_JAR)
 
-CONFIGURE_STRELKA = $(PERL) $(HOME)/share/usr/bin/configureStrelkaWorkflow.pl
-STRELKA_CONFIG = $(HOME)/share/usr/etc/strelka_config.ini
+CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
+STRELKA_CONFIG = /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/etc/strelka_config_bwa_default.ini
 
+#SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
+#NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
 
-SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
-NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
 
 ##################################
 ########## Annotation ############
@@ -307,18 +372,66 @@ NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
 SNP_EFF_MEM ?= 8g
 SNP_EFF_MODULE ?= snpEff/4.1l-Java-1.7.0_75
 LOAD_SNP_EFF_MODULE ?= module load $(SNP_EFF_MODULE)
-SNP_EFF_JAR ?= $(EBROOTSNPEFF)/snpEff.jar
-SNP_EFF = $(JAVA8) -Xmx$(SNP_EFF_MEM) -jar $(SNP_EFF_JAR)
-SNP_SIFT_JAR ?= $EBROOTSNPEFF/SnpSift.jar
-SNP_SIFT = $(JAVA8) -Xmx$(SNP_EFF_MEM) -jar $(SNP_SIFT_JAR)
-#SNP_EFF_CONFIG ?= $(HOME)/share/usr/snpEff-4.1/snpEff.config
-#DB_NSFP ?= $(HOME)/share/reference/snpEff/dbNSFP2.4.txt.gz
+SNP_EFF_DIR ?= /scicore/soft/apps/$(SNP_EFF_MODULE)/
 
-DB_NSFP ?= $(HOME)/share/reference/snpEff-4.1/dbNSFP3.0b1a.hg19.txt.gz
-NSFP_FIELDS ?= Uniprot_acc_Polyphen2 Uniprot_id_Polyphen2 Polyphen2_HVAR_score Polyphen2_HVAR_pred 1000Gp3_AF ESP6500_AA_AF ESP6500_EA_AF MutationAssessor_pred MutationAssessor_score MutationTaster_pred MutationTaster_score PROVEAN_pred ExAC_Adj_AF clinvar_rs clinvar_clnsig Interpro_domain
+SNP_EFF_JAR ?= $(SNP_EFF_DIR)/snpEff.jar
+SNP_EFF = $(JAVA) -Xmx$(SNP_EFF_MEM) -jar $(SNP_EFF_JAR)
+SNP_SIFT_JAR ?= $(SNP_EFF_DIR)/SnpSift.jar
+SNP_SIFT = $(JAVA) -Xmx$(SNP_EFF_MEM) -jar $(SNP_SIFT_JAR)
 
-VCF_EFF_ONE_PER_LINE = $(HOME)/share/usr/snpEff-4.1/scripts/vcfEffOnePerLine.pl
-VCF_JOIN_EFF = usb-modules/scripts/joinEff.pl
+SNP_EFF_CONFIG ?= usb-modules/snpEff.config
+SNP_EFF_FLAGS ?= -canon # -ud 0  -no-intron -no-intergenic -no-utr
+SNP_EFF_OPTS = -c $(SNP_EFF_CONFIG) -i vcf -o vcf $(SNP_EFF_FLAGS)
+SNP_SIFT_OPTS = -c $(SNP_EFF_CONFIG)
+
+VCF_FIELDS = CHROM POS ID REF ALT FILTER
+#NSFP_FIELDS ?= ExAC_Adj_AF 1000Gp3_AF ESP6500_AA_AF ESP6500_EA_AF \
+#	clinvar_rs clinvar_clnsig \
+#	Uniprot_acc_Polyphen2 Uniprot_id_Polyphen2 Polyphen2_HVAR_pred \
+#	MutationAssessor_pred MutationTaster_pred \
+#	PROVEAN_pred Interpro_domain
+ANN_FIELDS = $(addprefix ANN[*].,ALLELE EFFECT IMPACT GENE GENEID FEATURE FEATUREID BIOTYPE RANK \
+	HGVS_C HGVS_P CDNA_POS CDNA_LEN CDS_POS CDS_LEN AA_POS AA_LEN DISTANCE ERRORS)
+
+VCF_EFF_ONE_PER_LINE = $(PERL) $(SNP_EFF_DIR)/scripts/vcfEffOnePerLine.pl
+VCF_JOIN_EFF = $(PERL) usb-modules/scripts/joinEff.pl
+
+ANNOVAR = $(PERL) $(HOME)/share/usr/annovar/table_annovar.pl
+ANNOVAR_PROTOCOL ?= refGene$(,)cytoBand$(,)genomicSuperDups$(,)esp6500siv2_all$(,)1000g2014oct_all$(,)1000g2014oct_afr$(,)1000g2014oct_eas$(,)1000g2014oct_eur$(,)snp138$(,)ljb26_all
+ANNOVAR_OPERATION ?= g$(,)r$(,)r$(,)f$(,)f$(,)f$(,)f$(,)f$(,)f$(,)f
+ANNOVAR_OPTS = --dot2underline -remove -protocol $(ANNOVAR_PROTOCOL) -operation $(ANNOVAR_OPERATION) -nastring . -vcfinput -buildver $(ANNOVAR_REF)
+
+
+CHASM = $(RSCRIPT) modules/vcf_tools/chasmVcf.R
+#CHASM_DIR = /ifs/opt/common/CHASM/CHASMDL.1.0.7
+CHASM_DIR = $(HOME)/share/usr/CHASM
+CHASM_PYTHON_ENV = $(HOME)/share/usr/anaconda-envs/pyenv27-chasm
+CHASM_CLASSIFIER ?= Breast
+
+FATHMM = $(MY_RSCRIPT) modules/vcf_tools/fathmmVcf.R
+FATHMM_DIR = $(HOME)/share/usr/fathmm
+FATHMM_PYTHON = $(HOME)/share/usr/bin/python
+FATHMM_PYTHONPATH = $(HOME)/share/usr/lib/python:$(HOME)/share/usr/lib/python2.7
+FATHMM_OPTS = --genome $(REF) --ensemblTxdb $(ENSEMBL_TXDB) --ref $(REF_FASTA) --fathmmDir $(FATHMM_DIR) --python $(FATHMM_PYTHON) \
+	--mysqlHost $(EMBL_MYSQLDB_HOST) --mysqlPort $(EMBL_MYSQLDB_PORT) --mysqlUser $(EMBL_MYSQLDB_USER) \
+	--mysqlPassword $(EMBL_MYSQLDB_PW) --mysqlDb (EMBL_MYSQLDB_DB)
+TRANSFIC = $(RSCRIPT) modules/vcf_tools/transficVcf.R
+TRANSFIC_PERL_SCRIPT = $(HOME)/share/usr/transfic/bin/transf_scores.pl
+
+PROVEAN = $(RSCRIPT) modules/vcf_tools/proveanVcf.R
+PROVEAN_OPTS = --genome $(REF) --aaTable $(AA_TABLE) --ensemblTxdb $(ENSEMBL_TXDB) --mysqlHost $(EMBL_MYSQLDB_HOST) \
+			   --mysqlPort $(EMBL_MYSQLDB_PORT) --mysqlUser $(EMBL_MYSQLDB_USER) --mysqlPassword $(EMBL_MYSQLDB_PW) \
+			   --mysqlDb $(EMBL_MYSQLDB_DB) --numThreads 8 --memPerThread 1G --queue $(QUEUE) --qsubPriority $(QSUB_PRIORITY)
+
+AA_TABLE = $(HOME)/share/reference/aa_table.tsv
+
+MUT_ASS = $(RSCRIPT) usb-modules/vcf_tools/mutAssVcf.R
+MUTATION_TASTER = $(PYTHON) usb-modules/vcf_tools/mutation_taster_vcf.py
+
+ADD_GENE_LIST_ANNOTATION = $(RSCRIPT) usb-modules/vcf_tools/addGeneListAnnotationToVcf.R
+
+NON_SILENT_EFF = START_GAINED SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
+NON_SILENT_CODING_EFF = START_GAINED START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
 
 EMBL_MYSQLDB_HOST ?= 10.0.200.71
 EMBL_MYSQLDB_PORT ?= 38493
@@ -326,6 +439,14 @@ EMBL_MYSQLDB_USER ?= embl
 EMBL_MYSQLDB_PW ?= embl
 EMBL_MYSQLDB_DB ?= homo_sapiens_core_75_37
 
+ANNOTATE_FACETS_VCF = $(RSCRIPT) usb-modules/copy_number/annotateFacets2Vcf.R
+
+#NORMAL_VCF ?= $(HOME)/share/reference/spowellnormal.gatk_variants.vcf
+
+CANCER_HOTSPOT_ANNOTATION_SCRIPT = python modules/vcf_tools/hotspot_vcf.py
+
+CLASSIFY_PATHOGENICITY = $(PYTHON) modules/vcf_tools/classify_pathogenicity_vcf.py
+#COMMON_FILTER_VCF = $(PYTHON) modules/vcf_tools/common_filter_vcf.py
 ##################################
 ########## Copy number ###########
 ##################################

@@ -37,7 +37,6 @@ TARGETS_FILE = $(EXOME_BED_NOHEADER)
 QUALIMAP_TARGETS_FILE = $(TARGETS_FILE)
 endif
 
-INCLUDE_CHR_Y ?= true
 ifneq ($(and $(TARGETS_FILE),$(findstring false,$(EXOME))),)
 CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE) | cut -f1 | sort | uniq)
 else

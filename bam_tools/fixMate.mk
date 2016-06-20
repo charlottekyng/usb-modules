@@ -2,8 +2,7 @@
 # input: $(SAMPLES)
 # Author: Fong Chun Chan <fongchunchan@gmail.com>
 
-include modules/Makefile.inc
-include modules/hg19.inc
+include usb-modules/Makefile.inc
 
 FIXMATE = $(JAVA) -Xmx10G -jar $(JARDIR)/FixMateInformation.jar VALIDATION_STRINGENCY=LENIENT
 

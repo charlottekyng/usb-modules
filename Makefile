@@ -4,7 +4,15 @@
 # Author: Raymond Lim <raylim@mm.st>
 #
 
-export
+ifneq ("$(wildcard config.inc)", "")
+include config.inc
+endif
+ifneq ("$(wildcard project_config.inc)", "")
+include project_config.inc
+endif
+
+include usb-modules/config.inc
+#export
 
 NUM_ATTEMPTS ?= 20
 NOW := $(shell date +"%F")
@@ -33,39 +41,40 @@ gatk :
 	$(call RUN_MAKE,modules/variant_callers/gatkVariantCaller.mk)
 
 TARGETS += bwa
-bwa : NUM_ATTEMPTS = 50
+bwa : NUM_ATTEMPTS = 5
 bwa :
-	$(call RUN_MAKE,modules/aligners/bwaAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/bwaAligner.mk)
 
 TARGETS += bwamem
+bwamem : NUM_ATTEMPTS = 5
 bwamem :
-	$(call RUN_MAKE,modules/aligners/bwamemAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/bwamemAligner.mk)
 
 TARGETS += bowtie
-bowtie : NUM_ATTEMPTS = 50
+bowtie : NUM_ATTEMPTS = 5
 bowtie :
-	$(call RUN_MAKE,modules/aligners/bowtieAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/bowtieAligner.mk)
 
 TARGETS += tmap
-tmap : NUM_ATTEMPTS = 50
+tmap : NUM_ATTEMPTS = 5
 tmap :
-	$(call RUN_MAKE,modules/aligners/tmapAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/tmapAligner.mk)
 
 TARGETS += tophat_fusion
 tophat_fusion : 
-	$(call RUN_MAKE,modules/sv_callers/tophatFusion.mk)
+	$(call RUN_MAKE,usbmodules/sv_callers/tophatFusion.mk)
 
 TARGETS += tophat
 tophat : 
-	$(call RUN_MAKE,modules/aligners/tophatAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/tophatAligner.mk)
 
 TARGETS += hisat
 hisat : 
-	$(call RUN_MAKE,modules/aligners/hisatAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/hisatAligner.mk)
 
 TARGETS += cufflinks
 cufflinks : 
-	$(call RUN_MAKE,modules/rnaseq/cufflinks.mk)
+	$(call RUN_MAKE,usb-modules/rnaseq/cufflinks.mk)
 
 TARGETS += process_bam
 process_bam : 
@@ -85,17 +94,17 @@ rnaseq_metrics :
 
 TARGETS += fastqc
 fastqc :
-	$(call RUN_MAKE,modules/qc/fastqc.mk)
+	$(call RUN_MAKE,usb-modules/qc/fastqc.mk)
 
 # not tested on the cluster
 # requires x11 for graphics
-TARGETS += interval_qc
-interval_qc :
-	$(call RUN_MAKE,modules/qc/intervalBamQC.mk)
+#TARGETS += interval_qc
+#interval_qc :
+#	$(call RUN_MAKE,modules/qc/intervalBamQC.mk)
 
-TARGETS += jsm
-jsm :
-	$(call RUN_MAKE,modules/variant_callers/somatic/jsm.mk)
+#TARGETS += jsm
+#jsm :
+#	$(call RUN_MAKE,modules/variant_callers/somatic/jsm.mk)
 
 TARGETS += mutect
 mutect :
@@ -105,9 +114,9 @@ TARGETS += varscan_cnv
 varscan_cnv :
 	$(call RUN_MAKE,usb-modules/copy_number/varscanCNV.mk)
 
-TARGETS += varscan_fpfilter
-varscan_fpfilter :
-	$(call RUN_MAKE,modules/variant_callers/varscanFpfilter.mk)
+#TARGETS += varscan_fpfilter
+#varscan_fpfilter :
+#	$(call RUN_MAKE,modules/variant_callers/varscanFpfilter.mk)
 
 TARGETS += varscanTN
 varscanTN :
@@ -124,9 +133,9 @@ TARGETS += merge_vcfTN
 merge_vcfTN :
 	$(call RUN_MAKE,modules/vcf_tools/vcfMergeTN.mk)
 
-TARGETS += somatic_sniper
-somatic_sniper :
-	$(call RUN_MAKE,modules/variant_callers/somatic/somaticSniper.mk)
+#TARGETS += somatic_sniper
+#somatic_sniper :
+#	$(call RUN_MAKE,modules/variant_callers/somatic/somaticSniper.mk)
 
 
 TARGETS += som_indels
@@ -145,9 +154,9 @@ TARGETS += compare_vcfTN
 compare_vcfTN :
 	$(call RUN_MAKE,modules/vcf_tools/vcfCompareTN.mk)
 
-TARGETS += read_depth
-read_depth :
-	$(call RUN_MAKE,modules/qc/readDepth.mk)
+#TARGETS += read_depth
+#read_depth :
+#	$(call RUN_MAKE,modules/qc/readDepth.mk)
 
 TARGETS += qualimap
 qualimap :
@@ -166,29 +175,29 @@ sum_reads :
 	$(call RUN_MAKE,modules/rnaseq/sumRNASeqReads.mk)
 
 
-TARGETS += exomecnv
-exomecnv : 
-	$(call RUN_MAKE,modules/copy_number/exomeCNV.mk)
+#TARGETS += exomecnv
+#exomecnv : 
+#	$(call RUN_MAKE,modules/copy_number/exomeCNV.mk)
 
-TARGETS += exomecnvloh
-exomecnvloh : 
-	$(call RUN_MAKE,modules/copy_number/exomeCNVLOH.mk)
+#TARGETS += exomecnvloh
+#exomecnvloh : 
+#	$(call RUN_MAKE,modules/copy_number/exomeCNVLOH.mk)
 
 TARGETS += gistic
 gistic :
 	$(call RUN_MAKE,modules/copy_number/gistic.mk)
 
-TARGETS += freec
-freec : 
-	$(call RUN_MAKE,modules/copy_number/controlFreeC.mk)
+#TARGETS += freec
+#freec : 
+#	$(call RUN_MAKE,modules/copy_number/controlFreeC.mk)
 
-TARGETS += freecTN
-freecTN : 
-	$(call RUN_MAKE,modules/copy_number/controlFreeCTN.mk)
+#TARGETS += freecTN
+#freecTN : 
+#	$(call RUN_MAKE,modules/copy_number/controlFreeCTN.mk)
 
-TARGETS += freec_lohTN
-freec_lohTN : 
-	$(call RUN_MAKE,modules/copy_number/controlFreeCLOHTN.mk)
+#TARGETS += freec_lohTN
+#freec_lohTN : 
+#	$(call RUN_MAKE,modules/copy_number/controlFreeCLOHTN.mk)
 
 NUM_DEFUSE_JOBS ?= 5
 TARGETS += defuse
@@ -242,23 +251,23 @@ fusioncatcher :
 
 TARGETS += strelka
 strelka :
-	$(call RUN_MAKE,modules/variant_callers/somatic/strelka.mk)
+	$(call RUN_MAKE,usb-modules/variant_callers/somatic/strelka.mk)
 
 TARGETS += crest
 crest :
 	$(call RUN_MAKE,modules/sv_callers/crest.mk)
 
-TARGETS += pyloh
-pyloh :
-	$(call RUN_MAKE,modules/ploidy/pyloh.mk)
+#TARGETS += pyloh
+#pyloh :
+#	$(call RUN_MAKE,modules/ploidy/pyloh.mk)
 
-TARGETS += clonehd
-clonehd :
-	$(call RUN_MAKE,modules/clonality/clonehd.mk)
+#TARGETS += clonehd
+#clonehd :
+#	$(call RUN_MAKE,modules/clonality/clonehd.mk)
 
-TARGETS += emu
-emu :
-	$(call RUN_MAKE,modules/mut_sigs/emu.mk)
+#TARGETS += emu
+#emu :
+#	$(call RUN_MAKE,modules/mut_sigs/emu.mk)
 
 
 TARGETS += extract_fastq
@@ -304,7 +313,7 @@ merge_split_fastq :
 
 TARGETS += contest
 contest :
-	$(call RUN_MAKE,modules/contamination/contest.mk)
+	$(call RUN_MAKE,usb-modules/qc/contest.mk)
 
 TARGETS += virus_detection_bowtie2
 virus_detection_bowtie2 :

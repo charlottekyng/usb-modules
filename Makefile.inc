@@ -1,9 +1,8 @@
+
 ##Set environment variables
-TMPDIR = /scicore/scratch
-PATH := $(HOME)/usr_nobackup:$(PATH)
-#PATH := $(PATH):$(HOME)/share/usr/ensembl-git-tools/bin
-export PATH
-export R_LIBS := $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
+#export TMPDIR = /scicore/scratch
+#export PATH = $(HOME)/usr_nobackup:$(PATH)
+#export R_LIBS := $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
 
 #LD_LIBRARY_PATH := $(HOME)/share/usr/mysql/lib:$(LD_LIBRARY_PATH)
 #export LD_LIBRARY_PATH
@@ -14,32 +13,32 @@ export R_LIBS := $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
 #PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-compara/modules
 #PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-variation/modules
 #PERL5LIB := $(PERL5LIB):$(HOME)/share/usr/src/ensembl-funcgen/modules
-PERL5LIB := $(HOME)/perl5/lib
-export PERL5LIB
+#PERL5LIB := $(HOME)/perl5/lib
+#export PERL5LIB
 
-ifneq ("$(wildcard config.inc)", "")
-include config.inc
-endif
-ifneq ("$(wildcard project_config.inc)", "")
-include project_config.inc
-endif
+#ifneq ("$(wildcard config.inc)", "")
+#include config.inc
+#endif
+#ifneq ("$(wildcard project_config.inc)", "")
+#include project_config.inc
+#endif
 
 # default reference:
 # possible values: mm10, hg19, b37
-REF ?= b37
+#REF ?= b37
 # possible values: ILLUMINA, IONTORRENT
-SEQ_PLATFORM ?= ILLUMINA
+#SEQ_PLATFORM ?= ILLUMINA
 # possible values: NONE, BAITS, PCR
-CAPTURE_METHOD ?= NONE
+#CAPTURE_METHOD ?= NONE
 # possible values: NONE, EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
-PANEL ?= NONE
+#PANEL ?= NONE
 
 SAMPLE_SET_FILE ?= sample_sets.txt
 SAMPLE_FILE ?= samples.txt
 SAMPLE_SPLIT_FILE ?= samples.split.txt # generate using scripts/prepareFastq.sh [remove underscores from sample names]
 
-include usb-modules/genome_inc/$(REF).inc
-include usb-modules/config.inc
+#include usb-modules/genome_inc/$(REF).inc
+#include usb-modules/config.inc
 
 ifndef MAKEFILE_INC
 
