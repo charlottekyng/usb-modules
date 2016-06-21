@@ -46,9 +46,13 @@ endif
 	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
 		-R $(REF_FASTA) -V $< -o $@ --maskName 'encode' --mask $(ENCODE_BED) && $(RM) $< $<.idx")
 
+%.hotspot.vcf : %.vcf
+	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+		-R $(REF_FASTA) -V $< -o $@ --maskName HOTSPOT --mask $(CANCER_HOTSPOT_VCF) && $(RM) $< $<.idx")
+
 %.pass.vcf : %.vcf
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,2G,00:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) filter \
-		$(SNP_SIFT_OPTS) -f $< \"( na FILTER ) | (FILTER = 'PASS')\" > $@"))
+		$(SNP_SIFT_OPTS) -f $< \"( na FILTER ) | (FILTER = 'PASS') | (FILTER has 'HOTSPOT')\" > $@"))
 
 ############ ANNOTATION #########
 
@@ -112,8 +116,8 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 %.transfic.vcf : %.vcf
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_MEM,9G,00:59:59,"$(TRANSFIC) --genome $(REF) --transfic $(TRANSFIC_PERL_SCRIPT) --outFile $@ $< && $(RM) $< $<.idx"))
 
-%.hotspot.vcf : %.vcf
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_MEM,6G,00:29:29,"$(CANCER_HOTSPOT_ANNOTATION_SCRIPT) $< $(CANCER_HOTSPOT_ANNOTATION_TXT) > $@"))
+#%.hotspot.vcf : %.vcf
+#	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_MEM,6G,00:29:29,"$(CANCER_HOTSPOT_ANNOTATION_SCRIPT) $< $(CANCER_HOTSPOT_ANNOTATION_TXT) > $@"))
 
 %.provean.vcf : %.vcf
 	$(call LSCRIPT_MEM,8G,00:29:29,"$(PROVEAN) $(PROVEAN_OPTS) --outFile $@ $<")
@@ -227,8 +231,8 @@ endif
 
 # extract vcf to table
 tables/%.opl_tab.txt : vcf/%.vcf
-	$(call LSCRIPT_CHECK_MEM,2G,00:29:29,"\$$(LOAD_SNP_EFF_MODULE); \
-	format_fields=\$$(grep '^##FORMAT=<ID=' $< | sed 's/.*ID=//; s/,.*//;' | tr '\n' ' '); \
+	$(call LSCRIPT_CHECK_MEM,2G,00:29:29,"$(LOAD_SNP_EFF_MODULE); \
+	format_fields=\$$(grep '^##FORMAT=<ID=' $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | sed 's/.*ID=//; s/,.*//;' | tr '\n' ' '); \
 	N=\$$(expr \$$(grep '^#CHROM' $< | wc -w) - 10); \
 	fields='$(VCF_FIELDS)'; \
 	for f in \$$format_fields; do \
@@ -236,8 +240,10 @@ tables/%.opl_tab.txt : vcf/%.vcf
 			fields+=' 'GEN[\$$i].\$$f; \
 		done; \
 	done; \
-	fields+=' '\$$(grep '^##INFO=<ID=' $< | grep -v '=REF,' | sed 's/.*ID=//; s/,.*//; s/\bANN\b/$(ANN_FIELDS)/; ' | tr '\n' ' '); \
-	$(LOAD_PERL_MODULE); $(VCF_EFF_ONE_PER_LINE) < $< | $(SNP_SIFT) extractFields - \$$fields > $@; \
+	fields+=' '\$$(grep '^##INFO=<ID=' $< | grep -v '=REF,' | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | \
+		sed 's/.*ID=//; s/,.*//; s/\bANN\b/$(ANN_FIELDS)/; ' | tr '\n' ' '); \
+	$(LOAD_PERL_MODULE); $(VCF_EFF_ONE_PER_LINE) < $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | \
+		$(SNP_SIFT) extractFields - \$$fields > $@; \
 	for i in \`seq 0 \$$N\`; do \
 	S=\$$(grep '^#CHROM' $< | cut -f \$$((\$$i + 10))); \
 	sed -i \"1s/GEN\[\$$i\]/\$$S/g;\" $@; \

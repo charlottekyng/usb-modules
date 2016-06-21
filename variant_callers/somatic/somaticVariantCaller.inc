@@ -3,7 +3,7 @@ ifndef SOMATIC_VARIANT_CALLER_INC
 ### Filters
 #SOMATIC_FILTERS = pass
 SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft)
-SOMATIC_FILTERS += dp_ft som_ad_ft
+SOMATIC_FILTERS += dp_ft som_ad_ft hotspot
 SOMATIC_FILTERS += $(if $(NORMAL_VCF),nft)
 #SOMATIC_FILTERS += pass
 
@@ -33,7 +33,8 @@ SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 #SOMATIC_POST_ANNS += $(if $(findstring b37,$(REF)),gene_ann clinvar hotspot)
 #SOMATIC_POST_ANN_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_POST_ANNS,$1)))
 
-SOMATIC_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) $(SOMATIC_ANN_SUFFIX))) #$(SOMATIC_POST_FILTER_SUFFIX) $(SOMATIC_POST_ANN_SUFFIX)))
+SOMATIC_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) $(SOMATIC_ANN_SUFFIX))) 
+	#$(SOMATIC_POST_FILTER_SUFFIX) $(SOMATIC_POST_ANN_SUFFIX)))
 
 SOMATIC_EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous
 

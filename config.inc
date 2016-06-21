@@ -194,10 +194,6 @@ FASTQC ?= $(PERL) fastqc ####### BROKEN
 #NON_REF_FREQ = usb-modules/qc/nonRefFreqFromPileup.pl
 #NON_REF_FREQ_BIN_SIZE = 0.01
 
-CONTEST_JAR ?= $(JAR_DIR)/ContEst.jar
-CONTEST_OPTS ?= -T Contamination -BTI genotypes
-CONTEST = $(JAVA) -Xmx4G -jar $(CONTEST_JAR) -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
-
 
 ##################################
 ########## Aligners ##############
@@ -291,9 +287,23 @@ COLLECT_WGS_METRICS = $(call PICARD, CollectWgsMetrics)
 GATK_JAR ?= $(JARDIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
 GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1)
 
+REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,18G)
 INDEL_REALIGN ?= $(call GATK,IndelRealigner,18G)
+
+ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,18G)
+BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,18G)
+
+LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,8G)
 VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,6G)
 VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,8G)
+
+CONTEST ?= $(call GATK,ContEst,6G)
+ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,8G)
+HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,18G)
+MUTECT2 ?= $(call GATK,MuTect2,18G)
+PRINT_READS ?= $(call GATK,PrintReads,10G)
+APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,8G)
+VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,18G)
 
 BAM_CHR1_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) $(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES)))
@@ -303,6 +313,9 @@ BAM_REALN_OPTS = --knownAlleles $(KNOWN_INDELS)
 BAM_REALN_TARGET_OPTS = --known $(KNOWN_INDELS)
 endif
 
+CONTEST_JAR ?= $(JAR_DIR)/ContEst.jar
+CONTEST_OPTS ?= -T Contamination -BTI genotypes
+CONTEST = $(JAVA) -Xmx4G -jar $(CONTEST_JAR) -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 COVARIATES = -cov ReadGroupCovariate -cov QualityScoreCovariate -cov DinucCovariate -cov CycleCovariate
 

@@ -64,10 +64,10 @@ CANCER_GENE_CENSUS_BED = $(ANN_DIR)/cancer_gene_census.bed
 KANDOTH_BED = $(ANN_DIR)/kandoth127smg.bed
 LAWRENCE_BED = $(ANN_DIR)/lawrence_cancer5000s.bed
 DGD_BED = $(ANN_DIR)/dgd_Hsa_all_v71.bed
+CANCER_HOTSPOT_VCF = $(ANN_DIR)/hotspot.vcf
 
-CANCER_HOTSPOT_ANNOTATION_TXT = $(ANN_DIR)/cancer_hotspots_20160426.txt
 #FALSE_POSITIVE_BED = $(HOME)/share/reference/fuentes_blacklist.include_cosmic.hg19.bed
-ENCODE_BED = $(HOME)/share/reference/wgEncodeDacMapabilityConsensusExcludable.include_cosmic.bed
+#ENCODE_BED = $(HOME)/share/reference/wgEncodeDacMapabilityConsensusExcludable.include_cosmic.bed
 
 CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37_hg19.txt
 
