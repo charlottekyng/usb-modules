@@ -23,6 +23,11 @@ PANEL ?= NONE
 MERGE_SPLIT_BAMS ?= false  # merge processed split bams
 BAM_REPROCESS ?= false
 
+TRIM_READS ?= false
+FASTQ_FILTER := trim
+TRIM_LENGTH ?= 150
+TRIM_OPTS ?= -l $(TRIM_LENGTH)
+
 BAM_DUP_TYPE ?= markdup
 BAM_NO_FILTER ?= false
 BAM_NO_RECAL ?= false
@@ -132,6 +137,7 @@ BAM_SUFFIX := $(subst $( ),.,$(strip \
         $(if $(findstring false,$(BAM_NO_RECAL)),recal)\
         bam))
 
+MERGE_SPLIT_FASTQ ?= true
 
 ##################################
 #### General MPS tools ###########
@@ -170,6 +176,11 @@ MAF2MAF ?= $(PERL) $(SCRIPTSDIR)/maf2maf.pl
 MAF2VCF ?= $(PERL) $(SCRIPTSDIR)/maf2vcf.pl
 VEP_PATH ?= /opt/common/CentOS_6/vep/v82
 VEP_DATA ?= /opt/common/CentOS_6/vep/v82
+
+BAM2FASTX = $(HOME)/usr/bin/bam2fastx
+EXTRACT_TOOL ?= picard
+
+FASTQ_TRIMMER = $(PERL) usb-modules/fastq_tools/trimFastq.pl
 
 MODULE_SCRIPTS_DIR ?= usb-modules/scripts
 MERGE ?= $(MODULE_SCRIPTS_DIR)/merge.R
@@ -250,34 +261,33 @@ endif
 ########## Picard ################
 ##################################
 
-PICARD_MEM = 10G
 PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
 PICARD_JAR ?= $(JARDIR)/picard-tools-2.4.1/picard.jar
-PICARD = $(JAVA) -Xmx$(PICARD_MEM) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
+PICARD = $(JAVA) -Xmx$($2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
 
-SORT_SAM = $(call PICARD, SortSam)
-REORDER_SAM = $(call PICARD, ReorderSam)
-MARK_DUP = $(call PICARD, MarkDuplicates)
-MARK_DUP_CIGAR = $(call PICARD, MarkDuplicatesWithMateCigar)
-MERGE_SAMS = $(call PICARD, MergeSamFiles)
-FIX_MATE = $(call PICARD, FixMateInformation)
-SAM_TO_FASTQ = $(call PICARD, SamToFastq)
-CLEANBAM = $(call PICARD, CleanSam)
-ADD_RG = $(call PICARD, AddOrReplaceReadGroups)
-VALIDATE_SAM = $(call PICARD, ValidateSamFile)
+SORT_SAM = $(call PICARD,SortSam,19G)
+REORDER_SAM = $(call PICARD,ReorderSam,20G)
+MARK_DUP = $(call PICARD,MarkDuplicates,12G)
+MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,20G)
+MERGE_SAMS = $(call PICARD,MergeSamFiles,10G)
+FIX_MATE = $(call PICARD,FixMateInformation,8G)
+SAM_TO_FASTQ = $(call PICARD,SamToFastq,9G)
+CLEANBAM = $(call PICARD,CleanSam,5G)
+ADD_RG = $(call PICARD,AddOrReplaceReadGroups,12G)
+VALIDATE_SAM = $(call PICARD,ValidateSamFile,10G)
 
-INTERVAL_LIST_TOOL = $(call PICARD, IntervalListTools)
-CREATE_SEQ_DICT = $(call PICARD, CreateSequenceDictionary)
+INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,6G)
+CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,4G)
 
-COLLECT_HS_METRICS = $(call PICARD, CollectHsMetrics)
-COLLECT_MULT_METRICS = $(call PICARD, CollectMultipleMetrics)
-COLLECT_TARGETED_METRICS = $(call PICARD, CollectTargetedPcrMetrics)
-COLLECT_ALIGNMENT_METRICS = $(call PICARD, CollectAlignmentSummaryMetrics)
-COLLECT_ILMN_LANE_METRICS = $(call PICARD, CollectIlluminaLaneMetrics)
-COLLECT_OXOG_METRICS = $(call PICARD, CollectOxoGMetrics)
-COLLECT_RNA_METRICS = $(call PICARD, CollectRnaSeqMetrics)
-COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD, CollectSequencingArtifactMetrics)
-COLLECT_WGS_METRICS = $(call PICARD, CollectWgsMetrics)
+COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,8G)
+COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,8G)
+COLLECT_TARGETED_METRICS = $(call PICARD,CollectTargetedPcrMetrics,8G)
+COLLECT_ALIGNMENT_METRICS = $(call PICARD,CollectAlignmentSummaryMetrics,8G)
+COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,8G)
+COLLECT_OXOG_METRICS = $(call PICARD,CollectOxoGMetrics,8G)
+COLLECT_RNA_METRICS = $(call PICARD,CollectRnaSeqMetrics,8G)
+COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD,CollectSequencingArtifactMetrics,8G)
+COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,10G)
 
 
 ##################################
@@ -287,15 +297,16 @@ COLLECT_WGS_METRICS = $(call PICARD, CollectWgsMetrics)
 GATK_JAR ?= $(JARDIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
 GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1)
 
-REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,18G)
-INDEL_REALIGN ?= $(call GATK,IndelRealigner,18G)
+REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,11G)
+INDEL_REALIGN ?= $(call GATK,IndelRealigner,8G)
 
 ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,18G)
-BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,18G)
+BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,10G)
 
 LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,8G)
 VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,6G)
 VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,8G)
+COMBINE_VARIANTS ?= $(call GATK,CombineVariants,8G)
 
 CONTEST ?= $(call GATK,ContEst,6G)
 ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,8G)
@@ -313,9 +324,8 @@ BAM_REALN_OPTS = --knownAlleles $(KNOWN_INDELS)
 BAM_REALN_TARGET_OPTS = --known $(KNOWN_INDELS)
 endif
 
-CONTEST_JAR ?= $(JAR_DIR)/ContEst.jar
 CONTEST_OPTS ?= -T Contamination -BTI genotypes
-CONTEST = $(JAVA) -Xmx4G -jar $(CONTEST_JAR) -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
+CONTEST += -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 COVARIATES = -cov ReadGroupCovariate -cov QualityScoreCovariate -cov DinucCovariate -cov CycleCovariate
 

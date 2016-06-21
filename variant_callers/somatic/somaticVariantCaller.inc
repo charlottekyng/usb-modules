@@ -13,7 +13,7 @@ SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
 SOMATIC_COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),mgp_dbsnp, \
         eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
 
-ifeq ($(ANN_FACETS),true)
+ifeq ($(findstring true,$(ANN_FACETS)),true)
 	SOMATIC_COMMON_ANNS += facets
 endif
 

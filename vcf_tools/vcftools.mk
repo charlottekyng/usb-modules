@@ -136,7 +136,7 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 ifdef SAMPLE_PAIRS
 define annotate-facets-pair
 vcf/$1.%.facets.vcf : vcf/$1.%.vcf facets/cncf/$1.cncf.txt
-	$$(call LSCRIPT_MEM,4G,00:29:59,"$$(ANNOTATE_FACETS_VCF) --facetsFile $$(<<) --outFile $$@ $$<")
+	$$(call LSCRIPT_MEM,4G,00:29:59,"$$(LOAD_R_MODULE); $$(ANNOTATE_FACETS_VCF) --facetsFile $$(<<) --outFile $$@ $$<")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call annotate-facets-pair,$(pair))))
 endif

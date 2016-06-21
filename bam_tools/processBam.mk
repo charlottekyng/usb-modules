@@ -6,6 +6,7 @@
 ifndef PROCESS_BAM_MK
 
 include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
 LOGDIR ?= log/process_bam.$(NOW)
 
@@ -58,32 +59,33 @@ index : $(BAMS) $(addsuffix .bai,$(BAMS))
 	$(INIT) cp $< $@
 
 # limit coverage
-%.dcov.bam : %.bam
-	$(call LSCRIPT_MEM,18G,00:59:59,"$(call GATK_MEM,18G) -T PrintReads -R $(REF_FASTA) -I $< -dcov 50 -o $@")
+#%.dcov.bam : %.bam
+#	$(call LSCRIPT_MEM,18G,00:59:59,"$(call GATK_MEM,18G) -T PrintReads -R $(REF_FASTA) -I $< -dcov 50 -o $@")
 
 # filter
 %.filtered.bam : %.bam
 	$(call LSCRIPT_MEM,6G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
 
 %.fixmate.bam : %.bam
-	$(call LSCRIPT_MEM,9G,01:59:59,"$(call FIX_MATE_MEM,8G) I=$< O=$@ && $(RM) $<")
+	$(call LSCRIPT_MEM,9G,01:59:59,"$(LOAD_JAVA8_MODULE); $(FIX_MATE) I=$< O=$@ && $(RM) $<")
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,11G,02:59:59,"$(call GATK_MEM,10G) -T BaseRecalibrator -R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
+	$(call LSCRIPT_MEM,11G,02:59:59,"$(LOAD_JAVA8_MODULE); $(BASE_RECALIBRATOR) -R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
-	$(call LSCRIPT_MEM,20G,03:59:59,"$(call SORT_SAM_MEM,19G,02:59:59) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
+	$(call LSCRIPT_MEM,20G,03:59:59,"$(LOAD_JAVA8_MODULE); $(SORT_SAM) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
 
 %.markdup.bam : %.bam
-	$(call LSCRIPT_MEM,14G,03:59:59,"$(MKDIR) metrics; $(call MARK_DUP_MEM,14G) I=$< O=$@ METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
+	$(call LSCRIPT_MEM,14G,03:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(MARK_DUP) I=$< O=$@ \
+		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
 %.rmdup.bam : %.bam
-	$(call LSCRIPT_MEM,4G,02:59:59,"$(SAMTOOLS) rmdup $< $@ && $(RM) $<")
+	$(call LSCRIPT_MEM,4G,02:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) rmdup $< $@ && $(RM) $<")
 
 # clean sam files
 %.clean.bam : %.bam
-	$(call LSCRIPT_MEM,6G,01:59:59,"$(call CLEANBAM_MEM,6G) I=$< O=$@")
+	$(call LSCRIPT_MEM,6G,01:59:59,"$(LOAD_JAVA8_MODULE); $(CLEANBAM) I=$< O=$@")
 
 # add rg
 %.rg.bam : %.bam
@@ -99,10 +101,8 @@ ifeq ($(SPLIT_CHR),true)
 # $(eval $(call chr-target-aln,chromosome))
 define chr-target-realn
 %.$1.chr_split.intervals : %.bam %.bam.bai
-	$$(call LSCRIPT_PARALLEL_MEM,4,3G,4G,"$$(call GATK_MEM,11G) -T RealignerTargetCreator \
-		-I $$(<) \
-		-L $1 \
-		-nt 4 -R $$(REF_FASTA)  -o $$@ $$(BAM_REALN_TARGET_OPTS)")
+	$$(call LSCRIPT_PARALLEL_MEM,4,3G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(REALIGN_TARGET_CREATOR) \
+		-I $$(<) -L $1 -nt 4 -R $$(REF_FASTA) -o $$@ $$(BAM_REALN_TARGET_OPTS)")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-target-realn,$(chr))))
 
@@ -112,24 +112,27 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-target-realn,$(chr))))
 # $(eval $(call chr-aln,chromosome))
 define chr-realn
 %.$(1).chr_realn.bam : %.bam %.$(1).chr_split.intervals %.bam.bai
-	$$(call LSCRIPT_MEM,9G,12G,"if [[ -s $$(word 2,$$^) ]]; then $$(call GATK_MEM,8G) -T IndelRealigner \
-	-I $$(<) -R $$(REF_FASTA) -L $1 -targetIntervals $$(word 2,$$^) \
-	-o $$(@) $$(BAM_REALN_OPTS); \
-	else $$(call GATK_MEM,8G) -T PrintReads -R $$(REF_FASTA) -I $$< -L $1 -o $$@ ; fi")
+	$$(call LSCRIPT_MEM,9G,02:59:59,"$$(LOAD_JAVA8_MODULE); \
+		if [[ -s $$(word 2,$$^) ]]; then $$(INDEL_REALIGN) \
+			-I $$(<) -R $$(REF_FASTA) -L $1 -targetIntervals $$(word 2,$$^) \
+			-o $$(@) $$(BAM_REALN_OPTS); \
+		else $$(PRINT_READS) -R $$(REF_FASTA) -I $$< -L $1 -o $$@ ; fi")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample realn chromosome bams
 %.realn.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bai)
-	$(call LSCRIPT_PARALLEL_MEM,2,10G,11G,"$(MERGE_SAMS) $(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.realn.bam=.bam)")
+	$(call LSCRIPT_PARALLEL_MEM,2,10G,02:59:59,"$(LOAD_JAVA8_MODULE); $(MERGE_SAMS) $(foreach i,$(filter %.bam,$^), I=$(i)) \
+		SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.realn.bam=.bam)")
 
 # merge sample recal chromosome bams
 %.recal.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bai)
-	$(call LSCRIPT_PARALLEL_MEM,2,10G,11G,"$(MERGE_SAMS) $(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
+	$(call LSCRIPT_PARALLEL_MEM,2,10G,02:59:59,"$(LOAD_JAVA8_MODULE); $(MERGE_SAMS) \
+		$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
 
 define chr-recal
 %.$1.chr_recal.bam : %.bam %.recal_report.grp
-	$$(call LSCRIPT_MEM,11G,15G,"$$(call GATK_MEM,10G) -T PrintReads -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
+	$$(call LSCRIPT_MEM,11G,02:59:59,"$$(LOAD_JAVA8_MODULE); $$(PRINT_READS) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-recal,$(chr))))
 
@@ -137,18 +140,16 @@ else # no splitting by chr
 
 # recalibration
 %.recal.bam : %.bam %.recal_report.grp
-	$(call LSCRIPT_MEM,11G,15G,"$(call GATK_MEM,10G) -T PrintReads -R $(REF_FASTA) -I $< -BQSR $(word 2,$^) -o $@ && $(RM) $<")
+	$(call LSCRIPT_MEM,11G,02:59:29,"$(LOAD_JAVA8_MODULE); $(PRINT_READS) -R $(REF_FASTA) -I $< -BQSR $(word 2,$^) -o $@ && $(RM) $<")
 
 %.realn.bam : %.bam %.intervals %.bam.bai
-	if [[ -s $(word 2,$^) ]]; then $(call LSCRIPT_MEM,9G,12G,"$(call GATK_MEM,8G) -T IndelRealigner \
-	-I $< -R $(REF_FASTA) -targetIntervals $(<<) \
-	-o $@ $(BAM_REALN_OPTS) && $(RM) $<") ; \
+	if [[ -s $(word 2,$^) ]]; then $(call LSCRIPT_MEM,9G,02:59:59,"$(LOAD_JAVA8_MODULE); $(INDEL_REALIGN) \
+	-I $< -R $(REF_FASTA) -targetIntervals $(<<) -o $@ $(BAM_REALN_OPTS) && $(RM) $<") ; \
 	else mv $< $@ ; fi
 
 %.intervals : %.bam %.bam.bai
-	$(call LSCRIPT_PARALLEL_MEM,4,2.5G,3G,"$(call GATK_MEM,8G) -T RealignerTargetCreator \
-	-I $< \
-	-nt 4 -R $(REF_FASTA) -o $@ $(BAM_REALN_TARGET_OPTS)")
+	$(call LSCRIPT_PARALLEL_MEM,4,3G,00:29:59,"$(LOAD_JAVA8_MODULE); $(REALIGN_TARGET_CREATOR) \
+	-I $< -nt 4 -R $(REF_FASTA) -o $@ $(BAM_REALN_TARGET_OPTS)")
 endif
 
 endif
