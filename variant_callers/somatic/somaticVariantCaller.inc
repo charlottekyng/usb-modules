@@ -24,7 +24,7 @@ SOMATIC_INDEL_ANNS = $(SOMATIC_COMMON_ANNS) #hrun $(if $(findstring b37,$(REF)),
 SOMATIC_ANNS = $(if $(findstring indel,$1),$(SOMATIC_INDEL_ANNS),$(SOMATIC_SNV_ANNS)) #pathogenic
 
 SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
-
+$(info SOMATIC_ANN_SUFFIX is $(SOMATIC_ANN_SUFFIX))
 # filters that are run after first round of annotations
 #SOMATIC_POST_FILTERS += cft common_ft
 #SOMATIC_POST_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_POST_FILTERS,$1) pass2))

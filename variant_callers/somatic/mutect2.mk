@@ -8,10 +8,10 @@ LOGDIR ?= log/mutect2.$(NOW)
 PHONY += mutect2 #mutect_vcfs mutect_tables ext_output #mut_report
 ..DUMMY := $(shell mkdir -p version; echo "$(MUTECT2) &> version/mutect2.txt")
 
-mutect2 : pon mutect2_vcfs #mutect_tables ext_output
+mutect2 : pon mutect2_vcfs mutect_tables #ext_output
 pon : $(foreach chr,$(CHROMOSOMES),mutect2/chr_vcf_pon/pon.$(chr).mutect2.vcf)
 mutect2_vcfs : $(call SOMATIC_VCFS,mutect2) $(addsuffix .idx,$(call SOMATIC_VCFS,mutect2))
-#mutect_tables : $(call SOMATIC_TABLES,mutect)
+mutect_tables : $(call SOMATIC_TABLES,mutect2)
 #ext_output : $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
 #mut_report : mutect/report/index.html mutect/lowAFreport/index.html mutect/highAFreport/index.html
 

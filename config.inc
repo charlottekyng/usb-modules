@@ -127,17 +127,9 @@ SPLIT_FASTQ ?= false
 BAM_NO_SORT ?= false
 BAM_FIX_RG ?= false # fix the readgroups so that it corresponds with the bam filename
 
-BAM_SUFFIX := $(subst $( ),.,$(strip \
-        $(if $(findstring false,$(BAM_NO_SORT)),sorted)\
-        $(if $(findstring false,$(BAM_NO_FILTER)),filtered)\
-        $(if $(findstring true,$(BAM_FIX_RG)),rg)\
-        $(if $(findstring false,$(BAM_NO_REALN)),realn)\
-        $(if $(findstring rmdup,$(BAM_DUP_TYPE)),rmdup)\
-        $(if $(findstring markdup,$(BAM_DUP_TYPE)),markdup)\
-        $(if $(findstring false,$(BAM_NO_RECAL)),recal)\
-        bam))
 
 MERGE_SPLIT_FASTQ ?= true
+
 
 ##################################
 #### General MPS tools ###########
@@ -263,7 +255,7 @@ endif
 
 PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
 PICARD_JAR ?= $(JARDIR)/picard-tools-2.4.1/picard.jar
-PICARD = $(JAVA) -Xmx$($2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
+PICARD = $(JAVA) -Xmx$(2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
 
 SORT_SAM = $(call PICARD,SortSam,19G)
 REORDER_SAM = $(call PICARD,ReorderSam,20G)

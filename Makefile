@@ -12,7 +12,8 @@ include project_config.inc
 endif
 
 include usb-modules/config.inc
-#export
+
+export
 
 NUM_ATTEMPTS ?= 20
 NOW := $(shell date +"%F")
@@ -41,22 +42,22 @@ gatk :
 	$(call RUN_MAKE,modules/variant_callers/gatkVariantCaller.mk)
 
 TARGETS += bwa
-bwa : NUM_ATTEMPTS = 5
+#bwa : NUM_ATTEMPTS = 5
 bwa :
 	$(call RUN_MAKE,usb-modules/aligners/bwaAligner.mk)
 
 TARGETS += bwamem
-bwamem : NUM_ATTEMPTS = 5
+#bwamem : NUM_ATTEMPTS = 5
 bwamem :
 	$(call RUN_MAKE,usb-modules/aligners/bwamemAligner.mk)
 
 TARGETS += bowtie
-bowtie : NUM_ATTEMPTS = 5
+#bowtie : NUM_ATTEMPTS = 5
 bowtie :
 	$(call RUN_MAKE,usb-modules/aligners/bowtieAligner.mk)
 
 TARGETS += tmap
-tmap : NUM_ATTEMPTS = 5
+#tmap : NUM_ATTEMPTS = 5
 tmap :
 	$(call RUN_MAKE,usb-modules/aligners/tmapAligner.mk)
 

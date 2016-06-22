@@ -4,10 +4,11 @@
 # 		   EXTRACT_FASTQ = true/false (default: false)
 # 		   BAM_NO_RECAL = true/false (default: false)
 
+ALIGNER := bwamem
+
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
-
-ALIGNER := bwamem
+include usb-modules/aligners/align.inc
 
 LOGDIR ?= log/bwamem.$(NOW)
 
@@ -22,13 +23,15 @@ BWA_BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 
 bwamem : $(BWA_BAMS) $(addsuffix .bai,$(BWA_BAMS))
 
+$(info BAM_SUFFIX-BWA is $(BAM_SUFFIX))
+
 bam/%.bam : bwamem/bam/%.bwamem.$(BAM_SUFFIX)
-	$(call LSCRIPT,"ln -f $(<) $(@)")
+	$(call LSCRIPT,"echo HERE; ln -f $(<) $(@)")
 
 #$(call align-split-fastq,name,split-name,fastqs)
 define align-split-fastq
 bwamem/bam/$2.bwamem.bam : $3
-	$$(call LSCRIPT_PARALLEL_MEM,$(BWA_NUM_CORES),1G,01:29:59,"$$(LOAD_BWA_MODULE); $$(LOAD_SAMTOOLS_MODULE); \
+	$$(call LSCRIPT_PARALLEL_MEM,$$(BWA_NUM_CORES),1G,01:29:59,"$$(LOAD_BWA_MODULE); $$(LOAD_SAMTOOLS_MODULE); \
 		$$(BWA_MEM) -t $$(BWA_NUM_CORES) $$(BWA_ALN_OPTS) \
 		-R \"@RG\tID:$2\tLB:$1\tPL:$${SEQ_PLATFORM}\tSM:$1\" $$(REF_FASTA) $$^ | $$(SAMTOOLS) view -bhS - > $$@")
 endef
@@ -49,6 +52,6 @@ bwamem/bam/%.bwamem.bam : fastq/%.fastq.gz
 fastq/%.fastq.gz : fastq/%.fastq
 	$(call LSCRIPT,"gzip -c $< > $(@) && $(RM) $<")
 
-include usb-modules/bam_tools/processBam.mk
 include usb-modules/fastq_tools/fastq.mk
+include usb-modules/bam_tools/processBam.mk
 include usb-modules/aligners/align.mk

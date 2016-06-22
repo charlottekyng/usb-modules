@@ -5,7 +5,7 @@ find rawdata -name '*.gz' | xargs ln -t fastq
 
 for x in fastq/*.fastq.gz; do
     if [ `grep -o "_" <<< "$x" | wc -l` -gt 1 ]; then
-	mv $x `echo $x | sed 's/-//' | sed 's/^\([^_]*\)_[^_]*_L\([0-9]*\)_R\([12]\)_\([0-9]*\)/\1_\4\2.\3/'`
+	mv $x `echo $x | sed 's/-//' | sed 's/^\([^_]*\)_\([^_]*\)_L\([0-9]*\)_R\([12]\)_\([0-9]*\)/\1-\2_\3\5.\4/' | sed 's/_//g' | sed 's/-/_/g'`
     fi;
 done
 
