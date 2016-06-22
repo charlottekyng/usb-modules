@@ -71,7 +71,8 @@ index : $(BAMS) $(addsuffix .bai,$(BAMS))
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,11G,02:59:59,"$(LOAD_JAVA8_MODULE); $(BASE_RECALIBRATOR) -R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
+	$(call LSCRIPT_MEM,11G,02:59:59,"$(LOAD_JAVA8_MODULE); $(BASE_RECALIBRATOR) \
+		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
 	$(call LSCRIPT_MEM,20G,03:59:59,"$(LOAD_JAVA8_MODULE); $(SORT_SAM) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")

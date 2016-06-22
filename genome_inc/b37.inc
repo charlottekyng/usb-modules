@@ -4,31 +4,31 @@ REF_DIR = $(HOME)/ref_nobackup
 
 ifeq ($(SEQ_PLATFORM),IONTORRENT)
 ifeq ($(PANEL),CHPv2)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
 endif
 ifeq ($(PANEL),CCP)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/AmpliSeq.CCP.20131001.designed.nochr.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/AmpliSeq.CCP.20131001.hotspots.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeq.CCP.20131001.designed.nochr.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeq.CCP.20131001.hotspots.nochr.bed
 endif
 ifeq ($(PANEL),EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/AmpliSeqExome.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/AmpliSeqExome.20131001.designed.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeqExome.20131001.designed.nochr.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeqExome.20131001.designed.nochr.bed
 endif
 endif
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-ifeq ($(PANEL),EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/
+ifeq ($(PANEL),AGILENT_CLINICAL_EXOME)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
 endif
 ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/impact410_b37.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/impact410_b37.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
 endif
 ifeq ($(PANEL),IMPACT341)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/impact341_b37.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/impact341_b37.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
 endif
 endif
 
@@ -41,7 +41,7 @@ endif
 ### GENERAL REFERENCES ###
 
 GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/b37
-REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37.fasta
+REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37_decoy.fasta
 
 
 ### ANNOTATION SETS ####
@@ -69,7 +69,7 @@ CANCER_HOTSPOT_VCF = $(ANN_DIR)/hotspot.vcf
 #FALSE_POSITIVE_BED = $(HOME)/share/reference/fuentes_blacklist.include_cosmic.hg19.bed
 #ENCODE_BED = $(HOME)/share/reference/wgEncodeDacMapabilityConsensusExcludable.include_cosmic.bed
 
-CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37_hg19.txt
+CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37.txt
 
 KNOWN_CNVS = $(ANN_DIR)/GRCh37_hg19_variants_2013-07-23.txt
 

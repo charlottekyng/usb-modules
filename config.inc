@@ -16,7 +16,7 @@ REF ?= b37
 SEQ_PLATFORM ?= ILLUMINA
 # possible values: NONE, BAITS, PCR
 CAPTURE_METHOD ?= NONE
-# possible values: NONE, EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
+# possible values: NONE, AGILENT_CLINICAL_EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
 PANEL ?= NONE
 
 
@@ -309,7 +309,9 @@ APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,8G)
 VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,18G)
 
 BAM_CHR1_BASE_RECAL ?= false
-BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) $(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES)))
+BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) \
+	$(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES))) \
+	$(if $(TARGETS_FILE_INTERVALS),-L $(TARGETS_FILE_INTERVALS))
 
 ifneq ($(KNOWN_INDELS),)
 BAM_REALN_OPTS = --knownAlleles $(KNOWN_INDELS)
