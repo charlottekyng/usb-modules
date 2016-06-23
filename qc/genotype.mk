@@ -1,3 +1,9 @@
+SEQ_PLATFORM = ILLUMINA
+REF = hg19
+PANEL = AGILENT_CLINICAL_EXOME
+CAPTURE_METHOD = BAITS
+INCLUDE_CHR_Y = true
+
 ##### DEFAULTS ######
 LOGDIR = log/genotype.$(NOW)
 
@@ -23,16 +29,17 @@ genotype/snps_filtered.vcf : genotype/snps.vcf
 	$(INIT) grep '^#' $< > $@ && grep -e '0/1' -e '1/1' $< >> $@
 
 genotype/%.snps.vcf : bam/%.bam genotype/sites.to.genotype.vcf
-	$(call LSCRIPT_PARALLEL_MEM,4,2.5G,00:59:59,"$(LOAD_JAVA8_MODULE); $(HAPLOTYPE_CALLER) \
+	$(call LSCRIPT_PARALLEL_MEM,4,2.5G,00:59:59,"$(LOAD_JAVA8_MODULE); $(UNIFIED_GENOTYPER) \
 		-nt 4 -R $(REF_FASTA) --dbsnp $(DBSNP) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(word 2,$^) -o $@ --output_mode EMIT_ALL_SITES")
 
 ifndef $(TARGETS_FILE_INTERVALS)
 genotype/sites.to.genotype.vcf : $(TARGETS_FILE_INTERVALS) $(DBSNP)
-	$(call LSCRIPT_MEM,10G,00:29:29,"$(LOAD_BEDTOOLS_MODULE); $(BEDTOOLS) intersect -b $(TARGETS_FILE_INTERVALS) -a $(DBSNP) -header > $@")
+	$(INIT) $(LOAD_BEDTOOLS_MODULE); $(BEDTOOLS) intersect -b $(TARGETS_FILE_INTERVALS) -a $(DBSNP) -header | \
+	awk '$$5!~/N/'> $@
 else
 genotype/sites.to.genotype.vcf : $(DBSNP)
-	$(INIT) ln $(DBSNP) genotype/sites.to.genotype.vcf
+	$(INIT) awk '$$5!~/N/' $(DBSNP) > genotype/sites.to.genotype.vcf
 endif
 
 genotype/%.clust.png : genotype/%.vcf
