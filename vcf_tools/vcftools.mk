@@ -336,9 +336,9 @@ endif
 #	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
 #		-R $(REF_FASTA) -V $< -o $@ --filterExpression '$(VCF_POST_ANN_FILTER_EXPRESSION)' --filterName customFilter && $(RM) $<")
 
-#%.sdp_ft.vcf : %.vcf
-#	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,4G,00:59:59,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) filter \
-#		$(SNP_SIFT_OPTS) -f $< '(exists GEN[*].DP) & (GEN[*].DP > 20)' > $@"))
+%.sdp_ft.vcf : %.vcf
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,4G,00:59:59,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) filter \
+		$(SNP_SIFT_OPTS) -f $< '(exists GEN[*].DP) & (GEN[*].DP > 20)' > $@"))
 
 # Copy number regulated genes annotated per subtype
 # FYI Endometrioid_MSI-L has no copy number regulated genes

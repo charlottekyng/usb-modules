@@ -28,6 +28,10 @@ FASTQ_FILTER := trim
 TRIM_LENGTH ?= 150
 TRIM_OPTS ?= -l $(TRIM_LENGTH)
 
+# not primary alignment 256
+# read fails platform/vendor quality checks 512
+BAM_FILTER_FLAGS ?= 768
+
 BAM_DUP_TYPE ?= markdup
 BAM_NO_FILTER ?= false
 BAM_NO_RECAL ?= false
@@ -170,7 +174,8 @@ VEP_PATH ?= /opt/common/CentOS_6/vep/v82
 VEP_DATA ?= /opt/common/CentOS_6/vep/v82
 
 BAM2FASTX = $(HOME)/usr/bin/bam2fastx
-EXTRACT_TOOL ?= picard
+EXTRACT_TOOL ?= PICARD
+BAM_TO_FASTQ ?= xxx
 
 FASTQ_TRIMMER = $(PERL) usb-modules/fastq_tools/trimFastq.pl
 
@@ -263,7 +268,7 @@ MARK_DUP = $(call PICARD,MarkDuplicates,12G)
 MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,20G)
 MERGE_SAMS = $(call PICARD,MergeSamFiles,10G)
 FIX_MATE = $(call PICARD,FixMateInformation,8G)
-SAM_TO_FASTQ = $(call PICARD,SamToFastq,9G)
+SAM_TO_FASTQ = $(call PICARD,SamToFastq,4G)
 CLEANBAM = $(call PICARD,CleanSam,5G)
 ADD_RG = $(call PICARD,AddOrReplaceReadGroups,12G)
 VALIDATE_SAM = $(call PICARD,ValidateSamFile,10G)
@@ -299,14 +304,16 @@ LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,8G)
 VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,6G)
 VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,8G)
 COMBINE_VARIANTS ?= $(call GATK,CombineVariants,8G)
+SELECT_VARIANTS ?= $(call GATK,SelectVariants,4G)
 
 CONTEST ?= $(call GATK,ContEst,6G)
 ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,8G)
-HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,18G)
+HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,8G)
+UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,8G)
 MUTECT2 ?= $(call GATK,MuTect2,18G)
 PRINT_READS ?= $(call GATK,PrintReads,10G)
 APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,8G)
-VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,18G)
+VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,22G)
 
 BAM_CHR1_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) \
@@ -322,39 +329,6 @@ CONTEST_OPTS ?= -T Contamination -BTI genotypes
 CONTEST += -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 COVARIATES = -cov ReadGroupCovariate -cov QualityScoreCovariate -cov DinucCovariate -cov CycleCovariate
-
-VARIANT_CALL_THRESHOLD = 50
-VARIANT_EMIT_THRESHOLD = 10
-VARIANT_RECAL_TRUTH_SENSITIVITY_LEVEL = 99.0
-VARIANT_RECAL_ANNOTATIONS = QD MQRankSum FS MQ ReadPosRankSum
-HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -rf BadCigar -stand_call_conf $(VARIANT_CALL_THRESHOLD) -stand_emit_conf $(VARIANT_EMIT_THRESHOLD) $(REF_FASTA)
-
-HAPCALL_SNP_MQ_THRESHOLD ?= 40.0
-HAPCALL_SNP_QD_THRESHOLD ?= 2.0
-HAPCALL_SNP_FS_THRESHOLD ?= 60.0
-HAPCALL_SNP_HAP_SCORE_THRESHOLD ?= 13.0
-HAPCALL_SNP_MQ_RANKSUM_THRESHOLD ?= -12.5
-HAPCALL_SNP_READPOS_RANKSUM_THRESHOLD ?= -8.0
-HAPCALL_SNP_FILTERS := --filterName 'QD' --filterExpression 'QD < $(HAPCALL_SNP_QD_THRESHOLD)' \
-        --filterName 'MQ' --filterExpression 'MQ < $(HAPCALL_SNP_MQ_THRESHOLD)' \
-        --filterName 'FS' --filterExpression 'FS > $(HAPCALL_SNP_FS_THRESHOLD)' \
-       	--filterName 'HapScore' --filterExpression 'HaplotypeScore > $(HAPCALL_SNP_HAP_SCORE_THRESHOLD)' \
-       	--filterName 'MQRankSum' --filterExpression 'MQRankSum < $(HAPCALL_SNP_MQ_RANKSUM_THRESHOLD)' \
-       	--filterName 'ReadPosRankSum' --filterExpression 'ReadPosRankSum < $(HAPCALL_SNP_READPOS_RANKSUM_THRESHOLD)' \
-       	--filterName 'Depth' --filterExpression 'DP < 5'
-
-HAPCALL_INDEL_INBREED_COEFF_THRESHOLD ?= -0.8
-HAPCALL_INDEL_QD_THRESHOLD ?= 2.0
-HAPCALL_INDEL_FS_THRESHOLD ?= 200.0
-HAPCALL_INDEL_HAP_SCORE_THRESHOLD ?= 13.0
-HAPCALL_INDEL_MQ_RANKSUM_THRESHOLD ?= -20.0
-HAPCALL_INDEL_READPOS_RANKSUM_THRESHOLD ?= -8.0
-
-INDEL_FILTERS = --filterName 'QD' --filterExpression 'QD < $(HAPCALL_INDEL_QD_THRESHOLD)' \
-	--filterName 'ReadPosRankSum' --filterExpression 'ReadPosRankSum < ($HAPCALL_INDEL_MQ_RANKSUM_THRESHOLD)' \
-	--filterName 'InbreedingCoeff' --filterExpression 'InbreedingCoeff < $(HAPCALL_INDEL_INBREED_COEFF_THRESHOLD)'  \
-	--filterName 'FS' --filterExpression 'FS > $(HAPCALL_INDEL_FS_THRESHOLD)' \
-	--filterName 'DP' --filterExpression 'DP < 5'
 
 REPORT_STRATIFICATION := Filter
 
@@ -381,6 +355,44 @@ STRELKA_CONFIG = /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workfl
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
 #NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
 
+GATK_HARD_FILTER_SNPS ?= true
+GATK_POOL_SNP_RECAL ?= false
+
+VARIANT_CALL_THRESHOLD = 50
+VARIANT_EMIT_THRESHOLD = 10
+HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -stand_emit_conf $(VARIANT_EMIT_THRESHOLD) -R $(REF_FASTA)
+
+VARIANT_RECAL_TRUTH_SENSITIVITY_LEVEL = 99.0
+VARIANT_RECAL_ANNOTATIONS = QD MQRankSum FS MQ ReadPosRankSum
+
+HAPCALL_SNP_MQ_THRESHOLD ?= 40.0
+HAPCALL_SNP_QD_THRESHOLD ?= 2.0
+HAPCALL_SNP_FS_THRESHOLD ?= 60.0
+HAPCALL_SNP_HAP_SCORE_THRESHOLD ?= 13.0
+HAPCALL_SNP_MQ_RANKSUM_THRESHOLD ?= -12.5
+HAPCALL_SNP_READPOS_RANKSUM_THRESHOLD ?= -8.0
+HAPCALL_SNP_FILTERS := --filterName 'QD' --filterExpression 'QD < $(HAPCALL_SNP_QD_THRESHOLD)' \
+--filterName 'MQ' --filterExpression 'MQ < $(HAPCALL_SNP_MQ_THRESHOLD)' \
+--filterName 'FS' --filterExpression 'FS > $(HAPCALL_SNP_FS_THRESHOLD)' \
+--filterName 'HapScore' --filterExpression 'HaplotypeScore > $(HAPCALL_SNP_HAP_SCORE_THRESHOLD)' \
+--filterName 'MQRankSum' --filterExpression 'MQRankSum < $(HAPCALL_SNP_MQ_RANKSUM_THRESHOLD)' \
+--filterName 'ReadPosRankSum' --filterExpression 'ReadPosRankSum < $(HAPCALL_SNP_READPOS_RANKSUM_THRESHOLD)' \
+--filterName 'Depth' --filterExpression 'DP < 5'
+
+HAPCALL_INDEL_INBREED_COEFF_THRESHOLD ?= -0.8
+HAPCALL_INDEL_QD_THRESHOLD ?= 2.0
+HAPCALL_INDEL_FS_THRESHOLD ?= 200.0
+HAPCALL_INDEL_HAP_SCORE_THRESHOLD ?= 13.0
+HAPCALL_INDEL_MQ_RANKSUM_THRESHOLD ?= -20.0
+HAPCALL_INDEL_READPOS_RANKSUM_THRESHOLD ?= -8.0
+
+INDEL_FILTERS = --filterName 'QD' --filterExpression 'QD < $(HAPCALL_INDEL_QD_THRESHOLD)' \
+--filterName 'ReadPosRankSum' --filterExpression 'ReadPosRankSum < ($HAPCALL_INDEL_MQ_RANKSUM_THRESHOLD)' \
+--filterName 'InbreedingCoeff' --filterExpression 'InbreedingCoeff < $(HAPCALL_INDEL_INBREED_COEFF_THRESHOLD)'  \
+--filterName 'FS' --filterExpression 'FS > $(HAPCALL_INDEL_FS_THRESHOLD)' \
+--filterName 'DP' --filterExpression 'DP < 5'
+
+VARIANT_EVAL_GATK_REPORT = $(RSCRIPT) usb-modules/variant_callers/variantEvalGatkReport.R
 
 ##################################
 ########## Annotation ############

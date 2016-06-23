@@ -3,8 +3,7 @@
 # Author: Fong Chun Chan <fongchunchan@gmail.com>
 
 include usb-modules/Makefile.inc
-
-FIXMATE = $(JAVA) -Xmx10G -jar $(JARDIR)/FixMateInformation.jar VALIDATION_STRINGENCY=LENIENT
+include usb-modules/config.inc
 
 SAMPLE_FILE = samplesToFixMate.txt
 SAMPLES = $(shell cat $(SAMPLE_FILE))

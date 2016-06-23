@@ -10,10 +10,6 @@ include usb-modules/config.inc
 
 LOGDIR ?= log/process_bam.$(NOW)
 
-# not primary alignment
-# read fails platform/vendor quality checks
-BAM_FILTER_FLAGS ?= 768
-
 .DELETE_ON_ERROR:
 .SECONDARY: 
 

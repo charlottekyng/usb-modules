@@ -32,8 +32,8 @@ TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
 endif
 endif
 
-ifneq ($(and $(TARGETS_FILE),$(findstring false,$(EXOME))),)
-CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE) | cut -f1 | sort | uniq)
+ifndef $(TARGETS_FILE_INTERVALS)
+CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
 else
 CHROMOSOMES ?= $(shell seq 1 22) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
 endif
@@ -53,7 +53,7 @@ CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.vcf
 KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.b37.vcf
 OMNI ?= $(GSA_REF_DIR)/1000G_omni2.5.b37.vcf
-#HAPMAP ?= $(REF_DIR)/hapmap_3.3.b37.vcf.gz
+HAPMAP ?= $(GSA_REF_DIR)/hapmap_3.3.b37.vcf
 
 CLINVAR = $(ANN_DIR)/clinvar.vcf
 EXAC_NONTCGA = $(ANN_DIR)/ExAC_nonTCGA.r0.3.1.sites.vep.vcf

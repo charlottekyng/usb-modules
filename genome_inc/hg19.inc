@@ -8,34 +8,34 @@ TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeq_CancerHotspotPanel
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
 endif
 ifeq ($(PANEL),CCP)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeq.CCP.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeq.CCP.20131001.hotspots.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeq.CCP.20131001.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeq.CCP.20131001.hotspots.bed
 endif
 ifeq ($(PANEL),EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeqExome.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeqExome.20131001.designed.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.bed
 endif
 endif
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(PANEL),AGILENT_CLINICAL_EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
 endif
 #ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
-#TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
-#TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
+#TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/impact410_b37.bed
+#TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/impact410_b37.bed
 #endif
 #ifeq ($(PANEL),IMPACT341)
-#TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
-#TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
+#TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/impact341_b37.bed
+#TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/impact341_b37.bed
 #endif
 endif
 
-ifneq ($(and $(TARGETS_FILE_INTERVALS),$(findstring false,$(EXOME))),)
-CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
+ifndef $(TARGETS_FILE_INTERVALS)
+CHROMOSOMES ?= chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX $(if $(findstring true,$(INCLUDE_CHR_Y)),chrY) chrM
 else
-CHROMOSOMES ?= $(shell seq 1 22) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
+CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
 endif
 
 ### GENERAL REFERENCES ###
@@ -51,14 +51,14 @@ endif
 
 ### ANNOTATION SETS ####
 
-ANN_DIR ?= $(REF_DIR)/annotation_data/b37
+ANN_DIR ?= $(REF_DIR)/annotation_data/hg19
 
 CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 
 DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.hg19.vcf
 KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 OMNI ?= $(GSA_REF_DIR)/1000G_omni2.5.hg19.sites.vcf
-#HAPMAP ?= $(REF_DIR)/hapmap_3.3.b37.vcf.gz
+HAPMAP ?= $(GSA_REF_DIR)/hapmap_3.3.hg19.sites.vcf
 
 CLINVAR = $(ANN_DIR)/clinvar.vcf
 EXAC_NONTCGA = $(ANN_DIR)/ExAC_nonTCGA.r0.3.1.sites.vep.vcf

@@ -238,9 +238,9 @@ TARGETS += snp6
 snp6 :
 	$(call RUN_MAKE,modules/snp6/snp6.mk)
 
-TARGETS += snpcaller
-snpcaller :
-	$(call RUN_MAKE,modules/variant_callers/snpCaller.mk)
+TARGETS += genotype
+genotype :
+	$(call RUN_MAKE,usb-modules/qc/genotype.mk)
 
 TARGETS += soapfuse
 soapfuse :
