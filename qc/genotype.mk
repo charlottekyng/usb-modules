@@ -24,7 +24,7 @@ genotype/snps_filtered.vcf : genotype/snps.vcf
 	$(INIT) grep '^#' $< > $@ && grep -e '0/1' -e '1/1' $< >> $@
 
 genotype/%.snps.vcf : bam/%.bam genotype/sites.to.genotype.vcf
-	$(call LSCRIPT_PARALLEL_MEM,4,2.5G,01:59:59,"$(LOAD_JAVA8_MODULE); $(UNIFIED_GENOTYPER) \
+	$(call LSCRIPT_PARALLEL_MEM,4,4G,03:59:59,"$(LOAD_JAVA8_MODULE); $(UNIFIED_GENOTYPER) \
 		-nt 4 -R $(REF_FASTA) --dbsnp $(DBSNP) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(word 2,$^) -o $@ --output_mode EMIT_ALL_SITES")
 
