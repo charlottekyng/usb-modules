@@ -303,7 +303,7 @@ BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,10G)
 LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,8G)
 VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,6G)
 VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,8G)
-COMBINE_VARIANTS ?= $(call GATK,CombineVariants,8G)
+COMBINE_VARIANTS ?= $(call GATK,CombineVariants,20G)
 SELECT_VARIANTS ?= $(call GATK,SelectVariants,4G)
 
 CONTEST ?= $(call GATK,ContEst,6G)
