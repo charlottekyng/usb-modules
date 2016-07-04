@@ -17,7 +17,7 @@ CLUSTER_VCF = $(RSCRIPT) usb-modules/qc/clusterVcf.R
 all : genotype/snps_filtered.sdp_ft.clust.png
 
 genotype/snps.vcf : $(foreach sample,$(SAMPLES),genotype/$(sample).snps.vcf)
-	$(call LSCRIPT_MEM,16G,01:59:59,"$(LOAD_JAVA8_MODULE); $(COMBINE_VARIANTS) \
+	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_JAVA8_MODULE); $(COMBINE_VARIANTS) \
 		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
 
 genotype/snps_filtered.vcf : genotype/snps.vcf
