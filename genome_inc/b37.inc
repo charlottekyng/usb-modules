@@ -19,8 +19,8 @@ endif
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(PANEL),AGILENT_CLINICAL_EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
 endif
 ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
