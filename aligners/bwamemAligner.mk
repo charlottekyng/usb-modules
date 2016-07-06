@@ -3,7 +3,6 @@
 # OPTIONS: NO_MARKDUP = true/false (default: false)
 # 		   EXTRACT_FASTQ = true/false (default: false)
 # 		   BAM_NO_RECAL = true/false (default: false)
-
 ALIGNER := bwamem
 
 include usb-modules/Makefile.inc
@@ -26,7 +25,7 @@ bwamem : $(BWA_BAMS) $(addsuffix .bai,$(BWA_BAMS))
 $(info BAM_SUFFIX-BWA is $(BAM_SUFFIX))
 
 bam/%.bam : bwamem/bam/%.bwamem.$(BAM_SUFFIX)
-	$(call LSCRIPT,"echo HERE; ln -f $(<) $(@)")
+	$(call LSCRIPT," ln -f $(<) $(@)")
 
 #$(call align-split-fastq,name,split-name,fastqs)
 define align-split-fastq
