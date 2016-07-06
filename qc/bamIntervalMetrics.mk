@@ -49,7 +49,7 @@ metrics/hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).hs_metric
 	sed '/^$$/d; /^#/d; s/SAMPLE.*//; s/BAIT_SET/SAMPLE/; s/\s$$//' $< | head -1; \
 	for metrics in $^; do \
 		samplename=$$(basename $${metrics%%.hs_metrics.txt}); \
-	    sed "/^#/d; /^BAIT/d; /^\$$/d; s/^hs/$$samplename/; s/\t\+$$//" $$metrics; \
+	    sed "/^#/d; /^BAIT/d; /^\$$/d; s/^hs/$$samplename/; s/\t\+$$//" $$metrics | grep "^$$samplename"; \
 	done; \
 	} > $@
 
