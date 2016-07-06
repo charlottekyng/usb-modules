@@ -262,29 +262,29 @@ PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$
 PICARD_JAR ?= $(JARDIR)/picard-tools-2.4.1/picard.jar
 PICARD = $(JAVA) -Xmx$(2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
 
-SORT_SAM = $(call PICARD,SortSam,19G)
-REORDER_SAM = $(call PICARD,ReorderSam,20G)
-MARK_DUP = $(call PICARD,MarkDuplicates,12G)
-MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,20G)
-MERGE_SAMS = $(call PICARD,MergeSamFiles,10G)
-FIX_MATE = $(call PICARD,FixMateInformation,8G)
-SAM_TO_FASTQ = $(call PICARD,SamToFastq,4G)
-CLEANBAM = $(call PICARD,CleanSam,5G)
-ADD_RG = $(call PICARD,AddOrReplaceReadGroups,12G)
-VALIDATE_SAM = $(call PICARD,ValidateSamFile,10G)
+SORT_SAM = $(call PICARD,SortSam,$$(1))
+REORDER_SAM = $(call PICARD,ReorderSam,$$(1))
+MARK_DUP = $(call PICARD,MarkDuplicates,$$(1))
+MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,$$(1))
+MERGE_SAMS = $(call PICARD,MergeSamFiles,$$(1))
+FIX_MATE = $(call PICARD,FixMateInformation,$$(1))
+SAM_TO_FASTQ = $(call PICARD,SamToFastq,$$(1))
+CLEANBAM = $(call PICARD,CleanSam,$$(1))
+ADD_RG = $(call PICARD,AddOrReplaceReadGroups,$$(1))
+VALIDATE_SAM = $(call PICARD,ValidateSamFile,$$(1))
 
-INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,6G)
-CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,4G)
+INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,$$(1))
+CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,$$(1))
 
-COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,8G)
-COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,8G)
-COLLECT_TARGETED_METRICS = $(call PICARD,CollectTargetedPcrMetrics,8G)
-COLLECT_ALIGNMENT_METRICS = $(call PICARD,CollectAlignmentSummaryMetrics,8G)
-COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,8G)
-COLLECT_OXOG_METRICS = $(call PICARD,CollectOxoGMetrics,8G)
-COLLECT_RNA_METRICS = $(call PICARD,CollectRnaSeqMetrics,8G)
-COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD,CollectSequencingArtifactMetrics,8G)
-COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,10G)
+COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,$$(1))
+COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,$$(1))
+COLLECT_TARGETED_METRICS = $(call PICARD,CollectTargetedPcrMetrics,$$(1))
+COLLECT_ALIGNMENT_METRICS = $(call PICARD,CollectAlignmentSummaryMetrics,$$(1))
+COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,$$(1))
+COLLECT_OXOG_METRICS = $(call PICARD,CollectOxoGMetrics,$$(1))
+COLLECT_RNA_METRICS = $(call PICARD,CollectRnaSeqMetrics,$$(1))
+COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD,CollectSequencingArtifactMetrics,$$(1))
+COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,$$(1))
 
 
 ##################################
@@ -294,26 +294,23 @@ COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,10G)
 GATK_JAR ?= $(JARDIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
 GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1)
 
-REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,11G)
-INDEL_REALIGN ?= $(call GATK,IndelRealigner,8G)
+REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
+INDEL_REALIGN ?= $(call GATK,IndelRealigner,$$(1))
 
-ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,18G)
-BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,10G)
+ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,$$(1))
+BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,$$(1))
 
-LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,8G)
-VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,6G)
-VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,8G)
-COMBINE_VARIANTS ?= $(call GATK,CombineVariants,20G)
-SELECT_VARIANTS ?= $(call GATK,SelectVariants,4G)
+LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,$$(1))
+VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,$$(1))
+VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,$$(1))
+COMBINE_VARIANTS ?= $(call GATK,CombineVariants,$$(1))
+SELECT_VARIANTS ?= $(call GATK,SelectVariants,$$(1))
 
-CONTEST ?= $(call GATK,ContEst,6G)
-ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,8G)
-HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,8G)
-UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,12G)
-MUTECT2 ?= $(call GATK,MuTect2,18G)
-PRINT_READS ?= $(call GATK,PrintReads,10G)
-APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,8G)
-VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,22G)
+CONTEST ?= $(call GATK,ContEst,$$(1))
+ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,$$(1))
+PRINT_READS ?= $(call GATK,PrintReads,$$(1))
+APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,$$(1))
+VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,$$(1))
 
 BAM_CHR1_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) \
@@ -338,15 +335,17 @@ REPORT_STRATIFICATION := Filter
 
 VALIDATION ?= false
 
+HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,$$(1))
+UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,$$(1))
+MUTECT2 ?= $(call GATK,MuTect2,$$(1))
+
 MUTECT_JAR ?= $(JARDIR)/muTect-1.1.4.jar
-MUTECT_MEM ?= 11g
 MUTECT_MAX_ALT_IN_NORMAL ?= 500
 MUTECT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.05
 MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
-MUTECT_OPTS = --max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) --max_alt_allele_in_normal_fraction $(MUTECT_MAX_ALT_IN_NORMAL_FRACTION)
-MUTECT_GT_OPTS = --max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) --max_alt_allele_in_normal_fraction $(MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION)
+
 #MUT_FREQ_REPORT = modules/variant_callers/somatic/mutectReport.Rmd
-MUTECT = $(JAVA) -Xmx$(MUTECT_MEM) -jar $(MUTECT_JAR) --analysis_type MuTect
+MUTECT = $(JAVA) -Xmx$(1) -jar $(MUTECT_JAR) --analysis_type MuTect
 
 VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.2.jar
 VARSCAN = $(JAVA8) -Xmx6G -jar $(VARSCAN_JAR)

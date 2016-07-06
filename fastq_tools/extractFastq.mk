@@ -15,7 +15,7 @@ extract_fastq : $(foreach sample,$(SAMPLES),fastq/$(sample).1.fastq.gz)
 
 ifeq (${EXTRACT_TOOL},PICARD)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : bam/%.bam
-	$(call LSCRIPT_MEM,10G,00:59:59,"$(LOAD_JAVA8_MODULE); $(SAM_TO_FASTQ) \
+	$(call LSCRIPT_MEM,10G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call SAM_TO_FASTQ,9G) \
 		I=$< FASTQ=>(gzip -c > fastq/$*.1.fastq.gz) SECOND_END_FASTQ=>(gzip -c > fastq/$*.2.fastq.gz)")
 else
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : bam/%.bam

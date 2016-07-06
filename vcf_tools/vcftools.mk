@@ -21,33 +21,33 @@ LOGDIR ?= log/vcf.$(NOW)
 
 ifdef NORMAL_VCF
 %.nft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --maskName 'normal' --mask $(NORMAL_VCF) && $(RM) $< $<.idx")
 endif
 
 %.target_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --mask $(TARGETS_FILE_INTERVALS) --maskName targetInterval --filterNotInMask && $(RM) $< $<.idx")
 
 # process snp eff output with gatk %=sample.indels/snps
 %.annotated.vcf : %.vcf %.gatk_eff.vcf %.gatk_eff.vcf.idx %.vcf.idx 
-	$(call LSCRIPT_PARALLEL_MEM,5,2G,00:29:29,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_PARALLEL_MEM,5,2G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,1.5G) \
 	-R $(REF_FASTA) -nt 5 -A SnpEff --variant $< --snpEffFile $(word 2,$^) -o $@ &> $(LOGDIR)/$@.log")
 
 %.dp_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		 -R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH)' --filterName Depth && $(RM) $< $<.idx")
 
 %.het_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --genotypeFilterExpression 'isHet == 1' --genotypeFilterName 'Heterozygous positions'")
 
 %.encode_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --maskName 'encode' --mask $(ENCODE_BED) && $(RM) $< $<.idx")
 
 %.hotspot.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(VARIANT_FILTRATION) \
+	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --maskName HOTSPOT --mask $(CANCER_HOTSPOT_VCF) && $(RM) $< $<.idx")
 
 %.pass.vcf : %.vcf
@@ -71,14 +71,14 @@ endif
 
 define annotate-sample
 vcf/$1.%.ann.vcf : vcf/$1.%.vcf bam/$1.bam bam/$1.bai
-	$$(call LSCRIPT_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $(VARIANT_ANNOTATOR) -nt 4 -R $$(REF_FASTA) \
+	$$(call LSCRIPT_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $(call VARIANT_ANNOTATOR,1.5G) -nt 4 -R $$(REF_FASTA) \
 		$$(foreach ann,$$(VCF_ANNOTATIONS),-A $$(ann) ) --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -L $$< -V $$< -o $$@ && $$(RM) $$< $$<.idx")
 endef
 $(foreach sample,$(SAMPLES),$(eval $(call annotate-sample,$(sample))))
 
 define hrun-sample
 vcf/$1.%.hrun.vcf : vcf/$1.%.vcf bam/$1.bam bam/$1.bai
-	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $(VARIANT_ANNOTATOR) -nt 4 -R $$(REF_FASTA) \
+	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $(call VARIANT_ANNOTATOR,1.5G) -nt 4 -R $$(REF_FASTA) \
 		-L $$< -A HomopolymerRun --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -V $$< -o $$@ && $$(RM) $$< $$<.idx")
 endef
 $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
@@ -170,7 +170,7 @@ endif
 ifdef SAMPLE_PAIRS
 define som-ad-ft-tumor-normal
 vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
-	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(VARIANT_FILTRATION) -R $$(REF_FASTA) -V $$< -o $$@ \
+	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
 		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 < $(MIN_TUMOR_AD)' \
 		--filterName tumorVarAlleleDepth \
 		--filterExpression 'if (vc.getGenotype(\"$2\").getDP() > $(MIN_NORMAL_DEPTH)) { \
@@ -183,7 +183,7 @@ vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
 
 # somatic filter for structural variants
 vcf/$1_$2.%.sv_som_ft.vcf : vcf/$1_$2.%.vcf
-	$$(call LSCRIPT_CHECK_MEM,8G,12G,"$$(LOAD_JAVA8_MODULE); $$(VARIANT_FILTRATION) -R $$(REF_FASTA) -V $$< -o $$@ \
+	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
 		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"SU\") <= $$(DEPTH_FILTER)' \
 		--filterName svSupport \
 		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"SU\") < 5 * vc.getGenotype(\"$2\").getAnyAttribute(\"SU\")' \
@@ -202,7 +202,7 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call rename-samples-tumor-normal,$(tumor
 
 define ad-tumor-normal
 vcf/$1_$2.%.ad.vcf : vcf/$1_$2.%.vcf bam/$1.bam bam/$2.bam bam/$1.bai bam/$2.bai
-	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(VARIANT_ANNOTATOR) -nt 4 -R $$(REF_FASTA) \
+	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_ANNOTATOR,1.5G) -nt 4 -R $$(REF_FASTA) \
 		-A DepthPerAlleleBySample --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -V $$< -o $$@ -L $$<")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
@@ -210,7 +210,7 @@ $(foreach pair,$(SAMPLE_PAIRS),\
 
 define annotate-tumor-normal
 vcf/$1_$2.%.ann.vcf : vcf/$1_$2.%.vcf bam/$1.bam bam/$2.bam bam/$1.bai bam/$2.bai
-	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(VARIANT_ANNOTATOR) -nt 4 -R $$(REF_FASTA) \
+	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_ANNOTATOR,1.5G) -nt 4 -R $$(REF_FASTA) \
 		$$(foreach ann,$$(VCF_ANNOTATIONS),-A $$(ann) ) --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -V $$< -o $$@ -L $$< && $$(RM) $$< $$<.idx")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
@@ -218,7 +218,7 @@ $(foreach pair,$(SAMPLE_PAIRS),\
 
 define hrun-tumor-normal
 vcf/$1_$2.%.hrun.vcf : vcf/$1_$2.%.vcf bam/$1.bam bam/$2.bam bam/$1.bai bam/$2.bai
-	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(VARIANT_ANNOTATOR) -nt 4 -R $$(REF_FASTA) \
+	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,2G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_ANNOTATOR,1.5G) -nt 4 -R $$(REF_FASTA) \
 		-A HomopolymerRun --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -V $$< -L $$< -o $$@ && $$(RM) $$< $$<.idx")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call hrun-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))

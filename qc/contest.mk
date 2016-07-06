@@ -14,7 +14,7 @@ contest : contest/snp_vcf/all_contamination.txt $(foreach sample,$(SAMPLES),cont
 
 # ContEst on gatk snp_vcf folder
 contest/snp_vcf/%_contamination.txt : bam/%.bam snp_vcf/%.snps.vcf
-	$(call LSCRIPT_MEM,7G,8G,"$(MKDIR) contest/snp_vcf; $(call CONTEST_MEM,2G) -I $(<) -B:genotypes$(,)vcf $(<<) -o $(@)")
+	$(call LSCRIPT_MEM,7G,01:59:59,"$(MKDIR) contest/snp_vcf; $(call CONTEST,6G) -I $(<) -B:genotypes$(,)vcf $(<<) -o $(@)")
 
 contest/snp_vcf/all_contamination.txt : $(foreach sample,$(SAMPLES),contest/snp_vcf/$(sample)_contamination.txt)
 	( \

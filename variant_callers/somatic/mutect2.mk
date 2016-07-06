@@ -23,7 +23,7 @@ mutect2_tables_hotspotgt : $(call SOMATIC_TABLES_HOTSPOTGT,mutect2-hotspotgt)
 
 define mutect2-pon-chr
 mutect2/chr_vcf_pon/$1.$2.mutect2.vcf : bam/$1.bam
-	$$(MKDIR) mutect2/chr_vcf_pon; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(MUTECT2) \
+	$$(MKDIR) mutect2/chr_vcf_pon; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(call MUTECT2,18G) \
 		--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --artifact_detection_mode \
 		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $2 \
 		--annotation TandemRepeatAnnotator --annotation OxoGReadCounts \
@@ -35,7 +35,7 @@ $(foreach chr,$(CHROMOSOMES), \
 
 define mutect2-pon-chr
 mutect2/chr_vcf_pon/pon.$1.mutect2.vcf : $$(foreach normal,$$(NORMAL_SAMPLES),mutect2/chr_vcf_pon/$$(normal).$1.mutect2.vcf)
-	$$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(COMBINE_VARIANTS) \
+	$$(call LSCRIPT_CHECK_MEM,20G,03:29:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,19G) \
 	--reference_sequence $$(REF_FASTA) -minN 2 --setKey \"null\" --filteredAreUncalled --filteredrecordsmergetype KEEP_IF_ANY_UNFILTERED \
 	$$(foreach normal,$$(NORMAL_SAMPLES),--variant mutect2/chr_vcf_pon/$$(normal).$1.mutect2.vcf) --intervals $1 \
 	--out mutect2/chr_vcf_pon/pon.$1.mutect2.vcf")
@@ -45,9 +45,11 @@ $(foreach chr,$(CHROMOSOMES), \
 
 define mutect2-tumor-normal-chr
 mutect2/chr_vcf/$1_$2.$3.mutect2%vcf : bam/$1%bam bam/$2%bam mutect2/chr_vcf_pon/pon.$3.mutect2.vcf
-	$$(MKDIR) mutect2/chr_vcf; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(MUTECT2) \
+	$$(MKDIR) mutect2/chr_vcf; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(call MUTECT2,11G) \
 		--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
-		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 $$(MUTECT_OPTS) \
+		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 \
+		--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
+		--max_alt_allele_in_normal_fraction $(MUTECT_MAX_ALT_IN_NORMAL_FRACTION) \
 		--annotation TandemRepeatAnnotator --annotation OxoGReadCounts --normal_panel $$(word 3,$$^) \
 		--out mutect2/chr_vcf/$1_$2.$3.mutect2.vcf")
 endef
@@ -65,9 +67,11 @@ $(foreach pair,$(SAMPLE_PAIRS),\
 
 define mutect2-tumor-normal-hotspotgt-chr
 mutect2/chr_vcf_hotspotgt/$1_$2.$3.mutect2%vcf : bam/$1%bam bam/$2%bam #mutect2/chr_vcf_pon/pon.$3.mutect2.vcf
-	$$(MKDIR) mutect2/chr_vcf_hotspotgt; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(MUTECT2) \
+	$$(MKDIR) mutect2/chr_vcf_hotspotgt; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(call MUTECT2,11G) \
 		--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
-		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 $$(MUTECT_GT_OPTS) \
+		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 \
+		--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
+		--max_alt_allele_in_normal_fraction $(MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION) \
 		--annotation TandemRepeatAnnotator --annotation OxoGReadCounts --alleles $$(CANCER_HOTSPOT_VCF) --genotyping_mode GENOTYPE_GIVEN_ALLELES \
 		--out mutect2/chr_vcf_hotspotgt/$1_$2.$3.mutect2.vcf")
 endef

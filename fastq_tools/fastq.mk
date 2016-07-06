@@ -29,10 +29,10 @@ fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_bam/%.nsorted.bam
 	$(call LSCRIPT_MEM,10G,01:59:59,"TEMP=`mktemp`; mkfifo \$${TEMP}_1; mkfifo \$${TEMP}_2; \
 	gzip < \$${TEMP}_1 > fastq/$*.1.fastq.gz & \
 	gzip < \$${TEMP}_2 > fastq/$*.2.fastq.gz & \
-	$(LOAD_JAVA8_MODULE); $(SAM_TO_FASTQ) QUIET=true I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2")
+	$(LOAD_JAVA8_MODULE); $(call SAM_TO_FASTQ,9G) QUIET=true I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2")
 
 %.nsorted.bam : %.bam
-	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(SORT_SAM) I=$< O=$@ SO=queryname")
+	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
 
 unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) $(TRIM_OPTS) | gzip -c > $@ ")
@@ -44,7 +44,7 @@ unprocessed_fastq/%.readtrim.1.fastq.gz unprocessed_fastq/%.readtrim.2.fastq.gz 
 	TEMP=`mktemp`; mkfifo \$${TEMP}_1; mkfifo \$${TEMP}_2; \
 	gzip < \$${TEMP}_1 > fastq/$*.readtrim.1.fastq.gz & \
 	gzip < \$${TEMP}_2 > fastq/$*.readtrim.2.fastq.gz & \
-	$(SAM_TO_FASTQ) I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2 \
+	$(call SAM_TO_FASTQ,9G) I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2 \
 	READ1_MAX_BASES_TO_WRITE=\$$MAX_LENGTH READ2_MAX_BASES_TO_WRITE=\$$MAX_LENGTH")
 
 %.read_len : %.bam

@@ -22,8 +22,10 @@ ext_output : $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
 #$(call mutect-tumor-normal-chr,tumor,normal,chr)
 define mutect-tumor-normal-chr
 mutect/chr_vcf/$1_$2.$3.mutect%vcf mutect/chr_tables/$1_$2.$3.mutect%txt mutect/coverage/$1_$2.$3.mutect_cov%txt: bam/$1%bam bam/$2%bam
-	$$(MKDIR) mutect/chr_tables mutect/chr_vcf mutect/coverage; $$(call LSCRIPT_CHECK_MEM,12G,01:59:59,"$$(LOAD_JAVA6_MODULE); $$(MUTECT) \
-		--enable_extended_output $$(MUTECT_OPTS) --cosmic $$(COSMIC) \
+	$$(MKDIR) mutect/chr_tables mutect/chr_vcf mutect/coverage; $$(call LSCRIPT_CHECK_MEM,12G,01:59:59,"$$(LOAD_JAVA6_MODULE); $$(call MUTECT,11G) \
+		--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
+		--max_alt_allele_in_normal_fraction $(MUTECT_MAX_ALT_IN_NORMAL_FRACTION) \
+		--enable_extended_output --cosmic $$(COSMIC) \
 		--intervals $3 --reference_sequence $$(REF_FASTA) --dbsnp $$(DBSNP) \
 		--input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
 		--vcf mutect/chr_vcf/$1_$2.$3.mutect.vcf --out mutect/chr_tables/$1_$2.$3.mutect.txt \
