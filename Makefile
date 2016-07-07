@@ -83,11 +83,7 @@ process_bam :
 
 TARGETS += bam_metrics
 bam_metrics :
-	$(call RUN_MAKE,modules/qc/bamMetrics.mk)
-
-TARGETS += bam_interval_metrics
-bam_interval_metrics :
-	$(call RUN_MAKE,usb-modules/qc/bamIntervalMetrics.mk)
+	$(call RUN_MAKE,usb-modules/qc/bamMetrics.mk)
 
 TARGETS += rnaseq_metrics
 rnaseq_metrics :

@@ -1,9 +1,8 @@
 # vim: set ft=make :
 # Run Fastqc on bam files
 
-include modules/Makefile.inc
-
-FASTQC_SUMMARY_PLOT = $(RSCRIPT) modules/qc/fastqcSummaryPlot.R
+include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
 LOGDIR ?= log/fastqc.$(NOW)
 
@@ -13,10 +12,10 @@ LOGDIR ?= log/fastqc.$(NOW)
 fastqc : $(foreach sample,$(SAMPLES),fastqc/$(sample)_fastqc/summary.txt) fastqc/all_summary.txt
 
 fastqc/%_fastqc.zip : bam/%.bam
-	$(call LSCRIPT_NAMED_MEM,$*_fastqc,4G,12G,"$(FASTQC) -o fastqc $^")
+	$(call LSCRIPT_NAMED_MEM,$*_fastqc,6G,00:59:59,"$(LOAD_FASTQC_MODULE); $(FASTQC) -o fastqc $^")
 
 fastqc/%_fastqc/summary.txt : fastqc/%_fastqc.zip
 	$(INIT) $(UNZIP) -o -d fastqc $< &> $(LOG) && touch $@
 
 fastqc/all_summary.txt : $(foreach sample,$(SAMPLES),fastqc/$(sample)_fastqc/summary.txt)
-	$(INIT) $(FASTQC_SUMMARY_PLOT) --outPrefix fastqc/all_summary $^ &> $(LOG)
+	$(INIT) $(LOAD_R_MODULE); $(FASTQC_SUMMARY_PLOT) --outPrefix fastqc/all_summary $^ &> $(LOG)

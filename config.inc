@@ -14,11 +14,12 @@ BINDIR ?= $(HOME)/usr_nobackup/local/bin
 REF ?= b37
 # possible values: ILLUMINA, IONTORRENT
 SEQ_PLATFORM ?= ILLUMINA
-# possible values: NONE, BAITS, PCR
+# possible values: NONE, BAITS, PCR, RNA
 CAPTURE_METHOD ?= NONE
 # possible values: NONE, AGILENT_CLINICAL_EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
 PANEL ?= NONE
-
+# for RNA-seq
+STRAND_SPECIFICITY ?= NONE
 
 MERGE_SPLIT_BAMS ?= false  # merge processed split bams
 BAM_REPROCESS ?= false
@@ -131,7 +132,6 @@ SPLIT_FASTQ ?= false
 BAM_NO_SORT ?= false
 BAM_FIX_RG ?= false # fix the readgroups so that it corresponds with the bam filename
 
-
 MERGE_SPLIT_FASTQ ?= true
 
 
@@ -197,8 +197,10 @@ TABIX ?= $(HOME)/share/usr/bin/tabix
 
 FASTQC_MODULE ?= FastQC/0.11.4-Java-1.7.0_21
 LOAD_FASTQC_MODULE ?= module load $(FASTQC_MODULE)
-FASTQC ?= $(PERL) fastqc ####### BROKEN
+FASTQC ?= fastqc
+FASTQC_SUMMARY_PLOT = $(RSCRIPT) usb-modules/qc/fastqcSummaryPlot.R
 
+PLOT_RNASEQ_METRICS = $(RSCRIPT) usb-modules/qc/plotRnaseqMetrics.R
 #NON_REF_FREQ = usb-modules/qc/nonRefFreqFromPileup.pl
 #NON_REF_FREQ_BIN_SIZE = 0.01
 
@@ -277,15 +279,15 @@ INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,$$(1))
 CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,$$(1))
 
 COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,$$(1))
-COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,$$(1))
-COLLECT_TARGETED_METRICS = $(call PICARD,CollectTargetedPcrMetrics,$$(1))
+#COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,$$(1))
+COLLECT_TARGETEDPCR_METRICS = $(call PICARD,CollectTargetedPcrMetrics,$$(1))
 COLLECT_ALIGNMENT_METRICS = $(call PICARD,CollectAlignmentSummaryMetrics,$$(1))
-COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,$$(1))
+#COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,$$(1))
 COLLECT_OXOG_METRICS = $(call PICARD,CollectOxoGMetrics,$$(1))
-COLLECT_RNA_METRICS = $(call PICARD,CollectRnaSeqMetrics,$$(1))
+COLLECT_RNASEQ_METRICS = $(call PICARD,CollectRnaSeqMetrics,$$(1))
 COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD,CollectSequencingArtifactMetrics,$$(1))
 COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,$$(1))
-
+COLLECT_GCBIAS_METRICS = $(call PICARD,CollectGcBiasMetrics,$$(1))
 
 ##################################
 ########## GATK ### ##############
