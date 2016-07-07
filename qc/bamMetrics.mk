@@ -22,10 +22,10 @@ ifeq ($(CAPTURE_METHOD),RNA)
 bam_metrics : rna_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics
 endif
 
-hs_metrics : metrics/hs_metrics.txt metrics/interval_hs_metrics.txt
-amplicon_metrics : metrics/amplicon_metrics.txt metrics/interval_amplicon_metrics.txt
+hs_metrics : metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
+amplicon_metrics : metrics/all.amplicon_metrics.txt metrics/all.interval_amplicon_metrics.txt
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
-rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt metrics/rnaseq_report/index.html
+rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt metrics/all.rnaseq_report/index.html
 flagstats : $(foreach sample,$(SAMPLES),metrics/$(sample).flagstats.txt)
 alignment_summary_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).alignment_summary_metrics.txt)
 gc : $(foreach sample,$(SAMPLES),metrics/$(sample).gc_bias_metrics.txt)
@@ -59,52 +59,53 @@ metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.b
 
 metrics/%.wgs_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_WGS_METRICS,11G) \
-		INPUT=$< OOUTPUT=$@ REFERENCE_SEQUENCE=$(REF_FASTA) COUNT_UNPAIRED=true")
+		INPUT=$< OUTPUT=$@ COUNT_UNPAIRED=true")
 
 metrics/%.rnaseq_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_RNASEQ_METRICS,8G) \
 		REF_FLAT=$(GENE_REF_FLAT) RIBOSOMAL_INTERVALS=$(RIBOSOMAL_INTERVALS) \
-		STRAND_SPECIFICITY=$(STRAND_SPECIFICITY) REFERENCE_SEQUENCE=$(REF_FASTA) \
+		STRAND_SPECIFICITY=$(STRAND_SPECIFICITY) \
 		INPUT=$< OUTPUT=$@ CHART_OUTPUT=$@.pdf VERBOSITY=ERROR")
 
 metrics/%.alignment_summary_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_ALIGNMENT_METRICS,11G) \
-		INPUT=$< OUTPUT=metrics/$@ REFERENCE_SEQUENCE=$(REF_FASTA)")
+		INPUT=$< OUTPUT=$@")
 
 metrics/%.gc_bias_metrics.txt metrics/%.gc_bias_metrics_summary.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_GCBIAS_METRICS,11G) \
+	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(LOAD_R_MODULE); \
+		$(call COLLECT_GCBIAS_METRICS,11G) \
 		INPUT=$< OUTPUT=$@ CHART_OUTPUT=$(addsuffix .pdf,$@) \
-		SUMMARY_OUTPUT=metrics/$*.gc_bias_metrics_summary.txt REFERENCE_SEQUENCE=$(REF_FASTA)")
+		SUMMARY_OUTPUT=metrics/$*.gc_bias_metrics_summary.txt")
 
 metrics/%.artifact_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(call COLLECT_SEQ_ARTIFACT_METRICS,11G) INPUT=$< OUTPUT=$@ REFERENCE_SEQUENCE=$(REF_FASTA) \
-	DB_SNP=$(DBSNP) TARGET_INTERVALS=\$$TMP")
+	$(call COLLECT_SEQ_ARTIFACT_METRICS,11G) INPUT=$< OUTPUT=$@ \
+	DB_SNP=$(DBSNP) INTERVALS=\$$TMP")
 
 metrics/%.wgs.artifact_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_SEQ_ARTIFACT_METRICS,11G) \
-		INPUT=$< OUTPUT=$@ REFERENCE_SEQUENCE=$(REF_FASTA) DB_SNP=$(DBSNP)")
+		INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
 
 metrics/%.oxog_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(call COLLECT_OXOG_METRICS,11G) INPUT=$< OUTPUT=$@ REFERENCE_SEQUENCE=$(REF_FASTA) \
-	DB_SNP=$(DBSNP) TARGET_INTERVALS=\$$TMP")
+	$(call COLLECT_OXOG_METRICS,11G) INPUT=$< OUTPUT=$@ \
+	DB_SNP=$(DBSNP) INTERVALS=\$$TMP")
 
 metrics/%.wgs.oxog_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_OXOG_METRICS,11G) \
-		INPUT=$< OUTPUT=$@ REFERENCE_SEQUENCE=$(REF_FASTA) DB_SNP=$(DBSNP)")
+		INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
 
 metrics/%.flagstats.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,2G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) flagstat $< > $@")
 
 # summarize metrics into one file
-metrics/hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).hs_metrics.txt)
+metrics/all.hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).hs_metrics.txt)
 	$(INIT) \
 	{ \
 	sed '/^$$/d; /^#/d; s/SAMPLE.*//; s/BAIT_SET/SAMPLE/; s/\s$$//' $< | head -1; \
@@ -115,7 +116,7 @@ metrics/hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).hs_metric
 	} > $@
 
 # summarize interval metrics into one file
-metrics/interval_hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_hs_metrics.txt)
+metrics/all.interval_hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_hs_metrics.txt)
 	$(INIT) \
 	sed '/^#/d; /^$$/d' $< | cut -f 1-6 > $@.tmp; \
 	for metrics in $^; do \
@@ -128,7 +129,7 @@ metrics/interval_hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).
 	rm -f $@.tmp
 
 # summarize metrics into one file
-metrics/amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics.txt)
+metrics/all.amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics.txt)
 	$(INIT) \
 	{ \
 	sed '/^$$/d; /^#/d; s/CUSTOM_AMPLICON_SET/SAMPLE/; s/\s$$//' $< | head -1; \
@@ -139,7 +140,7 @@ metrics/amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).amp
 	} > $@
 
 # summarize interval metrics into one file
-metrics/interval_amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_amplicon_metrics.txt)
+metrics/all.interval_amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_amplicon_metrics.txt)
 	$(INIT) \
 	sed '/^#/d; /^$$/d' $< | cut -f 1-6 > $@.tmp; \
 	for metrics in $^; do \
@@ -165,9 +166,29 @@ metrics/all.normalized_coverage.rnaseq_metrics.txt : $(foreach sample,$(SAMPLES)
 		grep -A101 '^normalized_position' $$i | cut -f2 | sed "s/All_Reads/$$sample/" | paste $@ - > $@.tmp && mv $@.tmp $@; \
 	done'
 
-metrics/rnaseq_report/index.html : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
+metrics/all.rnaseq_report/index.html : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
 	$(INIT) $(LOAD_R_MODULE); $(PLOT_RNASEQ_METRICS) --outDir $(@D) $^
 
+metrics/all.alignment_summary_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).alignment_summary_metrics.txt)
+	$(INIT) \
+	{ \
+	sed '/^$$/d; /^#/d; s/SAMPLE.*//; s/\s$$//; s/^/SAMPLE\t/;' $< | head -1; \
+	for metrics in $^; do \
+		samplename=$$(basename $${metrics%%.alignment_summary_metrics.txt}); \
+		sed "/^#/d; /^CATEGORY/d; /^\$$/d; s/^/$$samplename\t/; s/\t\+$$//" $$metrics | grep "^$$samplename"; \
+	done; \
+	} >$@
+
+metrics/all.dup_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).dup_metrics.txt)
+	$(INIT) \
+	{ \
+	sed '/^$$/d; /^#/d; s/SAMPLE.*//; s/\s$$//; s/^/SAMPLE\t/;' $< | head -1; \
+	for metrics in $^; do \
+		samplename=$$(basename $${metrics%%.dup_metrics.txt}); \
+		sed "/^#/d; /^LIBRARY/d; /^\$$/d; s/^/$$samplename\t/; s/\t\+$$//" $$metrics | grep "^$$samplename"; \
+	done; \
+	} >@
+	
 #metrics/interval_report/index.html : metrics/hs_metrics.txt
 #	$(call LSCRIPT_MEM,3G,00:29:29,"$(PLOT_HS_METRICS) --outDir $(@D) $<")
 
