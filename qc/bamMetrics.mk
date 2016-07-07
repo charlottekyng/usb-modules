@@ -1,8 +1,4 @@
 # generate bam interval metrics per sample
-SEQ_PLATFORM = ILLUMINA
-REF = b37
-PANEL = AGILENT_CLINICAL_EXOME
-CAPTURE_METHOD = BAITS
 
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
