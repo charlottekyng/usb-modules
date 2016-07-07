@@ -10,16 +10,16 @@ LOGDIR ?= log/metrics.$(NOW)
 .PHONY: bam_metrics #hs_metrics amplicon_metrics wgs_metrics rna_metrics #interval_report #non_ref_metrics
 
 ifeq ($(CAPTURE_METHOD),NONE)
-bam_metrics : wgs_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics
+bam_metrics : wgs_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),BAITS)
-bam_metrics : hs_metrics artifacts oxog flagstats gc alignment_summary_metrics
+bam_metrics : hs_metrics artifacts oxog flagstats gc alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),PCR)
-bam_metrics : amplicon_metrics artifacts oxog flagstats gc alignment_summary_metrics
+bam_metrics : amplicon_metrics artifacts oxog flagstats gc alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),RNA)
-bam_metrics : rna_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics
+bam_metrics : rna_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics dup
 endif
 
 hs_metrics : metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
@@ -27,12 +27,13 @@ amplicon_metrics : metrics/all.amplicon_metrics.txt metrics/all.interval_amplico
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
 rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt metrics/all.rnaseq_report/index.html
 flagstats : $(foreach sample,$(SAMPLES),metrics/$(sample).flagstats.txt)
-alignment_summary_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).alignment_summary_metrics.txt)
+alignment_summary_metrics : metrics/all.alignment_summary_metrics.txt
 gc : $(foreach sample,$(SAMPLES),metrics/$(sample).gc_bias_metrics.txt)
 artifacts : $(foreach sample,$(SAMPLES),metrics/$(sample).artifact_metrics.txt)
 artifacts_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.artifact_metrics.txt)
 oxog : $(foreach sample,$(SAMPLES),metrics/$(sample).oxog_metrics.txt)
 oxog_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.oxog_metrics.txt)
+dup : metrics/all.dup_metrics.txt
 
 #interval_report : metrics/interval_report/index.html
 #non_ref_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_nonref_freq.txt)
@@ -187,8 +188,19 @@ metrics/all.dup_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).dup_
 		samplename=$$(basename $${metrics%%.dup_metrics.txt}); \
 		sed "/^#/d; /^LIBRARY/d; /^\$$/d; s/^/$$samplename\t/; s/\t\+$$//" $$metrics | grep "^$$samplename"; \
 	done; \
-	} >@
-	
+	} >$@
+
+metrics/all.oxog_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).oxog_metrics.txt)
+	$(INIT) \
+	{ \
+	sed '/^$$/d; /^#/d; s/\s$$//' $< | head -1; \
+	for metrics in $^; do \	
+		samplename=$$(basename $${metrics%%.oxog_metrics.txt}); \
+		sed "/^#/d; /^SAMPLE_ALIAS/d; /^\$$/d; s/^[^\t]\+\t/$$samplename\t/;" $$metrics | \
+		grep "^$$samplename" | sort -r -k 11 | head -1; \
+	done; \
+	} >$@
+
 #metrics/interval_report/index.html : metrics/hs_metrics.txt
 #	$(call LSCRIPT_MEM,3G,00:29:29,"$(PLOT_HS_METRICS) --outDir $(@D) $<")
 
