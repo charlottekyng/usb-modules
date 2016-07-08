@@ -10,28 +10,28 @@ LOGDIR ?= log/metrics.$(NOW)
 .PHONY: bam_metrics #hs_metrics amplicon_metrics wgs_metrics rna_metrics #interval_report #non_ref_metrics
 
 ifeq ($(CAPTURE_METHOD),NONE)
-bam_metrics : wgs_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics dup
+bam_metrics : wgs_metrics oxog_wgs flagstats alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),BAITS)
-bam_metrics : hs_metrics artifacts oxog flagstats gc alignment_summary_metrics dup
+bam_metrics : hs_metrics oxog flagstats alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),PCR)
-bam_metrics : amplicon_metrics artifacts oxog flagstats gc alignment_summary_metrics dup
+bam_metrics : amplicon_metrics oxog flagstats alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),RNA)
-bam_metrics : rna_metrics artifacts_wgs oxog_wgs flagstats gc alignment_summary_metrics dup
+bam_metrics : rna_metrics oxog_wgs flagstats alignment_summary_metrics dup
 endif
 
 hs_metrics : metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
 amplicon_metrics : metrics/all.amplicon_metrics.txt metrics/all.interval_amplicon_metrics.txt
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
 rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt metrics/all.rnaseq_report/index.html
-flagstats : $(foreach sample,$(SAMPLES),metrics/$(sample).flagstats.txt)
+flagstats : metrics/all.flagstats.txt
 alignment_summary_metrics : metrics/all.alignment_summary_metrics.txt
-gc : $(foreach sample,$(SAMPLES),metrics/$(sample).gc_bias_metrics.txt)
-artifacts : $(foreach sample,$(SAMPLES),metrics/$(sample).artifact_metrics.txt)
-artifacts_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.artifact_metrics.txt)
-oxog : $(foreach sample,$(SAMPLES),metrics/$(sample).oxog_metrics.txt)
+#gc : $(foreach sample,$(SAMPLES),metrics/$(sample).gc_bias_metrics.txt)
+artifacts : $(foreach sample,$(SAMPLES),metrics/$(sample).artifact_metrics.bait_bias_summary_metrics)
+artifacts_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.artifact_metrics.bait_bias_summary_metrics)
+oxog : metrics/all.oxog_metrics.txt
 oxog_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.oxog_metrics.txt)
 dup : metrics/all.dup_metrics.txt
 
@@ -72,13 +72,14 @@ metrics/%.alignment_summary_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_ALIGNMENT_METRICS,11G) \
 		INPUT=$< OUTPUT=$@")
 
-metrics/%.gc_bias_metrics.txt metrics/%.gc_bias_metrics_summary.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(LOAD_R_MODULE); \
-		$(call COLLECT_GCBIAS_METRICS,11G) \
-		INPUT=$< OUTPUT=$@ CHART_OUTPUT=$(addsuffix .pdf,$@) \
-		SUMMARY_OUTPUT=metrics/$*.gc_bias_metrics_summary.txt")
+# does not work, there's a conflict of java versions
+#metrics/%.gc_bias_metrics.txt metrics/%.gc_bias_metrics_summary.txt : bam/%.bam bam/%.bam.bai
+#	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA6_MODULE); $(LOAD_R_MODULE); \
+#		$(call COLLECT_GCBIAS_METRICS,11G) \
+#		INPUT=$< OUTPUT=$@ CHART_OUTPUT=$(addsuffix .pdf,$@) \
+#		SUMMARY_OUTPUT=metrics/$*.gc_bias_metrics_summary.txt")
 
-metrics/%.artifact_metrics.txt : bam/%.bam bam/%.bam.bai
+metrics/%.artifact_metrics.bait_bias_summary_metrics : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
@@ -86,7 +87,7 @@ metrics/%.artifact_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call COLLECT_SEQ_ARTIFACT_METRICS,11G) INPUT=$< OUTPUT=$@ \
 	DB_SNP=$(DBSNP) INTERVALS=\$$TMP")
 
-metrics/%.wgs.artifact_metrics.txt : bam/%.bam bam/%.bam.bai
+metrics/%.wgs.artifact_metrics.bait_bias_summary_metrics : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_SEQ_ARTIFACT_METRICS,11G) \
 		INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
 
@@ -169,7 +170,7 @@ metrics/all.normalized_coverage.rnaseq_metrics.txt : $(foreach sample,$(SAMPLES)
 
 metrics/all.rnaseq_report/index.html : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
 	$(INIT) $(LOAD_R_MODULE); $(PLOT_RNASEQ_METRICS) --outDir $(@D) $^
-
+      
 metrics/all.alignment_summary_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).alignment_summary_metrics.txt)
 	$(INIT) \
 	{ \
@@ -193,14 +194,24 @@ metrics/all.dup_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).dup_
 metrics/all.oxog_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).oxog_metrics.txt)
 	$(INIT) \
 	{ \
-	sed '/^$$/d; /^#/d; s/\s$$//' $< | head -1; \
-	for metrics in $^; do \	
+	sed '/^$$/d; /^#/d; s/\s$$//;' $< | head -1; \
+	for metrics in $^; do \
 		samplename=$$(basename $${metrics%%.oxog_metrics.txt}); \
 		sed "/^#/d; /^SAMPLE_ALIAS/d; /^\$$/d; s/^[^\t]\+\t/$$samplename\t/;" $$metrics | \
 		grep "^$$samplename" | sort -r -k 11 | head -1; \
 	done; \
 	} >$@
 
+metrics/all.flagstats.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).flagstats.txt)
+	$(INIT) \
+	{ \
+	echo -ne "category\t"; sed 's/^[0-9]\+ + [0-9]\+ //;' $< | tr '\n' '\t';  echo "";\
+	for metrics in $^; do \
+		samplename=$$(basename $${metrics%%.flagstats.txt}); echo -ne "$$samplename\t"; \
+		cut -f1 -d' ' $$metrics | tr '\n' '\t'; echo ""; \
+	done; \
+	} >$@
+	
 #metrics/interval_report/index.html : metrics/hs_metrics.txt
 #	$(call LSCRIPT_MEM,3G,00:29:29,"$(PLOT_HS_METRICS) --outDir $(@D) $<")
 

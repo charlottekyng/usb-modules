@@ -31,10 +31,10 @@ genotype/%.snps.vcf : bam/%.bam genotype/sites.to.genotype.vcf
 ifndef $(TARGETS_FILE_INTERVALS)
 genotype/sites.to.genotype.vcf : $(TARGETS_FILE_INTERVALS) $(DBSNP)
 	$(INIT) $(LOAD_BEDTOOLS_MODULE); $(BEDTOOLS) intersect -b $(TARGETS_FILE_INTERVALS) -a $(DBSNP) -header | \
-	awk '$$5!~/N/'> $@
+	awk '$$5!~/N/' | egrep "\#|COMMON" > $@
 else
 genotype/sites.to.genotype.vcf : $(DBSNP)
-	$(INIT) awk '$$5!~/N/' $(DBSNP) > genotype/sites.to.genotype.vcf
+	$(INIT) awk '$$5!~/N/' $(DBSNP) | egrep "\#|COMMON" > genotype/sites.to.genotype.vcf
 endif
 
 genotype/%.clust.png : genotype/%.vcf
