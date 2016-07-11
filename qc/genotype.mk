@@ -31,13 +31,13 @@ genotype/%.snps.vcf : bam/%.bam genotype/sites.to.genotype.vcf
 ifndef $(TARGETS_FILE_INTERVALS)
 genotype/sites.to.genotype.vcf : $(TARGETS_FILE_INTERVALS) $(DBSNP)
 	$(INIT) $(LOAD_BEDTOOLS_MODULE); $(BEDTOOLS) intersect -b $(TARGETS_FILE_INTERVALS) -a $(DBSNP) -header | \
-	awk '$$5!~/N/' | egrep "\#|COMMON" > $@
+	awk '$$5!~/N/' | egrep "\#|COMMON=1" > $@
 else
 genotype/sites.to.genotype.vcf : $(DBSNP)
-	$(INIT) awk '$$5!~/N/' $(DBSNP) | egrep "\#|COMMON" > genotype/sites.to.genotype.vcf
+	$(INIT) awk '$$5!~/N/' $(DBSNP) | egrep "\#|COMMON=1" > genotype/sites.to.genotype.vcf
 endif
 
 genotype/%.clust.png : genotype/%.vcf
-	$(INIT) $(LOAD_R_MODULE); $(CLUSTER_VCF) --outPrefix genotype/$* $<
+	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_R_MODULE); $(CLUSTER_VCF) --outPrefix genotype/$* $<")
 
 include usb-modules/vcf_tools/vcftools.mk
