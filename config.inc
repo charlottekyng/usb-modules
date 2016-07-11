@@ -347,10 +347,11 @@ MUTECT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.05
 MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
 
 #MUT_FREQ_REPORT = modules/variant_callers/somatic/mutectReport.Rmd
-MUTECT = $(JAVA) -Xmx$(1) -jar $(MUTECT_JAR) --analysis_type MuTect
+
+MUTECT ?= $(JAVA) -Xmx11G -jar $(MUTECT_JAR) --analysis_type MuTect
 
 VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.2.jar
-VARSCAN = $(JAVA8) -Xmx6G -jar $(VARSCAN_JAR)
+VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
 
 CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
 STRELKA_CONFIG = /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/etc/strelka_config_bwa_default.ini
@@ -527,7 +528,5 @@ CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
 DEFUSE ?= $(PERL) $(HOME)/share/usr/defuse-0.6.1/scripts/defuse.pl
 INTEGRATE ?= $(HOME)/share/usr/Integrate_0.2.0/bin/Integrate
 ONCOFUSE_JAR ?= $(JARDIR)/Oncofuse.jar
-
-
 endif
 CONFIG_INC = true

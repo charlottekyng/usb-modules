@@ -1,4 +1,3 @@
-#### MAKE INCLUDES #####
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
 include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
@@ -22,9 +21,9 @@ ext_output : $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
 #$(call mutect-tumor-normal-chr,tumor,normal,chr)
 define mutect-tumor-normal-chr
 mutect/chr_vcf/$1_$2.$3.mutect%vcf mutect/chr_tables/$1_$2.$3.mutect%txt mutect/coverage/$1_$2.$3.mutect_cov%txt: bam/$1%bam bam/$2%bam
-	$$(MKDIR) mutect/chr_tables mutect/chr_vcf mutect/coverage; $$(call LSCRIPT_CHECK_MEM,12G,01:59:59,"$$(LOAD_JAVA6_MODULE); $$(call MUTECT,11G) \
-		--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
-		--max_alt_allele_in_normal_fraction $(MUTECT_MAX_ALT_IN_NORMAL_FRACTION) \
+	$$(MKDIR) mutect/chr_tables mutect/chr_vcf mutect/coverage; $$(call LSCRIPT_CHECK_MEM,12G,01:59:59,"$$(LOAD_JAVA6_MODULE); $$(MUTECT) \
+		--max_alt_alleles_in_normal_count $$(MUTECT_MAX_ALT_IN_NORMAL) \
+		--max_alt_allele_in_normal_fraction $$(MUTECT_MAX_ALT_IN_NORMAL_FRACTION) \
 		--enable_extended_output --cosmic $$(COSMIC) \
 		--intervals $3 --reference_sequence $$(REF_FASTA) --dbsnp $$(DBSNP) \
 		--input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
@@ -58,5 +57,4 @@ vcf/$1_$2.mutect.vcf : $$(foreach chr,$$(CHROMOSOMES),mutect/chr_vcf/$1_$2.$$(ch
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 		$(eval $(call mutect-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
-
 include usb-modules/vcf_tools/vcftools.mk

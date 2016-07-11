@@ -31,7 +31,7 @@ endif
 
 # process snp eff output with gatk %=sample.indels/snps
 %.annotated.vcf : %.vcf %.gatk_eff.vcf %.gatk_eff.vcf.idx %.vcf.idx 
-	$(call LSCRIPT_PARALLEL_MEM,5,2G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,1.5G) \
+	$(call LSCRIPT_PARALLEL_MEM,5,3G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,2G) \
 	-R $(REF_FASTA) -nt 5 -A SnpEff --variant $< --snpEffFile $(word 2,$^) -o $@ &> $(LOGDIR)/$@.log")
 
 %.dp_ft.vcf : %.vcf
