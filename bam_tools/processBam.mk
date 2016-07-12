@@ -66,7 +66,7 @@ index : $(addsuffix .bai,$(BAMS))
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,11G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,10G) \
+	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,19G) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
