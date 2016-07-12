@@ -73,7 +73,7 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,20G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
 
 %.markdup.bam : %.bam
-	$(call LSCRIPT_MEM,14G,03:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,13G) I=$< O=$@ \
+	$(call LSCRIPT_MEM,20G,03:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
 %.rmdup.bam : %.bam
