@@ -32,7 +32,7 @@ ifndef $(TARGETS_FILE_INTERVALS)
 genotype/sites.to.genotype.vcf : $(TARGETS_FILE_INTERVALS) $(DBSNP)
 	$(INIT) grep "^\#" $(DBSNP) > $@ && \
 	$(LOAD_BEDTOOLS_MODULE); $(BEDTOOLS) intersect -b $(TARGETS_FILE_INTERVALS) -a $(DBSNP) -header | \
-	awk '$$5!~/N/' | egrep "^3|^X" | egrep "COMMON=1" | uniq >> $@
+	awk '$$5!~/N/' | egrep "^3|^12|^17|^19" | egrep "COMMON=1" | uniq >> $@
 else
 genotype/sites.to.genotype.vcf : $(DBSNP)
 	$(INIT) grep "^\#" $(DBSNP) > $@ && \

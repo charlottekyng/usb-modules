@@ -1,6 +1,7 @@
 # This module is for the hisat aligner
 # input: $(SAMPLES) 
-include modules/Makefile.inc
+include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
 BAM_NO_REALN = true
 BAM_NO_RECAL = true

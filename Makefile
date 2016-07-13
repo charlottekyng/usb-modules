@@ -69,9 +69,9 @@ TARGETS += tophat
 tophat : 
 	$(call RUN_MAKE,usb-modules/aligners/tophatAligner.mk)
 
-TARGETS += hisat
+TARGETS += hisat2
 hisat : 
-	$(call RUN_MAKE,usb-modules/aligners/hisatAligner.mk)
+	$(call RUN_MAKE,usb-modules/aligners/hisat2Aligner.mk)
 
 TARGETS += cufflinks
 cufflinks : 
