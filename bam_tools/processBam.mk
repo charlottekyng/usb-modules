@@ -72,6 +72,9 @@ index : $(addsuffix .bai,$(BAMS))
 %.sorted.bam : %.bam
 	$(call LSCRIPT_MEM,20G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
 
+%.nsorted.bam : %.bam
+	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
+
 %.markdup.bam : %.bam
 	$(call LSCRIPT_MEM,20G,03:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
@@ -88,6 +91,10 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,12G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call ADD_RG,11G) I=$< O=$@ RGLB=$(call strip-suffix,$(@F)) \
 		RGPL=$(SEQ_PLATFORM) RGPU=00000000 RGSM=$(call strip-suffix,$(@F)) RGID=$(call strip-suffix,$(@F)) \
 		VERBOSITY=ERROR && $(RM) $<")
+
+%.read_len : %.bam
+	$(call LSCRIPT_MEM,4G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); \
+	$(SAMTOOLS) view $< | awk '{ print length($$10) }' | sort -n | uniq -c | sort -rn | sed 's/^ \+//' | awk ' > $@")
 
 # if SPLIT_CHR is set to true, we will split realn processing by chromosome
 ifeq ($(SPLIT_CHR),true)

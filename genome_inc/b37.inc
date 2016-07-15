@@ -33,12 +33,11 @@ TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
 endif
 endif
 
-ifndef $(TARGETS_FILE_INTERVALS)
+ifeq ($(findstring bed,$(TARGETS_FILE_INTERVALS)),bed)
 CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
 else
 CHROMOSOMES ?= $(shell seq 1 22) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
 endif
-
 ### GENERAL REFERENCES ###
 
 GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/b37
@@ -128,7 +127,6 @@ ONCOTATOR_DB ?= $(REF_DIR)/oncotator_v1_ds_Jan262014
 ANNOVAR_DB = $(HOME)/share/usr/annovar/humandb
 
 HISAT_REF = $(HOME)/share/reference/hisat/grch37_snp_tran/genome_snp_tran
-
 endif
 B37_INC = true
 

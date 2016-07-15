@@ -1,6 +1,5 @@
 ifndef CONFIG_INC
 
-
 JARDIR ?= $(HOME)/usr_nobackup/local/lib/java
 SCRIPTSDIR ?= $(HOME)/usr_nobackup/local/scripts
 BINDIR ?= $(HOME)/usr_nobackup/local/bin
@@ -23,23 +22,32 @@ PAIRED_END ?= true
 # for RNA-seq, possible values NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND
 STRAND_SPECIFICITY ?= NONE
 
+## process FASTQs before alignment
+TRIM_LENGTH ?= 150
+# trim is fixed length trim, cutadapt
+FASTQ_FILTER ?= trim
+CLIP_FASTQ_R1 ?= OFF
+CLIP_FASTQ_R2 ?= OFF
+
+
 MERGE_SPLIT_BAMS ?= false  # merge processed split bams
 BAM_REPROCESS ?= false
-
-TRIM_READS ?= false
-FASTQ_FILTER := trim
-TRIM_LENGTH ?= 150
-TRIM_OPTS ?= -l $(TRIM_LENGTH)
 
 # not primary alignment 256
 # read fails platform/vendor quality checks 512
 BAM_FILTER_FLAGS ?= 768
 
+ifeq ($(CAPTURE_METHOD),RNA)
+BAM_DUP_TYPE ?= none
+BAM_NO_FILTER ?= true
+BAM_NO_RECAL ?= true
+BAM_NO_REALN ?= true
+else
 BAM_DUP_TYPE ?= markdup
 BAM_NO_FILTER ?= false
 BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= false
-
+endif
 INCLUDE_CHR_Y ?= false
 
 ### VARIANT FILTERS
@@ -54,7 +62,6 @@ HRUN_FILTER ?= 4
 ANN_FACETS ?= true ## useful mostly for exomes
 
 include usb-modules/genome_inc/$(REF).inc
-
 ##################################
 ####### Environmental var ########
 ##################################
@@ -224,7 +231,6 @@ BWA_SAMPE ?= bwa sampe
 BWA_MEM ?= bwa mem
 
 BWA_NUM_CORES ?= 8
-
 BWA_ALN_OPTS ?= -M
 
 FASTQ_CHUNKS := 10
@@ -247,6 +253,12 @@ endif
 ifeq ($(NO_NOVEL_SPLICING),true)
         TOPHAT_OPTS += --no-novel-juncs
 endif
+
+STAR_MODULE ?= STAR/2.5.2a-goolf-1.7.20
+LOAD_STAR_MODULE ?= module load $(STAR_MODULE)
+
+STAR_FUSION_MODULE ?= STAR-Fusion/0.6.0-goolf-1.4.10-Perl-5.16.3
+LOAD_STAR_FUSION_MODULE ?= module load $(STAR_FUSION_MODULE)
 
 HISAT ?= $(HOME)/share/usr/hisat2-2.0.2-beta/hisat2
 HISAT_NUM_CORES ?= 8

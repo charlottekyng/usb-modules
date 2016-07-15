@@ -1,8 +1,7 @@
-# This module is used to extract fastq files from bam files
-
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
 
+$(info FILTER is $(FASTQ_FILTER))
 VPATH ?= unprocessed_bam
 
 LOGDIR ?= log/fastq.$(NOW)
@@ -18,24 +17,29 @@ fastq: $(foreach split,$(UNSPLIT_SAMPLES),fastq/$(split).1.fastq.gz)
 endif
 
 ifdef FASTQ_FILTER
+ifeq ($(PAIRED_END),true)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz unprocessed_fastq/%.2.$(FASTQ_FILTER).fastq.gz
 	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz && cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
 else
+fastq/%.1.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz
+	$(INIT) ln $< fastq/$*.1.fastq.gz && cp $< fastq/$*.1.fastq.gz
+endif
+else
+ifeq ($(PAIRED_END),true)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
 	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz && cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
+else
+fastq/%.1.fastq.gz : unprocessed_fastq/%.1.fastq.gz
+	$(INIT) ln $< fastq/$*.1.fastq.gz && cp $< fastq/$*.1.fastq.gz
+endif
 endif
 
-fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_bam/%.nsorted.bam
-	$(call LSCRIPT_MEM,10G,01:59:59,"TEMP=`mktemp`; mkfifo \$${TEMP}_1; mkfifo \$${TEMP}_2; \
-	gzip < \$${TEMP}_1 > fastq/$*.1.fastq.gz & \
-	gzip < \$${TEMP}_2 > fastq/$*.2.fastq.gz & \
-	$(LOAD_JAVA8_MODULE); $(call SAM_TO_FASTQ,9G) QUIET=true I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2")
-
-%.nsorted.bam : %.bam
-	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
-
 unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
-	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) $(TRIM_OPTS) | gzip -c > $@ ")
+	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) -l $(TRIM_LENGTH) | gzip -c > $@ ")
+
+unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
+	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
+	TRIM_GALORE -q 20 --output trimmed_fastq --clip_R1 $(CLIP_FASTQ_R1) $(ifeq $(findstring true,$(PAIRED_END)),true),--clip_R2 $(CLIP_FASTQ_R2))"
 
 unprocessed_fastq/%.readtrim.1.fastq.gz unprocessed_fastq/%.readtrim.2.fastq.gz : %.bam %.read_len
 	$(call LSCRIPT_MEM,10G,02:59:59,"$(LOAD_JAVA8_MODULE); NUM_READS=`awk '{ sum += $$1 } END { print sum }' $(word 2,$^)`; \
@@ -47,14 +51,13 @@ unprocessed_fastq/%.readtrim.1.fastq.gz unprocessed_fastq/%.readtrim.2.fastq.gz 
 	$(call SAM_TO_FASTQ,9G) I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2 \
 	READ1_MAX_BASES_TO_WRITE=\$$MAX_LENGTH READ2_MAX_BASES_TO_WRITE=\$$MAX_LENGTH")
 
-%.read_len : %.bam
-	$(call LSCRIPT_MEM,4G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); \
-		$(SAMTOOLS) view $< | awk '{ print length($$10) }' | sort -n | uniq -c | sort -rn | sed 's/^ \+//' | awk ' > $@")
 
 define merged-fastq
 unprocessed_fastq/$1.%.fastq.gz : $$(foreach split,$2,unprocessed_fastq/$$(split).%.fastq.gz)
-	$$(INIT) zcat $$(^) | gzip > $$@ 2> $$(LOG)
+	$$(call LSCRIPT_MEM,10G,02:59:59,"zcat $$(^) | gzip > $$@ 2> $$(LOG)")
 unprocessed_fastq/$1.%.fastq.gz : $$(foreach split,$2,unprocessed_fastq/$$(split).%.fastq)
-	$$(INIT) cat $$(^) | gzip > $$@ 2> $$(LOG)
+	$$(call LSCRIPT_MEM,10G,02:59:59,"cat $$(^) | gzip > $$@ 2> $$(LOG)")
 endef
 $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call merged-fastq,$(sample),$(split.$(sample)))))
+
+include usb-modules/bam_tools/processBam.mk

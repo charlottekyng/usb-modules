@@ -25,6 +25,7 @@ MAKE = usb-modules/scripts/qmake.pl -n $@.$(NOW) -r $(NUM_ATTEMPTS) -m -s -- mak
 endif
 NUM_JOBS ?= 100
 
+$(info BLAH)
 define RUN_MAKE_J
 $(MAKE) -e -f $1 -j $2 $(TARGET) && \
 	mkdir -p completed_tasks && \
@@ -68,6 +69,10 @@ tophat_fusion :
 TARGETS += tophat
 tophat : 
 	$(call RUN_MAKE,usb-modules/aligners/tophatAligner.mk)
+
+TARGETS += star
+star :
+	$(call RUN_MAKE,usb-modules/aligners/starAligner.mk)
 
 TARGETS += hisat2
 hisat : 
