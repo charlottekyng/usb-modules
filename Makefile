@@ -25,7 +25,6 @@ MAKE = usb-modules/scripts/qmake.pl -n $@.$(NOW) -r $(NUM_ATTEMPTS) -m -s -- mak
 endif
 NUM_JOBS ?= 100
 
-$(info BLAH)
 define RUN_MAKE_J
 $(MAKE) -e -f $1 -j $2 $(TARGET) && \
 	mkdir -p completed_tasks && \
@@ -132,6 +131,9 @@ TARGETS += varscan
 varscan :
 	$(call RUN_MAKE,modules/variant_callers/varscan.mk)
 
+TARGETS += screen_hotspots
+screen_hotspots :
+	$(call RUN_MAKE,usb-modules/qc/screenHotspot.mk)
 
 # single sample mutation seq
 

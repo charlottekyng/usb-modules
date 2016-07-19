@@ -189,6 +189,7 @@ BAM_TO_FASTQ ?= xxx
 FASTQ_TRIMMER = $(PERL) usb-modules/fastq_tools/trimFastq.pl
 TRIM_GALORE_MODULE = Trim_Galore/0.4.1-goolf-1.4.10-Perl-5.16.3
 LOAD_TRIM_GALORE_MODULE ?= module load $(TRIM_GALORE_MODULE)
+TRIM_GALORE ?= trim_galore
 
 MODULE_SCRIPTS_DIR ?= usb-modules/scripts
 MERGE ?= $(MODULE_SCRIPTS_DIR)/merge.R
