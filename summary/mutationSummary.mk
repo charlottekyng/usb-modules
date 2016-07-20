@@ -4,6 +4,9 @@ include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
 LOGDIR = log/summary.$(NOW)
 
+#.DELETE_ON_ERROR:
+.SECONDARY: 
+PHONY : mutation_summary
 
 ALLTABLES_HIGH_MODERATE_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.high_moderate.txt
 ALLTABLES_LOW_MODIFIER_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.low_modifier.txt
@@ -32,8 +35,10 @@ endif
 # Set max for ExAC_AF column in MUTATION_SUMMARY sheet and tsv
 EXCEL_MAX_EXAC_AF ?= 1
 
-mutation_summary: summary/mutation_summary.xlsx
+mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
 
-summary/mutation_summary.xlsx : $(ALLTABLES_HIGH_MODERATE_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_NONSYNONYMOUS_MUTECT) $(ALLTABLES_HIGH_MODERATE_STRELKA) $(ALLTABLES_LOW_MODIFIER_STRELKA) $(ALLTABLES_SYNONYMOUS_STRELKA) $(ALLTABLES_NONSYNONYMOUS_STRELKA) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
-	$(INIT) 
-	python usb-modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@
+summary/mutation_summary.xlsx : $(ALLTABLES_HIGH_MODERATE_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_NONSYNONYMOUS_MUTECT)
+#$(ALLTABLES_HIGH_MODERATE_STRELKA) $(ALLTABLES_LOW_MODIFIER_STRELKA) $(ALLTABLES_SYNONYMOUS_STRELKA) $(ALLTABLES_NONSYNONYMOUS_STRELKA) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
+	$(INIT) $(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R --outFile $@ $(wordlist 1,8,$^)
+
+#	python usb-modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@

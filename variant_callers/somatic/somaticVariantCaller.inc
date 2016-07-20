@@ -15,9 +15,12 @@ ifeq ($(findstring true,$(ANN_FACETS)),true)
 	SOMATIC_COMMON_ANNS += facets
 endif
 
-SOMATIC_SNV_ANNS = $(SOMATIC_COMMON_ANNS) #$(if $(findstring b37,$(REF)),chasm fathmm)
-SOMATIC_INDEL_ANNS = $(SOMATIC_COMMON_ANNS) #hrun $(if $(findstring b37,$(REF)),provean mut_taste)
-SOMATIC_ANNS = $(if $(findstring indel,$1),$(SOMATIC_INDEL_ANNS),$(SOMATIC_SNV_ANNS)) #pathogenic
+SOMATIC_SNV_ANNS = $(SOMATIC_COMMON_ANNS)
+#$(if $(findstring b37,$(REF)),chasm fathmm)
+SOMATIC_INDEL_ANNS = $(SOMATIC_COMMON_ANNS)
+#hrun $(if $(findstring b37,$(REF)),provean mut_taste)
+SOMATIC_ANNS = $(if $(findstring indel,$1),$(SOMATIC_INDEL_ANNS),$(SOMATIC_SNV_ANNS))
+#pathogenic
 SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 
 # filters that are run after first round of annotations
@@ -27,7 +30,7 @@ SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 #SOMATIC_POST_ANNS += $(if $(findstring b37,$(REF)),gene_ann clinvar hotspot)
 #SOMATIC_POST_ANN_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_POST_ANNS,$1)))
 
-SOMATIC_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) $(SOMATIC_ANN_SUFFIX))) 
+SOMATIC_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) $(SOMATIC_ANN_SUFFIX)))
 SOMATICGT_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) pass eff))
 
 SOMATIC_EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous
