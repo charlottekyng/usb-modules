@@ -1,5 +1,6 @@
-include modules/Makefile.inc
-include modules/variant_callers/somatic/somaticVariantCaller.inc
+include usb-modules/Makefile.inc
+include usb-modules/config.inc
+include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
 LOGDIR = log/summary.$(NOW)
 
@@ -8,10 +9,10 @@ ALLTABLES_HIGH_MODERATE_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mut
 ALLTABLES_LOW_MODIFIER_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.low_modifier.txt
 ALLTABLES_SYNONYMOUS_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.synonymous.txt
 ALLTABLES_NONSYNONYMOUS_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous.txt
-ALLTABLES_HIGH_MODERATE_STRELKA_VARSCAN = alltables/allTN.strelka_varscan_indels.tab.high_moderate.txt
-ALLTABLES_LOW_MODIFIER_STRELKA_VARSCAN = alltables/allTN.strelka_varscan_indels.tab.low_modifier.txt
-ALLTABLES_SYNONYMOUS_STRELKA_VARSCAN = alltables/allTN.strelka_varscan_indels.tab.synonymous.txt
-ALLTABLES_NONSYNONYMOUS_STRELKA_VARSCAN = alltables/allTN.strelka_varscan_indels.tab.nonsynonymous.txt
+ALLTABLES_HIGH_MODERATE_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.high_moderate.txt
+ALLTABLES_LOW_MODIFIER_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.low_modifier.txt
+ALLTABLES_SYNONYMOUS_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.synonymous.txt
+ALLTABLES_NONSYNONYMOUS_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous.txt
 
 # Add optional absolute results to excel
 # the $(wildcard x) syntax is used to check for existence of file
@@ -33,7 +34,6 @@ EXCEL_MAX_EXAC_AF ?= 1
 
 mutation_summary: summary/mutation_summary.xlsx
 
-summary/mutation_summary.xlsx : $(ALLTABLES_HIGH_MODERATE_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_NONSYNONYMOUS_MUTECT) $(ALLTABLES_HIGH_MODERATE_STRELKA_VARSCAN) $(ALLTABLES_LOW_MODIFIER_STRELKA_VARSCAN) $(ALLTABLES_SYNONYMOUS_STRELKA_VARSCAN) $(ALLTABLES_NONSYNONYMOUS_STRELKA_VARSCAN) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
-	$(INIT) unset PYTHONPATH; \
-	source $(ANACONDA_27_ENV)/bin/activate $(ANACONDA_27_ENV); \
-	python modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@
+summary/mutation_summary.xlsx : $(ALLTABLES_HIGH_MODERATE_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_NONSYNONYMOUS_MUTECT) $(ALLTABLES_HIGH_MODERATE_STRELKA) $(ALLTABLES_LOW_MODIFIER_STRELKA) $(ALLTABLES_SYNONYMOUS_STRELKA) $(ALLTABLES_NONSYNONYMOUS_STRELKA) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
+	$(INIT) 
+	python usb-modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@

@@ -115,6 +115,9 @@ LOAD_JAVA8_MODULE ?= module load $(JAVA8_MODULE)
 JAVA ?= java $(JAVA_ARGS)
 JARDIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/lib/java
 
+PYTHON_MODULE ?= Python/3.5.1-goolf-1.4.10
+LOAD_PYTHON_MODULE ?= module load $(PYTHON_MODULE)
+
 #ANACONDA_PYTHON ?= $(HOME)/share/usr/anaconda/bin/python
 #ANACONDA_27_ENV ?= /home/debruiji/share/usr/anaconda-envs/anaconda-2.7
 #PYTHON ?= $(ANACONDA_PYTHON)
@@ -372,6 +375,7 @@ VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
 
 CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
 STRELKA_CONFIG = /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/etc/strelka_config_bwa_default.ini
+ANNOTATE_STRELKA = $(PERL) usb-modules/variant_callers/somatic/annotate_strelka.pl
 
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
 #NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl

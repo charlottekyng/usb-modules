@@ -25,7 +25,7 @@ $(foreach pair,$(SAMPLE_PAIRS),\
 define hotspot-samplepairs-screen
 hotspots/$1_$2.snps.screened.vcf : hotspots/$1_$2.snps.vcf
 	$$(call LSCRIPT_MEM,8G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
-		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 0 || vc.getGenotype(\"$1\").getAD().2 > 0 || vc.getGenotype(\"$1\").getAD().3 > 0' \
+		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 1 || vc.getGenotype(\"$1\").getAD().2 > 1 || vc.getGenotype(\"$1\").getAD().3 > 1' \
 		--filterName presentInTumor")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
