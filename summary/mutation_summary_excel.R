@@ -1,3 +1,4 @@
+options(java.parameters = "-Xmx8000m")
 suppressPackageStartupMessages(library("optparse"));
 suppressPackageStartupMessages(library("xlsx"));
 

@@ -37,8 +37,8 @@ EXCEL_MAX_EXAC_AF ?= 1
 
 mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
 
-summary/mutation_summary.xlsx : $(ALLTABLES_HIGH_MODERATE_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_NONSYNONYMOUS_MUTECT)
-#$(ALLTABLES_HIGH_MODERATE_STRELKA) $(ALLTABLES_LOW_MODIFIER_STRELKA) $(ALLTABLES_SYNONYMOUS_STRELKA) $(ALLTABLES_NONSYNONYMOUS_STRELKA) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
-	$(INIT) $(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R --outFile $@ $(wordlist 1,8,$^)
-
+summary/mutation_summary.xlsx : (ALLTABLES_NONSYNONYMOUS_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_NONSYNONYMOUS_STRELKA) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
+	$(call LSCRIPT_CHECK_MEM,9G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	--outFile $@ $(wordlist 1,4,$^)")
+	
 #	python usb-modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@
