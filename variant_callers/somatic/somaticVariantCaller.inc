@@ -2,7 +2,8 @@ ifndef SOMATIC_VARIANT_CALLER_INC
 
 ### Filters
 SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft)
-SOMATIC_FILTERS += som_ad_ft hotspot
+SOMATIC_FILTERS += $(if $(findstring strelka,$1),,som_ad_ft)
+SOMATIC_FILTERS += hotspot
 #SOMATIC_FILTERS += ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 4),nft)
 
 SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
@@ -20,10 +21,12 @@ ifeq ($(findstring true,$(ANN_FACETS)),true)
 endif
 
 SOMATIC_SNV_ANNS = $(SOMATIC_COMMON_ANNS)
-#$(if $(findstring b37,$(REF)),chasm fathmm)
 SOMATIC_INDEL_ANNS = $(SOMATIC_COMMON_ANNS)
+
 #hrun $(if $(findstring b37,$(REF)),provean mut_taste)
+
 SOMATIC_ANNS = $(if $(findstring indel,$1),$(SOMATIC_INDEL_ANNS),$(SOMATIC_SNV_ANNS))
+
 #pathogenic
 SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 
