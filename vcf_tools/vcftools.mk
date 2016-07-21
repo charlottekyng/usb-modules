@@ -400,6 +400,5 @@ endif
 #		$(SNP_SIFT_OPTS) -f $< \"( na FILTER ) | (FILTER = 'PASS')\" > $@"))
 
 
-
 VCFTOOLS_MK = true
 

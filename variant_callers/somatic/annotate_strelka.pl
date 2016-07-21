@@ -25,11 +25,13 @@ while (my $line = <>) {
 
 		$normal[$n_tir] =~ /^(\d+),/;
 		my $normal_ad = $1.",".($normal[$n_dp]-$1);
-		my $normal_af = $1/$normal[$n_dp];
+		my $normal_af = "";
+		if ($normal[$n_dp]!=0) { $normal_af = $1/$normal[$n_dp];}
 
 		$tumour[$n_tir] =~ /^(\d+),/;
 		my $tumour_ad = $1.",".($tumour[$n_dp]-$1);
-		my $tumour_af = $1/$tumour[$n_dp];
+		my $tumour_af = "";
+		if ($tumour[$n_dp]!=0) {$1/$tumour[$n_dp];}
 
 		push @format, "AD", "AF";
 		push @normal, $normal_ad, $normal_af;

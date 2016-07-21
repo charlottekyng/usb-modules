@@ -57,4 +57,6 @@ vcf/$1_$2.mutect.vcf : $$(foreach chr,$$(CHROMOSOMES),mutect/chr_vcf/$1_$2.$$(ch
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 		$(eval $(call mutect-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
+
 include usb-modules/vcf_tools/vcftools.mk
+include usb-modules/variant_callers/somatic/pon.mk

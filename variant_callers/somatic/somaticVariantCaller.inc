@@ -3,13 +3,17 @@ ifndef SOMATIC_VARIANT_CALLER_INC
 ### Filters
 SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft)
 SOMATIC_FILTERS += som_ad_ft hotspot
-SOMATIC_FILTERS += ifeq ($(shell test $(word $(NORMAL_SAMPLES)) -gt 4),nft)
+#SOMATIC_FILTERS += ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 4),nft)
 
 SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
 
 ### Annotation
 SOMATIC_COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),mgp_dbsnp, \
         eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
+
+ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 4; echo $$?),0)
+	SOMATIC_COMMON_ANNS += nft
+endif
 
 ifeq ($(findstring true,$(ANN_FACETS)),true)
 	SOMATIC_COMMON_ANNS += facets

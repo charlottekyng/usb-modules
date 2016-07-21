@@ -62,7 +62,7 @@ for (file in files) {
 	}	
 
 	name <- strsplit (file, ".", fixed=T)[[1]]
-	name <- name[length(name)-1]
+	name <- toString(name[c(2,length(name)-1)])
 	if (file.exists(opt$outFile)) {
 		write.xlsx2(tab, opt$outFile, sheetName=name, append=TRUE, showNA=FALSE, row.names=F)
 	} else { write.xlsx2(tab, opt$outFile, sheetName=name, append=FALSE, showNA=FALSE, row.names=F)}
