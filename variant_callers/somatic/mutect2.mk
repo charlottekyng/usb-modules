@@ -38,10 +38,15 @@ mutect2/chr_vcf_pon/pon.$1.mutect2.vcf : $$(foreach normal,$$(NORMAL_SAMPLES),mu
 	$$(call LSCRIPT_CHECK_MEM,20G,03:29:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,19G) \
 	--reference_sequence $$(REF_FASTA) -minN 2 --setKey \"null\" --filteredAreUncalled --filteredrecordsmergetype KEEP_IF_ANY_UNFILTERED \
 	$$(foreach normal,$$(NORMAL_SAMPLES),--variant mutect2/chr_vcf_pon/$$(normal).$1.mutect2.vcf) --intervals $1 \
-	--out mutect2/chr_vcf_pon/pon.$1.mutect2.vcf")
+	--out $$@")
 endef
 $(foreach chr,$(CHROMOSOMES), \
 	$(eval $(call mutect2-pon-chr,$(chr))))
+
+mutect2/pon.mutect2.vcf : $(foreach chr,$(CHROMOSOMES),mutect2/chr_vcf_pon/pon.$(chr).mutect2.vcf)
+	$(call LSCRIPT_CHECK_MEM,20G,03:29:59,"$(LOAD_JAVA8_MODULE); $(call COMBINE_VARIANTS,19G) \
+	--reference_sequence $(REF_FASTA) $(foreach chr,$(CHROMOSOMES),--variant mutect2/chr_vcf_pon/pon.$(chr).mutect2.vcf) \
+	--out $@")
 
 define mutect2-tumor-normal-chr
 mutect2/chr_vcf/$1_$2.$3.mutect2%vcf : bam/$1%bam bam/$2%bam mutect2/chr_vcf_pon/pon.$3.mutect2.vcf

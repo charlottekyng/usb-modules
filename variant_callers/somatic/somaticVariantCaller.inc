@@ -3,7 +3,7 @@ ifndef SOMATIC_VARIANT_CALLER_INC
 ### Filters
 SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft)
 SOMATIC_FILTERS += som_ad_ft hotspot
-SOMATIC_FILTERS += $(if $(NORMAL_VCF),nft)
+SOMATIC_FILTERS += ifeq ($(shell test $(word $(NORMAL_SAMPLES)) -gt 4),nft)
 
 SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
 

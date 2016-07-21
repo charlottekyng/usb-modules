@@ -19,11 +19,9 @@ LOGDIR ?= log/vcf.$(NOW)
 ############ FILTERS #########
 
 
-ifdef NORMAL_VCF
-%.nft.vcf : %.vcf
+%.nft.vcf : %.vcf mutect2/pon.mutect2.vcf
 	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
-		-R $(REF_FASTA) -V $< -o $@ --maskName 'normal' --mask $(NORMAL_VCF) && $(RM) $< $<.idx")
-endif
+		-R $(REF_FASTA) -V $< -o $@ --maskName 'PoN' --mask $(word 2,$^) && $(RM) $< $<.idx")
 
 %.target_ft.vcf : %.vcf
 	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
