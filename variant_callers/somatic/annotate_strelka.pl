@@ -7,7 +7,7 @@ while (my $line = <>) {
 		print $line; print "\n"; 
 		if ($line =~ /^\#\#FORMAT\=\<ID\=TOR/) { 
 			print "\#\#FORMAT\=\<ID\=AD,Number=2,Type=Float,Description=\"AD computed from tier 1\"\>\n";
-			print "\#\#FORMAT\=\<ID\=AF,Number=2,Type=Float,Description=\"AF computed from tier 1\"\>\n";
+			print "\#\#FORMAT\=\<ID\=FA,Number=2,Type=Float,Description=\"AF computed from tier 1\"\>\n";
 		}
 	} else {
 		my @arr = split /\t/, $line;
@@ -34,7 +34,7 @@ while (my $line = <>) {
 		my $tumour_af = "";
 		if ($tumour[$n_dp]!=0) { $tumour_af = $1/$tumour[$n_dp];}
 
-		push @format, "AD", "AF";
+		push @format, "AD", "FA";
 		push @normal, $normal_ad, $normal_af;
 		push @tumour, $tumour_ad, $tumour_af;
 

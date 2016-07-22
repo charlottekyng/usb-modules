@@ -26,7 +26,7 @@ output_fields = c("TUMOR_SAMPLE", "NORMAL_SAMPLE", "ANN[*].GENE", "ANN[*].HGVS_P
 	"TUMOR.DP", "NORMAL.DP", "TUMOR.AD", "NORMAL.AD", "cancer_gene_census", "kandoth", "lawrence", "hap_insuf", 
 	"facetsCF_EM", "facetsTCN_EM", "facetsLCN_EM",
 	"duplicatedGenesDB", "dbNSFP_MutationTaster_pred", "dbNSFP_Polyphen2_HVAR_pred", "dbNSFP_Interpro_domain", 
-	"CHROM", "POS", "ID", "REF", "ALT", "dbNSFP_ExAC_AF", "dbNSFP_ExAC_Adj_AF", "dbNSFP_ExAC_AFR_AC", "dbNSFP_ExAC_AMR_AF", 
+	"CHROM", "POS", "ID", "REF", "ALT", "FILTER", "dbNSFP_ExAC_AF", "dbNSFP_ExAC_Adj_AF", "dbNSFP_ExAC_AFR_AC", "dbNSFP_ExAC_AMR_AF", 
 	"dbNSFP_ExAC_FIN_AF", "dbNSFP_ExAC_AFR_AF", "dbNSFP_ExAC_EAS_AF", "dbNSFP_ExAC_SAS_AF", "dbNSFP_ExAC_NFE_AF", "dbNSFP_Uniprot_acc")	
 
 for (file in files) {
