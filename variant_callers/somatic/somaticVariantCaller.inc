@@ -1,8 +1,8 @@
 ifndef SOMATIC_VARIANT_CALLER_INC
 
 ### Filters
-SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft)
-SOMATIC_FILTERS += $(if $(findstring strelka,$1),,som_ad_ft)
+SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft) som_ad_ft
+#SOMATIC_FILTERS += $(if $(findstring strelka,$1),,som_ad_ft)
 SOMATIC_FILTERS += hotspot
 #SOMATIC_FILTERS += ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 4),nft)
 

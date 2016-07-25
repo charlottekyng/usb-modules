@@ -25,8 +25,7 @@ strelka/$1_$2/task.complete : strelka/$1_$2/Makefile
 	$$(call LSCRIPT_NAMED_PARALLEL_MEM,$1_$2.strelka,10,1G,02:29:29,"make -j 10 -C $$(<D)")
 
 vcf/$1_$2.%.vcf : strelka/vcf/$1_$2.%.vcf
-	$$(INIT) perl -ne 'if (/^#CHROM/) { s/NORMAL/$2/; s/TUMOR/$1/; } print;' $$< > $$@ 
-#&& $$(RM) $$<
+	$$(INIT) perl -ne 'if (/^#CHROM/) { s/NORMAL/$2/; s/TUMOR/$1/; } print;' $$< > $$@ && $$(RM) $$<
 
 strelka/vcf/$1_$2.strelka_snps.vcf : strelka/$1_$2/task.complete
 	$$(INIT) cp -f strelka/$1_$2/results/all.somatic.snvs.vcf $$@
