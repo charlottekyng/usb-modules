@@ -50,15 +50,15 @@ normalName <- baseCountFile %>% sub('.*/', '', .) %>% sub('.*_', '', .) %>% sub(
 switch(opt$genome,
        b37={
            data(hg19gcpct)
-           chromLevels=c(1:22, "X")
+           chromLevels=c(1:22, "X", "Y")
        },
        GRCh37={
            data(hg19gcpct)
-           chromLevels=c(1:22, "X")
+           chromLevels=c(1:22, "X", "Y")
        },
        hg19={
            data(hg19gcpct)
-           chromLevels=c(1:22, "X")
+           chromLevels=c(1:22, "X", "Y")
 #           chromLevels=paste("chr", c(1:22, "X"), sep = '')
        },
        mm9={
