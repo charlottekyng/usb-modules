@@ -39,7 +39,7 @@ unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
 
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
-	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --clip_R1 $(CLIP_FASTQ_R1) $(if $(findstring true,$(PAIRED_END)),--clip_R2 $(CLIP_FASTQ_R2)) \
+	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --clip_R1 $(CLIP_FASTQ_R1) $(if $(findstring true,$(PAIRED_END)),--clip_R2 $(CLIP_FASTQ_R2)) $^ \
 	&& mv unprocessed_fastq/$*_trimmed.fq.gz $@")
 
 unprocessed_fastq/%.readtrim.1.fastq.gz unprocessed_fastq/%.readtrim.2.fastq.gz : %.bam %.read_len
