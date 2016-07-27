@@ -9,8 +9,8 @@ LOGDIR ?= log/fastqc.$(NOW)
 .PHONY: fastqc
 .SECONDARY: 
 
-fastqc : $(foreach sample,$(SAMPLES),fastqc/$(sample)_fastqc/summary.txt) fastqc/all_summary.txt
-
+#fastqc : $(foreach sample,$(SAMPLES),fastqc/$(sample)_fastqc/summary.txt) fastqc/all_summary.txt
+fastqc : $(foreach sample,$(SAMPLES),fastqc/$(sample)_fastqc.zip)
 fastqc/%_fastqc.zip : bam/%.bam
 	$(call LSCRIPT_NAMED_MEM,$*_fastqc,6G,00:59:59,"$(LOAD_FASTQC_MODULE); $(FASTQC) -o fastqc $^")
 
