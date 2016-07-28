@@ -99,7 +99,7 @@ mm <- lapply(facetsFiles, function(f) {
 	tab <- read.delim(f, as.is=T)
 	tab$chrom[which(tab$chrom==23)] <- "X"
 
-	tabGR <- tab %$% GRanges(seqnames = chrom, ranges = IRanges(loc.start, loc.end))
+	tabGR <- tab %$% GRanges(seqnames = chrom, ranges = IRanges(start, end))
 	mcols(tabGR) <- tab %>% select(cnlr.median:lcn.em)
 
 	fo <- findOverlaps(tabGR, genesGR)
@@ -107,30 +107,30 @@ mm <- lapply(facetsFiles, function(f) {
 	df <- as.data.frame(cbind(mcols(genesGR)[subjectHits(fo),], mcols(tabGR)[queryHits(fo),]))
 	df %<>% group_by(hgnc) %>% top_n(1, abs(cnlr.median))
 
-	ploidy <- table(df$tcn)
+	ploidy <- table(df$tcn.em)
 	ploidy <- as.numeric(names(ploidy)[which.max(ploidy)])
 
 	df$GL <- 0
-	df$GL[df$tcn < ploidy] <- -1
-	df$GL[df$tcn == 0] <- -2
-	df$GL[df$tcn > ploidy] <- 1
-	df$GL[df$tcn >= ploidy + 4] <- 2
+	df$GL[df$tcn.em < ploidy] <- -1
+	df$GL[df$tcn.em == 0] <- -2
+	df$GL[df$tcn.em > ploidy] <- 1
+	df$GL[df$tcn.em >= ploidy + 4] <- 2
 
-	load(gsub("cncf.txt", "Rdata", f, fixed=T))
-	noise <- median(abs(out2$jointseg$cnlr-  unlist(apply(out2$out[,c("cnlr.median", "num.mark")], 1, function(x) {rep(x[1], each=x[2])}))))
+#	load(gsub("cncf.txt", "Rdata", f, fixed=T))
+#	noise <- median(abs(out2$jointseg$cnlr-  unlist(apply(out2$out[,c("cnlr.median", "num.mark")], 1, function(x) {rep(x[1], each=x[2])}))))
 
-	lrr <- sort(out2$jointseg$cnlr)
-	if (noise <= 0.2) { lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))]
-	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
-	} else { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]}
+#	lrr <- sort(out2$jointseg$cnlr)
+#	if (noise <= 0.2) { lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))]
+#	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
+#	} else { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]}
 
-	df$GL2 <- 0
-	df$GL2[df$cnlr.median < median(lrr)-(2.5*sd(lrr))] <- -1
-	df$GL2[df$cnlr.median < median(lrr)-(7*sd(lrr))] <- -2
-	df$GL2[df$cnlr.median > median(lrr)+(2*sd(lrr))] <- 1
-	df$GL2[df$cnlr.median > median(lrr)+(6*sd(lrr))] <- 2
+#	df$GL2 <- 0
+#	df$GL2[df$cnlr.median < median(lrr)-(2.5*sd(lrr))] <- -1
+#	df$GL2[df$cnlr.median < median(lrr)-(7*sd(lrr))] <- -2
+#	df$GL2[df$cnlr.median > median(lrr)+(2*sd(lrr))] <- 1
+#	df$GL2[df$cnlr.median > median(lrr)+(6*sd(lrr))] <- 2
 
-	df %>% select(hgnc, GL, GL2) %>% ungroup
+	df %>% select(hgnc, GL) %>% ungroup
 })
 names(mm) <- facetsFiles
 for (f in facetsFiles) {
