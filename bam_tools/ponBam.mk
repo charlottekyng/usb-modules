@@ -12,7 +12,7 @@ bam/pon.header.sam : $(foreach normal,$(NORMAL_SAMPLES),bam/$(normal).downsample
 	uniq $@.tmp > $@ && $(RM) $@.tmp
 
 bam/pon.bam : bam/pon.header.sam $(foreach normal,$(NORMAL_SAMPLES),bam/$(normal).downsampled.bam) $(addsuffix .bai,$(foreach normal,$(NORMAL_SAMPLES),bam/$(normal).downsampled.bam))
-	$(call LSCRIPT_MEM,12G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) merge -f -h $< $@ $(filter %.bam,$^) && $(RM) $^")
+	$(call LSCRIPT_MEM,20G,02:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) merge -f -h $< $@ $(filter %.bam,$^) && $(RM) $^")
 
 
 include usb-modules/bam_tools/processBam.mk
