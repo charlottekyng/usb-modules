@@ -17,9 +17,9 @@ star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz
 	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< --readFilesCommand gunzip -c \
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 1 --alignIntronMax 1000000 --alignMatesGapMax 1000000\
 	--outFilterType BySJout --outFilterMultimapNmax 20 --outFilterMismatchNmax 999 \
-	--outFileNamePrefix $(@D)/$* \
+	--outFileNamePrefix $(@D)/$*. \
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
-	--outReadsUnmapped Fastx --outMultimapperOrder Random --outSAMattrIHstart 0)"
+	--outReadsUnmapped Fastx --outMultimapperOrder Random --outSAMattrIHstart 0")
 
 
 bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
@@ -35,7 +35,7 @@ bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(samp
 	--outReadsUnmapped None --outMultimapperOrder Random --outSAMattrIHstart 0 \
 	--chimSegmentMin 12 --chimJunctionOverhangMin 12 --chimSegmentReadGapMax parameter 3 \
 	--quantMode TranscriptomeSAM && \
-	ln star/secondpass/$*_Aligned.sortedByCoord.out.bam $@)"
+	ln star/secondpass/$*_Aligned.sortedByCoord.out.bam $@")
 
 include usb-modules/fastq_tools/fastq.mk
 include usb-modules/bam_tools/processBam.mk
