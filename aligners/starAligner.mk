@@ -29,13 +29,13 @@ bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(samp
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 10 --alignIntronMax 200000 --alignMatesGapMax 200000 \
 	--alignSJstitchMismatchNmax 5 -1 5 5 \
 	--outFilterType BySJout --outFilterMultimapNmax 20 --outFilterMismatchNmax 999 \
-	--outFileNamePrefix $(@D)/$*_ \
+	--outFileNamePrefix star/secondpass/$*. \
 	--sjdbFileChrStartEnd $(filter %.SJ.out.tab,$^) \
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped None --outMultimapperOrder Random --outSAMattrIHstart 0 \
 	--chimSegmentMin 12 --chimJunctionOverhangMin 12 --chimSegmentReadGapMax parameter 3 \
 	--quantMode TranscriptomeSAM && \
-	ln star/secondpass/$*_Aligned.sortedByCoord.out.bam $@")
+	ln star/secondpass/$*.Aligned.sortedByCoord.out.bam $@")
 
 include usb-modules/fastq_tools/fastq.mk
 include usb-modules/bam_tools/processBam.mk
