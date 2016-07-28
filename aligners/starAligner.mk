@@ -23,7 +23,7 @@ star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz
 
 
 bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
-	$(call LSCRIPT_PARALLEL_MEM,8,4G,00:29:59,"$(MKDIR) star star/secondpass/; \
+	$(call LSCRIPT_PARALLEL_MEM,8,8G,00:29:59,"$(MKDIR) star star/secondpass/; \
 	$(LOAD_STAR_MODULE); STAR --runMode alignReads \
 	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< --readFilesCommand gunzip -c \
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 10 --alignIntronMax 200000 --alignMatesGapMax 200000 \
