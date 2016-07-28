@@ -57,6 +57,9 @@ index : $(addsuffix .bai,$(BAMS))
 #%.dcov.bam : %.bam
 #	$(call LSCRIPT_MEM,18G,00:59:59,"$(call GATK_MEM,18G) -T PrintReads -R $(REF_FASTA) -I $< -dcov 50 -o $@")
 
+%.downsampled.bam : %.bam
+	$(call LSCRIPT_CHECK_MEM,20G,03:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bh -s $(SAMTOOLS_DOWNSAMPLE_FACTOR) $< > $@")
+
 # filter
 %.filtered.bam : %.bam
 	$(call LSCRIPT_MEM,6G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")

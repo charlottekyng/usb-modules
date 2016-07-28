@@ -152,7 +152,7 @@ dev.off()
 #tab <- cbind(out2$IGV[, 1:4], fit$cncf[, 2:ncol(fit$cncf)])
 #write.table(tab, str_c(opt$outPrefix, ".cncf.txt"), row.names = F, quote = F, sep = '\t')
 
-if("clonal.cluster" %in% colnames(fit2$cncf) { clonal.cluster = fit2$cncf$clonal.cluster
+if("clonal.cluster" %in% colnames(fit2$cncf)) { clonal.cluster = fit2$cncf$clonal.cluster
 } else { clonal.cluster <- rep(NA, nrow(fit2$cncf))}
 
 writetable <- cbind(fit2$cncf[,c("chrom", "seg", "num.mark", "nhet", "cnlr.median", "mafR", "segclust", "cnlr.median.clust", "mafR.clust")],

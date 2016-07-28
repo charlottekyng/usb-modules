@@ -36,6 +36,7 @@ BAM_REPROCESS ?= false
 # not primary alignment 256
 # read fails platform/vendor quality checks 512
 BAM_FILTER_FLAGS ?= 768
+SAMTOOLS_DOWNSAMPLE_FACTOR ?= 0.2
 
 ifeq ($(CAPTURE_METHOD),RNA)
 BAM_DUP_TYPE ?= none
