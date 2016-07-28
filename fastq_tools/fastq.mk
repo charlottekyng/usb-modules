@@ -19,10 +19,12 @@ endif
 ifdef FASTQ_FILTER
 ifeq ($(PAIRED_END),true)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz unprocessed_fastq/%.2.$(FASTQ_FILTER).fastq.gz
-	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz && cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
+	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz
+	#&& cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
 else
 fastq/%.1.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz
-	$(INIT) ln $< fastq/$*.1.fastq.gz && cp $< fastq/$*.1.fastq.gz
+	$(INIT) ln $< fastq/$*.1.fastq.gz
+	#&& cp $< fastq/$*.1.fastq.gz
 endif
 else
 ifeq ($(PAIRED_END),true)
@@ -38,7 +40,7 @@ unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) -l $(TRIM_LENGTH) | gzip -c > $@ ")
 
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
-	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
+	$(call LSCRIPT_MEM,2G,02:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --clip_R1 $(CLIP_FASTQ_R1) $(if $(findstring true,$(PAIRED_END)),--clip_R2 $(CLIP_FASTQ_R2)) $^ \
 	&& mv unprocessed_fastq/$*_trimmed.fq.gz $@")
 
