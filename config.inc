@@ -526,10 +526,10 @@ endif
 
 FACETS_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCN.R
 FACETS_FILL_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsFillGeneCN.R
-FACETS_GENE_CN_OPTS = $(if $(GENES_FILE),--genesFile $(GENES_FILE)) \
-                                          --mysqlHost $(EMBL_MYSQLDB_HOST) --mysqlPort $(EMBL_MYSQLDB_PORT) \
-                                          --mysqlUser $(EMBL_MYSQLDB_USER) --mysqlPassword $(EMBL_MYSQLDB_PW) \
-                                          --mysqlDb $(EMBL_MYSQLDB_DB)
+FACETS_GENE_CN_OPTS = $(if $(TARGETS_FILE_GENES),--genesFile $(TARGETS_FILE_GENES))
+                                     #     --mysqlHost $(EMBL_MYSQLDB_HOST) --mysqlPort $(EMBL_MYSQLDB_PORT) \
+                                     #     --mysqlUser $(EMBL_MYSQLDB_USER) --mysqlPassword $(EMBL_MYSQLDB_PW) \
+                                     #     --mysqlDb $(EMBL_MYSQLDB_DB)
 
 FACETS_PLOT_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCNPlot.R
 FACETS_PLOT_GENE_CN_OPTS = --sampleColumnPostFix '_EM'

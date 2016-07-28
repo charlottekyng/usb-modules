@@ -6,7 +6,7 @@ LOGDIR ?= log/facets.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets
 
-facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
+facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt) facets/geneCN.txt
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
 facets/vcf/dbsnp_het_gatk.snps.vcf : $(FACETS_DBSNP:.gz=) $(foreach sample,$(SAMPLES),gatk/vcf/$(sample).variants.snps.het.pass.vcf) 
