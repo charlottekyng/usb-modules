@@ -107,8 +107,8 @@ mm <- lapply(facetsFiles, function(f) {
 	df <- as.data.frame(cbind(mcols(genesGR)[subjectHits(fo),], mcols(tabGR)[queryHits(fo),]))
 	df %<>% group_by(hgnc) %>% top_n(1, abs(cnlr.median))
 
-	ploidy <- table(df$tcn.em)
-	ploidy <- as.numeric(names(ploidy)[which.max(ploidy)])
+	ploidy <- median(unlist(apply(cbind(df$tcn.em, df$num.mark),1,function(x){rep(x[1], x[2])})))
+#	ploidy <- as.numeric(names(ploidy)[which.max(ploidy)])
 
 	df$GL <- 0
 	df$GL[df$tcn.em < ploidy] <- -1
