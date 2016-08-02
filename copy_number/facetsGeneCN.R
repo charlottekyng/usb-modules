@@ -141,3 +141,47 @@ for (f in facetsFiles) {
 mm <- left_join(genes, join_all(mm, type = 'full', by="hgnc")) %>% arrange(as.integer(chrom), start, end)
 write.table(mm, file=opt$outFile, sep="\t", row.names=F, na="", quote=F)
 
+seg_sample <- seg_chr <- seg_band <- seg_start <- seg_end <- seg_genes <- seg_type <- NA
+for (i in grep("EM", colnames(mm))) {
+	for(chr in c(1:22,"X")) {
+		tt <- mm[which(mm$chrom==chr),c(1:5,i)]
+		tt[which(is.na(tt[,6])),6] <- -1000
+		rr <- rle(tt[,6]); 
+		if (rr$values[1]== -1000) {
+			rr$values[1] <- rr$values[2]
+		}
+		if (rr$values[length(rr$values)]== -1000) {
+			rr$values[length(rr$values)] <- rr$values[length(rr$values)-1]
+		}
+		for ( idx in which(rr$values== -1000)) {
+			if (rr$values[idx-1]== rr$values[idx+1]) { rr$values[idx] <- rr$values[idx-1]}
+			else {rr$values[idx] <- 0}
+		}
+		mm[which(mm$chrom==chr),i] <- unlist(apply(cbind(rr$value,rr$length), 1, function(x){rep(x[1],x[2])}))
+
+		tt <- mm[which(mm$chrom==chr),c(1:5,i)]
+		rr <- rle(tt[,6]); 
+		if (length(rr$length)>1) {
+			cs <- cumsum(rr$lengths)
+			start <- c(1,cs[1:(length(cs)-1)]+1)
+			end <- cs
+		} else {start <- 1; end <- rr$lengths[1] }
+
+		for (idx in which(rr$values %in% c(-2,2))) {
+			if (rr$values[idx] %in% c(-2,2)) {
+				seg_sample <- c(seg_sample, colnames(mm)[i])
+				seg_chr <- c(seg_chr, chr)
+				seg_band <- c(seg_band, paste(tt[start[idx],"band"], tt[end[idx],"band"], sep="-"))
+				seg_start <- c(seg_start, tt[start[idx],"start"])
+				seg_end <- c(seg_end, tt[end[idx],"end"])
+				seg_genes <- c(seg_genes, toString(mm[start[idx]:end[idx],"hgnc"]))
+				seg_type <- c(seg_type, rr$values[idx])
+			}
+		}		
+
+	}
+}
+seg_type[which(seg_type==2)] <- "amp"
+seg_type[which(seg_type== -2)] <- "del"
+write.table(cbind(seg_sample, seg_chr, seg_band, seg_start, seg_end, seg_genes, seg_type), file=gsub("txt", "ampdel.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
+write.table(mm, file=gsub("txt", "filled.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
