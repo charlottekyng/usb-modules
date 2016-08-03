@@ -34,7 +34,7 @@ bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(samp
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped None --outMultimapperOrder Random --outSAMattrIHstart 0 \
 	--chimSegmentMin 12 --chimJunctionOverhangMin 12 --chimSegmentReadGapMax parameter 3 \
-	--quantMode TranscriptomeSAM && \
+	--quantMode GeneCounts && \
 	ln star/secondpass/$*.Aligned.sortedByCoord.out.bam $@")
 
 include usb-modules/fastq_tools/fastq.mk

@@ -1,4 +1,5 @@
 include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
 LOGDIR ?= log/facets.$(NOW)
 
