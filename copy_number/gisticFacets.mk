@@ -1,4 +1,4 @@
-include modules/Makefile.inc
+include usb-modules/Makefile.inc
 
 LOGDIR = log/gisticFacets.$(NOW)
 
