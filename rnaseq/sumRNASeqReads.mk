@@ -1,13 +1,13 @@
 # This module deals with summarizing RNA-Seq reads over ensembl models and generating RPKM.  It requires that pre-processing of the bam files are done by GATK as input.
 # Authors: Fong Chun Chan <fongchunchan@gmail.com> & Raymond Lim <raylim@mm.st>
-include modules/Makefile.inc
-include modules/variant_callers/gatk.inc
+include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
 LOGDIR = log/sumReads.$(NOW)
 
-SUM_READS_RSCRIPT = ${RSCRIPT} modules/rnaseq/summarizeRNASeqReads.R
-SUM_EXONS_RSCRIPT = ${RSCRIPT} modules/rnaseq/summarizeRNASeqReadsByExon.R
-SUM_INTRONS_RSCRIPT = ${RSCRIPT} modules/rnaseq/summarizeRNASeqReadsByIntron.R
+SUM_READS_RSCRIPT =  usb-modules/rnaseq/summarizeRNASeqReads.R
+SUM_EXONS_RSCRIPT =  usb-modules/rnaseq/summarizeRNASeqReadsByExon.R
+SUM_INTRONS_RSCRIPT =  usb-modules/rnaseq/summarizeRNASeqReadsByIntron.R
 
 SUM_READS_OPTS =
 
@@ -28,10 +28,10 @@ all : $(foreach type,$(SUM_TYPE),$(foreach sample,$(SAMPLES),sumreads/$(sample).
 #sumintrons : $(foreach sample,$(SAMPLES),sumintrons/$(sample).sumintrons.txt)
 
 sumreads/%.sumreads.byGene.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,30G,90G,"$(SUM_READS_RSCRIPT) -g $(REF) --outFile $@ $(SUM_READS_OPTS) $<")
+	$(call LSCRIPT_MEM,30G,02:59:59,"$(LOAD_R_MODULE); $(RSCRIPT) $(SUM_READS_RSCRIPT) -g $(REF) --outFile $@ $(SUM_READS_OPTS) $<")
 
 sumreads/%.sumreads.byExon.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,20G,90G,"$(SUM_EXONS_RSCRIPT) --txdb $(ENSEMBL_TXDB) --outFile $@ $(SUM_READS_OPTS) $<")
+	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_R_MODULE); $(RSCRIPT) $(SUM_EXONS_RSCRIPT) --txdb $(ENSEMBL_TXDB) --outFile $@ $(SUM_READS_OPTS) $<")
 
 sumreads/geneRPKM.txt : $(foreach sample,$(SAMPLES),sumreads/$(sample).sumreads.byGene.txt)
 	cut -f 2 $< > $@; \
@@ -50,4 +50,4 @@ sumreads/exonCounts.txt : $(foreach sample,$(SAMPLES),sumreads/$(sample).sumread
 	for x in $^; do sample=`echo $$x | sed 's/.*\///; s/\..*//'`; cut -f 4 $$x | sed "s/exonCount/$$sample/" | paste $@ - > $@.tmp; mv $@.tmp $@; done
 
 
-include modules/bam_tools/processBam.mk
+include usb-modules/bam_tools/processBam.mk
