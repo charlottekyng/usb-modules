@@ -9,7 +9,7 @@ LOGDIR ?= log/star.$(NOW)
 ALIGNER := star
 include usb-modules/aligners/align.inc
 
-star : $(foreach sample,$(SAMPLES),bam/$(sample).bam)
+star : $(foreach sample,$(SAMPLES),bam/$(sample).bam) star/all.ReadsPerGene.out.tab
 
 star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz
 	$(call LSCRIPT_PARALLEL_MEM,8,4G,00:29:59,"$(MKDIR) star star/firstpass/; \
@@ -36,6 +36,11 @@ bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(samp
 	--chimSegmentMin 12 --chimJunctionOverhangMin 12 --chimSegmentReadGapMax parameter 3 \
 	--quantMode GeneCounts && \
 	ln star/secondpass/$*.Aligned.sortedByCoord.out.bam $@")
+
+star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),star/secondpass/$(sample).ReadsPerGene.out.tab)
+	perl -p -e "s/N_unmapped/GENE\t\t\t\nN_unmapped/;" $< | cut -f 1 > $@; \
+	for x in $^; do sample=`echo $$x | sed 's/.*\///; s/\..*//'`; perl -p -e "s/N_unmapped/\t$$sample\t\t\nN_unmapped/;" $$x \
+	| cut -f 2 | paste $@ - > $@.tmp; mv $@.tmp $@; done
 
 include usb-modules/fastq_tools/fastq.mk
 include usb-modules/bam_tools/processBam.mk
