@@ -536,6 +536,17 @@ FACETS_PLOT_GENE_CN_OPTS = --sampleColumnPostFix '_EM'
 
 ANN_FACETS ?= false
 
+#################################
+########## MutSigCV #############
+MUTSIGCV_DIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/MutSigCV_1.4
+MUTSIGCV ?= $(MUTSIGCV_DIR)/run_MutSigCV.sh
+MCR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/MCR_R2013a_glnxa64/v81/
+MUTSIGCV_REF_DIR ?= /scicore/home/terracci/ngkiuy/ref_nobackup/MutSigCV
+MUTSIGCV_COVERAGE_REF ?= $(MUTSIGCV_REF_DIR)/exome_full192.coverage.txt
+MUTSIGCV_COV_REF ?= $(MUTSIGCV_REF_DIR)/gene.covariates.txt
+MUTSIGCV_DICT_REF ?= $(MUTSIGCV_REF_DIR)/mutation_type_dictionary_file.txt
+MUTSIGCV_SEQ_REF_DIR ?= $(MUTSIGCV_REF_DIR)/chr_files_hg19/
+
 ##################################
 ########## Gene expression #######
 ##################################

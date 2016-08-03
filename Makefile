@@ -376,4 +376,8 @@ TARGETS += ann_ext_vcf
 ann_ext_vcf: 
 	$(call RUN_MAKE,modules/bam_tools/mergeBam.mk)
 
+TARGETS += mutsigcv
+mutsigcv :
+	$(call RUN_MAKE,usb-modules/siggenes/mutsigcv.mk)
+
 .PHONY : $(TARGETS)
