@@ -183,7 +183,7 @@ nfuse_wgss_wtss :
 
 TARGETS += sum_reads
 sum_reads :
-	$(call RUN_MAKE,modules/rnaseq/sumRNASeqReads.mk)
+	$(call RUN_MAKE,usb-modules/rnaseq/sumRNASeqReads.mk)
 
 
 #TARGETS += exomecnv
