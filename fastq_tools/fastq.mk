@@ -20,11 +20,9 @@ ifdef FASTQ_FILTER
 ifeq ($(PAIRED_END),true)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz unprocessed_fastq/%.2.$(FASTQ_FILTER).fastq.gz
 	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz
-	#&& cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
 else
 fastq/%.1.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz
 	$(INIT) ln $< fastq/$*.1.fastq.gz
-	#&& cp $< fastq/$*.1.fastq.gz
 endif
 else
 ifeq ($(PAIRED_END),true)
