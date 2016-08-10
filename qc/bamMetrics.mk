@@ -19,7 +19,8 @@ ifeq ($(CAPTURE_METHOD),PCR)
 bam_metrics : amplicon_metrics oxog flagstats alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),RNA)
-bam_metrics : rna_metrics oxog_wgs flagstats alignment_summary_metrics dup
+bam_metrics : rna_metrics flagstats alignment_summary_metrics
+#oxog_wgs flagstats alignment_summary_metrics dup
 endif
 
 hs_metrics : metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
@@ -63,7 +64,8 @@ metrics/%.wgs_metrics.txt : bam/%.bam bam/%.bam.bai
 		INPUT=$< OUTPUT=$@ COUNT_UNPAIRED=true")
 
 metrics/%.rnaseq_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_RNASEQ_METRICS,8G) \
+	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_R_MODULE); $(LOAD_JAVA8_MODULE); \
+		$(call COLLECT_RNASEQ_METRICS,8G) \
 		REF_FLAT=$(GENE_REF_FLAT) RIBOSOMAL_INTERVALS=$(RIBOSOMAL_INTERVALS) \
 		STRAND_SPECIFICITY=$(STRAND_SPECIFICITY) \
 		INPUT=$< OUTPUT=$@ CHART_OUTPUT=$@.pdf VERBOSITY=ERROR")
@@ -166,7 +168,7 @@ metrics/all.normalized_coverage.rnaseq_metrics.txt : $(foreach sample,$(SAMPLES)
 	grep -A101 '^normalized_position' $< | cut -f1 > $@ && \
 	for i in $^; do sample=`echo $$i | sed 's:.*/::; s/\..*//'`; \
 		grep -A101 '^normalized_position' $$i | cut -f2 | sed "s/All_Reads/$$sample/" | paste $@ - > $@.tmp && mv $@.tmp $@; \
-	done'
+	done;
 
 metrics/all.rnaseq_report/index.html : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
 	$(INIT) $(LOAD_R_MODULE); $(PLOT_RNASEQ_METRICS) --outDir $(@D) $^

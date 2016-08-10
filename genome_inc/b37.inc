@@ -78,8 +78,8 @@ REF_HOUSEKEEPING_GENE_BED = $(ANN_DIR)/share/reference/hg19.HouseKeepingGenes.be
 
 ENSEMBL_TXDB = $(ANN_DIR)/hsapiens_ensembl_biomart.sqlite
 
-RIBOSOMAL_INTERVALS = $(ANN_DIR)/rrna_intervals.txt
-GENE_REF_FLAT = $(ANN_DIR)/b37_genes.refFlat.txt
+RIBOSOMAL_INTERVALS ?= $(ANN_DIR)/ribosomalRNA.interval_list
+GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
 
 SNP_TXT = $(ANN_DIR)/b37_snp137.SingleDiNucl.1based.nochr.txt
 

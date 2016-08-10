@@ -89,9 +89,9 @@ TARGETS += bam_metrics
 bam_metrics :
 	$(call RUN_MAKE,usb-modules/qc/bamMetrics.mk)
 
-#TARGETS += rnaseq_metrics
-#rnaseq_metrics :
-#	$(call RUN_MAKE,modules/qc/rnaseqMetrics.mk)
+TARGETS += rnaseq_metrics
+rnaseq_metrics :
+	$(call RUN_MAKE,usb-modules/qc/rnaseqMetrics.mk)
 
 TARGETS += fastqc
 fastqc :
