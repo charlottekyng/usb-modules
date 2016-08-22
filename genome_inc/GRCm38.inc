@@ -1,48 +1,43 @@
 # vim: set ft=make:
 ifndef GRCM38_INC
 REF = GRCm38
-TOPHAT_REF = GRCm38
-REF_DIR = $(HOME)/share/reference
 
-INTEGRATE_ANN = $(REF_DIR)/mm10_annot.ucsc.txt
-INTEGRATE_BWTS =$(REF_DIR)/Mus_musculus_GRCm38/bwts
+REF_DIR = $(HOME)/ref_nobackup
 
-GENES_GTF = $(REF_DIR)/Mus_musculus/NCBI/$(TOPHAT_REF)/Annotation/Genes/genes.gtf
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
+ifeq ($(PANEL),AGILENT_ALLEXON)
+TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_TargetGeneSymbols.txt
+endif
+endif
 
-REF_FASTA := $(REF_DIR)/Mus_musculus_GRCm38/Mus_musculus.GRCm38.71.dna.chromosome.genome.fa
-REF_DICT := $(REF_DIR)/Mus_musculus_GRCm38/Mus_musculus.GRCm38.71.dna.chromosome.genome.dict
+ifeq ($(findstring bed,$(TARGETS_FILE_INTERVALS)),bed)
+CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
+else
+CHROMOSOMES ?= $(shell seq 1 19) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
+endif
+
+### GENERAL REFERENCES ###
+
+REF_FASTA := $(REF_DIR)/genomes/GRCm38_68.fa
+REF_DICT := $(REF_DIR)/genomes/GRCm38_68.fa.dict
+
 SNP_EFF_GENOME = GRCm38.79 # == mm10
-DBSNP := $(REF_DIR)/mgp.v5.merged.snps_all.dbSNP142.vcf.gz
-MGP_SNP_DBSNP := $(DBSNP)
-MGP_INDEL_DBSNP := $(REF_DIR)/mgp.v5.merged.indels.dbSNP142.normed.vcf.gz
+DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.dbSNP142.vcf.gz
+KNOWN_INDELS := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.indels.dbSNP142.normed.vcf.gz
 
-EXOME_BED = $(REF_DIR)/mus_musculus_known_genes_exons_GRCm38.bed
-EXOME_BED_NOHEADER = $(REF_DIR)/mus_musculus_known_genes_exons_GRCm38_noheader.bed
-
-FREEC_REF := $(REF_DIR)/Mus_musculus_GRCm38/freec
-CHR_LEN = $(REF_DIR)/Mus_musculus_GRCm38/mm10.len
-
-BOWTIE_REF = $(REF_DIR)/Mus_musculus_GRCm38/Mus_musculus.GRCm38.71.dna.chromosome.genome
-
-ENSEMBL_TXDB = $(REF_DIR)/mus_musculus_ensembl_biomart.2014-04-28.sqlite
-
+#INTEGRATE_ANN = $(REF_DIR)/mm10_annot.ucsc.txt
+#INTEGRATE_BWTS =$(REF_DIR)/Mus_musculus_GRCm38/bwts
+#GENES_GTF = $(REF_DIR)/Mus_musculus/NCBI/$(TOPHAT_REF)/Annotation/Genes/genes.gtf
+#CHR_LEN = $(REF_DIR)/Mus_musculus_GRCm38/mm10.len
+#BOWTIE_REF = $(REF_DIR)/Mus_musculus_GRCm38/Mus_musculus.GRCm38.71.dna.chromosome.genome
+#ENSEMBL_TXDB = $(REF_DIR)/mus_musculus_ensembl_biomart.2014-04-28.sqlite
 #TXDB = $(HOME)/ensmusg70.08032013.sqlite
 
-RIBOSOMAL_INTERVALS = $(REF_DIR)/mm10_rrna_intervals.txt
-GENE_REF_FLAT = $(REF_DIR)/mm10_genes.refFlat.txt
-
-EXOME ?= false
-ifeq ($(EXOME),true)
-TARGETS_FILE = $(EXOME_BED_NOHEADER)
-QUALIMAP_TARGETS_FILE = $(TARGETS_FILE)
-endif
-
-ifneq ($(and $(TARGETS_FILE),$(findstring false,$(EXOME))),)
-CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE) | cut -f1 | sort | uniq)
-else
-CHROMOSOMES := $(shell seq 1 19) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
-endif
-
+#RIBOSOMAL_INTERVALS = $(REF_DIR)/mm10_rrna_intervals.txt
+#GENE_REF_FLAT = $(REF_DIR)/mm10_genes.refFlat.txt
 
 endif
 GRCM38_INC = true
