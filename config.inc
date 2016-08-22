@@ -44,11 +44,23 @@ BAM_NO_FILTER ?= true
 BAM_NO_RECAL ?= true
 BAM_NO_REALN ?= true
 else
+ifeq ($(CAPTURE_METHOD),PCR)
+BAM_DUP_TYPE ?= none
+BAM_NO_FILTER ?= true
+BAM_NO_RECAL ?= true
+BAM_NO_REALN ?= true
+else
 BAM_DUP_TYPE ?= markdup
 BAM_NO_FILTER ?= false
 BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= false
 endif
+BAM_DUP_TYPE ?= markdup
+BAM_NO_FILTER ?= false
+BAM_NO_RECAL ?= false
+BAM_NO_REALN ?= false
+endif
+
 INCLUDE_CHR_Y ?= false
 
 ### VARIANT FILTERS
