@@ -16,7 +16,7 @@ ifeq ($(CAPTURE_METHOD),BAITS)
 bam_metrics : hs_metrics oxog flagstats alignment_summary_metrics dup
 endif
 ifeq ($(CAPTURE_METHOD),PCR)
-bam_metrics : amplicon_metrics oxog flagstats alignment_summary_metrics dup
+bam_metrics : amplicon_metrics flagstats alignment_summary_metrics
 endif
 ifeq ($(CAPTURE_METHOD),RNA)
 bam_metrics : rna_metrics flagstats alignment_summary_metrics

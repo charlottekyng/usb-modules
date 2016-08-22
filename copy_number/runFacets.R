@@ -16,16 +16,17 @@ if (!interactive()) {
 }
 
 optList <- list(
-		make_option("--seed", default = 1234),
-                make_option("--snp_nbhd", default = 250, type = 'integer', help = "window size"),
-                make_option("--pre_cval", default = 50, type = 'integer', help = "pre-processing critical value"),
-                make_option("--cval1", default = 150, type = 'integer', help = "critical value for estimating diploid log Ratio"),
-                make_option("--cval2", default = 50, type = 'integer', help = "starting critical value for segmentation (increases by 10 until success)"),
-                make_option("--max_cval", default = 5000, type = 'integer', help = "maximum critical value for segmentation (increases by 10 until success)"),
-                make_option("--min_nhet", default = 25, type = 'integer', help = "minimum number of heterozygote snps in a segment used for bivariate t-statistic during clustering of segment"),
-                make_option("--gene_loc_file", default = '~/share/reference/IMPACT410_genes_for_copynumber.txt', type = 'character', help = "file containing gene locations"),
-                make_option("--genome", default = 'b37', type = 'character', help = "genome of counts file"),
-                make_option("--outPrefix", default = NULL, help = "output prefix"))
+	make_option("--seed", default = 1234),
+	make_option("--snp_nbhd", default = 250, type = 'integer', help = "window size"),
+	make_option("--pre_cval", default = 50, type = 'integer', help = "pre-processing critical value"),
+	make_option("--cval1", default = 150, type = 'integer', help = "critical value for estimating diploid log Ratio"),
+	make_option("--cval2", default = 50, type = 'integer', help = "starting critical value for segmentation (increases by 10 until success)"),
+	make_option("--max_cval", default = 5000, type = 'integer', help = "maximum critical value for segmentation (increases by 10 until success)"),
+	make_option("--min_nhet", default = 25, type = 'integer', help = "minimum number of heterozygote snps in a segment used for bivariate t-statistic during clustering of segment"),
+	make_option("--gene_loc_file", default = '~/share/reference/IMPACT410_genes_for_copynumber.txt', type = 'character', help = "file containing gene locations"),
+	make_option("--genome", default = 'b37', type = 'character', help = "genome of counts file"),
+#	make_option("--chroms", default=NULL, type='character', help="chromosomes"),
+	make_option("--outPrefix", default = NULL, help = "output prefix"))
 
 parser <- OptionParser(usage = "%prog [options] [tumor-normal base counts file]", option_list = optList);
 
@@ -48,29 +49,13 @@ tumorName <- baseCountFile %>% sub('.*/', '', .) %>% sub('_.*', '', .)
 normalName <- baseCountFile %>% sub('.*/', '', .) %>% sub('.*_', '', .) %>% sub('\\..*', '', .)
 
 switch(opt$genome,
-       b37={
-           data(hg19gcpct)
-           chromLevels=c(1:22, "X")
-       },
-       GRCh37={
-           data(hg19gcpct)
-           chromLevels=c(1:22, "X")
-       },
-       hg19={
-           data(hg19gcpct)
-           chromLevels=c(1:22, "X")
-#           chromLevels=paste("chr", c(1:22, "X"), sep = '')
-       },
-       mm9={
-           data(mm9gcpct)
-           chromLevels=c(1:19, "X")
-#           chromLevels=paste("chr", c(1:19, "X", "Y"), sep = '')
-       },
-       {
-           stop(paste("Invalid Genome",opt$genome))
-       })
+       b37={ data(hg19gcpct); chromLevels=c(1:22, "X") },
+       GRCh37={ data(hg19gcpct); chromLevels=c(1:22, "X") },
+       hg19={ data(hg19gcpct); chromLevels=c(1:22, "X") },
+       mm9={ data(mm9gcpct); chromLevels=c(1:19, "X") },
+       { stop(paste("Invalid Genome",opt$genome)) })
 
-
+#if(!is.null(chroms)) { chromLevels=chroms; }
 
 buildData=installed.packages()["facets",]
 cat("#Module Info\n")
@@ -80,6 +65,7 @@ for(fi in c("Package","LibPath","Version","Built")){
 version=buildData["Version"]
 cat("\n")
 
+chromLevels=unique(read.delim(gzfile(baseCountFile), as.is=T,sep=" ")[,1])
 preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, cval = opt$pre_cval, chromlevels = chromLevels)
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)
 

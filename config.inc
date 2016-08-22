@@ -514,7 +514,7 @@ FACETS_CVAL1 ?= 150
 FACETS_CVAL2 ?= 50
 FACETS_MIN_NHET ?= 25
 FACETS_GATK_VARIANTS ?= false
-FACETS_OPTS = --cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)
+FACETS_OPTS = --cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL) 
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
 
 FACETS_UNION_GATK_DBSNP ?= false
