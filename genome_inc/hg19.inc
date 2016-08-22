@@ -15,6 +15,10 @@ ifeq ($(PANEL),EXOME)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.bed
 endif
+ifeq ($(PANEL),HCC)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+endif
 endif
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
