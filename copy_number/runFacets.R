@@ -131,7 +131,8 @@ cat("# loglik =", fit$loglik, "\n", file = ff, append = T)
 #plotSample(out2, fit)
 #dev.off()
 
-pdf(file = str_c(opt$outPrefix, ".cncf.pdf"), height = 6, width = 9)
+if(sum(out$out$num.mark)<=10000) { height=4; width=7} else { height=6; width=9)
+pdf(file = str_c(opt$outPrefix, ".cncf.pdf"), height = height, width = width)
 plotSample(out2, fit, chromlevels = chromLevels)
 dev.off()
 
