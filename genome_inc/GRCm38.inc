@@ -6,10 +6,10 @@ REF_DIR = $(HOME)/ref_nobackup
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(PANEL),AGILENT_ALLEXON)
-TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Covered_noHeader_noAnn.bed
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_TargetGeneSymbols.txt
+TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/GRCm38/S0276129_Covered_noAnn_noHeader_GRCm37liftover.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/GRCm38/S0276129_Padded_noAnn_noHeader_GRCm37liftover.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/GRCm38/S0276129_Padded_noAnn_noHeader_GRCm37liftover.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/GRCm38/S0276129_Targets.txt
 endif
 endif
 
