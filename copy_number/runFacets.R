@@ -132,7 +132,7 @@ cat("# loglik =", fit$loglik, "\n", file = ff, append = T)
 #dev.off()
 
 pdf(file = str_c(opt$outPrefix, ".cncf.pdf"), height = 6, width = 9)
-plotSample(out2, fit)
+plotSample(out2, fit, chromlevels = chromLevels)
 dev.off()
 
 #tab <- cbind(out2$IGV[, 1:4], fit$cncf[, 2:ncol(fit$cncf)])
