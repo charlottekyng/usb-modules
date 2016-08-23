@@ -18,6 +18,7 @@ endif
 ifeq ($(PANEL),HCC)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
 endif
 endif
 
