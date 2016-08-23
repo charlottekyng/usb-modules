@@ -31,7 +31,8 @@ facets/vcf/targets_dbsnp.vcf.gz : $(TARGETS_FILE)
 
 define snp-pileup-tumor-normal
 facets/snp_pileup/$1_$2.bc.gz : bam/$1.bam bam/$2.bam
-	$$(call LSCRIPT_CHECK_MEM,3G,00:59:59,"$$(LOAD_PERL_MODULE); $$(GET_BASE_COUNTS) bam/$2.bam bam/$1.bam $$@ $$(GET_BASE_COUNTS_PARAMS)")
+	$$(call LSCRIPT_CHECK_MEM,3G,00:59:59,"$$(LOAD_PERL_MODULE); $$(GET_BASE_COUNTS) bam/$2.bam bam/$1.bam $$@ \
+	$$(REF_FASTA) $$(TARGETS_FILE_INTERVALS) $$(GET_BASE_COUNTS_MIN_DEPTH) $$(GET_BASE_COUNTS_MAX_DEPTH)")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
@@ -39,7 +40,9 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(p
 	
 
 facets/cncf/%.cncf.txt : facets/snp_pileup/%.bc.gz
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) $(FACETS_OPTS) --outPrefix $(@D)/$* $<")
+	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) \
+	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
+	--outPrefix $(@D)/$* $<")
 
 facets/geneCN.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
 	$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$(LOAD_R_MODULE); $(FACETS_GENE_CN) $(FACETS_GENE_CN_OPTS) --outFile $@ $^")

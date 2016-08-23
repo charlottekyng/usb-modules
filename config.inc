@@ -519,14 +519,14 @@ CLASSIFY_PATHOGENICITY = $(PYTHON) modules/vcf_tools/classify_pathogenicity_vcf.
 ##################################
 
 GET_BASE_COUNTS = $(PERL) usb-modules/copy_number/facets-snp-pileup.pl
-GET_BASE_COUNTS_PARAMS = $(REF_FASTA) $(TARGETS_FILE_INTERVALS) 25 1000
+GET_BASE_COUNTS_MIN_DEPTH ?= 25
+GET_BASE_COUNTS_MAX_DEPTH ?= 1000
 
 FACETS_PRE_CVAL ?= 50
 FACETS_CVAL1 ?= 150
 FACETS_CVAL2 ?= 50
 FACETS_MIN_NHET ?= 25
 FACETS_GATK_VARIANTS ?= false
-FACETS_OPTS = --cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL) 
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
 
 FACETS_UNION_GATK_DBSNP ?= false
@@ -547,6 +547,21 @@ FACETS_PLOT_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCNPlot.R
 FACETS_PLOT_GENE_CN_OPTS = --sampleColumnPostFix '_EM'
 
 ANN_FACETS ?= false
+
+CBS_SEGMENTCNV = $(RSCRIPT) usb-modules/copy_number/segmentVarscanCNV.R
+
+CBS_SEG_SD ?= 2
+CBS_SEG_SMOOTH ?= 10
+CBS_SEG_ALPHA ?= 0.000001
+
+CBS_MULTIPARAM_SEGMENT ?= false
+CBS_SEG_SDS ?= 1.5 2 2.5 3
+CBS_SEG_SMOOTHS ?= 5 10
+CBS_SEG_ALPHAS ?= 0.01 0.0001 0.000001 0.0000000001
+
+VARSCAN_GENE_CN = $(RSCRIPT) usb-modules/copy_number/varscanCNVGeneCN.R
+VARSCAN_GENE_CN_OPTS = $(if $(GENES_FILE),--genesFile $(GENES_FILE))
+CBS_MPILEUP_OPTS = -q 1 $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVALS))
 
 #################################
 ########## MutSigCV #############

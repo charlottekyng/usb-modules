@@ -12,7 +12,8 @@ optList <- list(
                 make_option("--smoothRegion", default = 10, type = "double", action = "store", help ="smooth region"),
                 make_option("--outlierSDscale", default = 2.5, type = "double", action = "store", help ="outlier SD scale"),
                 make_option("--undoSD", default = 2, type = "double", action = "store", help ="undo SD"),
-                make_option("--prefix", default = NULL, type = "character", action = "store", help ="Output prefix (required)"))
+                make_option("--prefix", default = NULL, type = "character", action = "store", help ="Output prefix (required)"),
+		make_option("--perchromplots", default = FALSE, type="logical", action = "store", help = "should be make per chrom plots"))
 
 parser <- OptionParser(usage = "%prog [options] inDir", option_list = optList);
 arguments <- parse_args(parser, positional_arguments = T);
@@ -35,6 +36,7 @@ chroms <- c(1:22, "X")
 cn <- read.table(cnFile, header=T, as.is=T)
 cn[,1] <- gsub("chr", "", cn[,1])
 keep <- which(cn[,1] %in% chroms)
+chroms <- unique(cn[keep,1])
 if (length(rm) > 0) { cn <- cn[keep,]}
 cn[which(cn[,1]=="X"),1] <- 23
 cn[,1] <- as.numeric(cn[,1])
@@ -60,10 +62,15 @@ write.table(collapsedData, file = paste(opt$prefix, ".collapsed_seg.txt", sep = 
 
 ylim <- c(min(as.numeric(Data[,4])), max(as.numeric(Data[,4])))
 ylim[2] <- ylim[2]+0.5
+
+rlechr <- rle(Data$Chr)
+
 pdf(paste(opt$prefix,".seg_plot.pdf", sep=""), height=5, width=18)
 plot(as.numeric(Data[,4]), pch=20, xlab='Position', ylab="Copy number", xaxt='n', ylim=ylim)
 points(as.numeric(Data[,5]), pch = 20, col = 'blue')
-abline(v=cumsum(rle(Data$Chr)$lengths), col="red", lty=3)
+abline(v=cumsum(rlechr$lengths), col="red", lty=3)
+abline(h=0, col="darkgrey", lty=3)
+text(cumsum(rlechr$lengths)-(rlechr$lengths/2), ylim[2]-0.25, rlechr$values)
 
 if (!is.null(opt$centromereFile)) {
     cen <- read.table(opt$centromereFile, sep = '\t')
@@ -73,7 +80,6 @@ if (!is.null(opt$centromereFile)) {
         if (!is.na(index)) {
             abline(v=index, col="darkgrey", lty=3)
         }
-        text(cumsum(rle(Data$Chromosome)$lengths)-((rle(Data$Chromosome)$lengths)/2), ylim[2]-0.25)
     }
 }
 dev.off()
@@ -82,6 +88,8 @@ png(paste(opt$prefix,".seg_plot.png", sep=""), type = 'cairo-png', height=400, w
 plot(as.numeric(Data[,4]), pch=20, xlab='Position', ylab="Copy number", xaxt='n', ylim=ylim)
 points(as.numeric(Data[,5]), pch = 20, col = 'blue')
 abline(v=cumsum(rle(Data$Chr)$lengths), col="red", lty=3)
+abline(h=0, col="darkgrey", lty=3)
+text(cumsum(rlechr$lengths)-(rlechr$lengths/2),	ylim[2]-0.25, rlechr$values)
 
 if (!is.null(opt$centromereFile)) {
     cen <- read.table(opt$centromereFile, sep = '\t')
@@ -91,12 +99,11 @@ if (!is.null(opt$centromereFile)) {
         if (!is.na(index)) {
             abline(v=index, col="darkgrey", lty=3)
         }
-        text(cumsum(rle(Data$Chromosome)$lengths)-((rle(Data$Chromosome)$lengths)/2), ylim[2]-0.25)
     }
 }
 dev.off()
 
-
+if(opt$perchromplots) {
 if (!is.null(opt$centromereFile)) {
     cen <- read.table(opt$centromereFile, sep = '\t')
 }
@@ -123,5 +130,5 @@ for (chr in chroms) {
         dev.off()
     }
 }
-
+}
 
