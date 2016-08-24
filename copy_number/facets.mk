@@ -32,7 +32,7 @@ facets/vcf/targets_dbsnp.vcf.gz : $(TARGETS_FILE)
 define snp-pileup-tumor-normal
 facets/snp_pileup/$1_$2.bc.gz : bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_CHECK_MEM,3G,00:59:59,"$$(LOAD_PERL_MODULE); $$(GET_BASE_COUNTS) bam/$2.bam bam/$1.bam $$@ \
-	$$(REF_FASTA) $$(TARGETS_FILE_INTERVALS) $$(GET_BASE_COUNTS_MIN_DEPTH) $$(GET_BASE_COUNTS_MAX_DEPTH)")
+	$$(REF_FASTA) $$(TARGETS_FILE_INTERVALS) $$(GET_BASE_COUNTS_MIN_DEPTH) $$(GET_BASE_COUNTS_MAX_DEPTH) $$(GET_BASE_COUNTS_POS)")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 

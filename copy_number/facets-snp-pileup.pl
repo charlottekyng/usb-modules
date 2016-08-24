@@ -15,6 +15,7 @@ my $reference  = $ARGV[3];
 my $bedfile    = $ARGV[4];
 my $min_ndepth = $ARGV[5];
 my $max_ndepth = $ARGV[6];
+my $snplocprefix = $ARGV[7];
 
 # prefix for the pileup command
 #my $cmdprefix = 'source /etc/profile.d/lmod.sh; module purge; source $HOME/.bashrc; module load SAMtools/1.3-goolf-1.7.20; ';
@@ -23,8 +24,6 @@ $cmdprefix .= "samtools mpileup -q15 -Q20 -B -f $reference -l $bedfile -r ";
 
 # chromosomes
 my @chroms = (1..22, "X", "Y");
-
-my $snplocprefix = "/scicore/home/terracci/ngkiuy/ref_nobackup/facets/pileup" . "/snplocs_chr";
 
 # file prefix for snp location data
 open(REF, $reference) or die "Could not open $reference";

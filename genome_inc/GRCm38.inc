@@ -28,6 +28,8 @@ SNP_EFF_GENOME = GRCm38.79 # == mm10
 DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.dbSNP142.vcf.gz
 KNOWN_INDELS := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.indels.dbSNP142.normed.vcf.gz
 
+GET_BASE_COUNTS_POS ?= $(REF_DIR)/facets/pileup_GRCm38/snplocs_chr
+
 #INTEGRATE_ANN = $(REF_DIR)/mm10_annot.ucsc.txt
 #INTEGRATE_BWTS =$(REF_DIR)/Mus_musculus_GRCm38/bwts
 #GENES_GTF = $(REF_DIR)/Mus_musculus/NCBI/$(TOPHAT_REF)/Annotation/Genes/genes.gtf

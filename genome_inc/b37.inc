@@ -70,6 +70,8 @@ CANCER_HOTSPOT_VCF = $(ANN_DIR)/hotspot.vcf
 #FALSE_POSITIVE_BED = $(HOME)/share/reference/fuentes_blacklist.include_cosmic.hg19.bed
 #ENCODE_BED = $(HOME)/share/reference/wgEncodeDacMapabilityConsensusExcludable.include_cosmic.bed
 
+GET_BASE_COUNTS_POS ?= $(REF_DIR)/facets/pileup/snplocs_chr
+
 CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37.txt
 
 KNOWN_CNVS = $(ANN_DIR)/GRCh37_hg19_variants_2013-07-23.txt
