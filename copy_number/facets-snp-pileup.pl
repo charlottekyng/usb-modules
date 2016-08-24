@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Cwd 'abs_path';
 use File::Basename;
+use List::MoreUtils qw(uniq);
 
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # x    define needed variables    x
@@ -23,7 +24,14 @@ my $cmdprefix = 'module load SAMtools/1.3-goolf-1.7.20; ';
 $cmdprefix .= "samtools mpileup -q15 -Q20 -B -f $reference -l $bedfile -r ";
 
 # chromosomes
-my @chroms = (1..22, "X", "Y");
+my @chroms = ();
+open(BED, $bedfile) or die "Could not open $bedfile";
+while (my $blah=<BED>) {
+	my @chrom = split(/\t/, $blah);
+	push @chroms, $chrom[0];
+}
+@chroms = uniq @chroms;
+print STDERR join ',',@chroms;
 
 # file prefix for snp location data
 open(REF, $reference) or die "Could not open $reference";
