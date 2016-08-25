@@ -53,6 +53,7 @@ switch(opt$genome,
        GRCh37={ data(hg19gcpct); chromLevels=c(1:22, "X") },
        hg19={ data(hg19gcpct); chromLevels=c(1:22, "X") },
        mm9={ data(mm9gcpct); chromLevels=c(1:19, "X") },
+       GRCm38={data(mm10gcpct); chromLevels=c(1:19, "X")},
        { stop(paste("Invalid Genome",opt$genome)) })
 
 #if(!is.null(chroms)) { chromLevels=chroms; }
@@ -65,7 +66,10 @@ for(fi in c("Package","LibPath","Version","Built")){
 version=buildData["Version"]
 cat("\n")
 
-chromLevels=unique(read.delim(gzfile(baseCountFile), as.is=T,sep=" ")[,1])
+chromLevels_bed=sort(unique(read.delim(gzfile(baseCountFile), as.is=T,sep=" ")[,1]))
+chromLevels <- chromLevels[which(chromLevels %in% chromLevels_bed)]
+print (chromLevels)
+
 preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, cval = opt$pre_cval, chromlevels = chromLevels)
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)
 
@@ -131,7 +135,7 @@ cat("# loglik =", fit$loglik, "\n", file = ff, append = T)
 #plotSample(out2, fit)
 #dev.off()
 
-if(sum(out$out$num.mark)<=10000) { height=4; width=7} else { height=6; width=9)
+if(sum(out2$out$num.mark)<=10000) { height=4; width=7} else { height=6; width=9}
 pdf(file = str_c(opt$outPrefix, ".cncf.pdf"), height = height, width = width)
 plotSample(out2, fit, chromlevels = chromLevels)
 dev.off()

@@ -1,6 +1,20 @@
+#SEQ_PLATFORM = ILLUMINA
+#REF = GRCm38
+#PANEL = AGILENT_ALLEXON
+#CAPTURE_METHOD = BAITS
+
+#NUM_ATTEMPTS = 1
+#ANN_FACETS = false
+#FACETS_GATK_VARIANTS = true
+
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
 
+ANNOTATE_VARIANTS ?= false
+ANNOTATE_VARIANTS= false
+$(info ANNOTATE_VARIANTS $(ANNOTATE_VARIANTS))
+include usb-modules/variant_callers/variantCaller.inc
+$(info ANNOTATE_VARIANTS $(ANNOTATE_VARIANTS))
 LOGDIR ?= log/facets.$(NOW)
 
 .SECONDARY:
@@ -10,29 +24,31 @@ LOGDIR ?= log/facets.$(NOW)
 facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt) facets/geneCN.txt
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
-facets/vcf/dbsnp_het_gatk.snps.vcf : $(FACETS_DBSNP:.gz=) $(foreach sample,$(SAMPLES),gatk/vcf/$(sample).variants.snps.het.pass.vcf) 
-	$(call LSCRIPT_CHECK_MEM,4G,6G,"$(call GATK_MEM,3G) -T CombineVariants \
-		--minimalVCF $(foreach i,$^, --variant $i) -R $(REF_FASTA) -o $@")
+ifeq ($(FACETS_GATK_VARIANTS),true)
+GET_BASE_COUNTS_POS2 = facets/base_pos/snploc_chr
+else
+GET_BASE_COUNTS_POS2 = GET_BASE_COUNTS_POS
+endif
 
-# flag homozygous calls
-%.het.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,9G,12G,"$(call GATK_MEM,8G) -V $< -T VariantFiltration -R $(REF_FASTA) \
-		--genotypeFilterName 'hom' --genotypeFilterExpression 'isHet == 0' -o $@")
+#facets/base_pos/gatk.vcf : $(foreach normalsample,$(NORMAL_SAMPLES),vcf/$(normalsample).$(call VCF_SUFFIXES,gatk_snps).vcf)
+facets/base_pos/gatk.vcf : $(foreach normalsample,$(NORMAL_SAMPLES),vcf/$(normalsample).gatk_snps.vcf)
+	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call COMBINE_VARIANTS,21G) \
+		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
 
-%.vcf.gz : %.vcf
-	$(INIT) cat $< | gzip -c > $@
-
-%.vcf : %.vcf.gz
-	$(INIT) zcat $< > $@
-
-# no flag target definitions
-facets/vcf/targets_dbsnp.vcf.gz : $(TARGETS_FILE)
-	$(INIT) $(BEDTOOLS) intersect -header -u -a $(DBSNP) -b $< | gzip -c > $@
+define base-count-pos
+facets/base_pos/snploc_chr$1 : facets/base_pos/gatk.vcf $$(GET_BASE_COUNTS_POS)$1
+	$(INIT) \
+	$(MKDIR) facets/basepos/ && \
+	cut -f1 $< | grep -v "#" > $@ && \
+	cat $(word 2,$^) >> $@ && \
+	sort -n $@ > $@.tmp && mv $@.tmp $@;	
+endef
+$(foreach chr,$(CHROMOSOMES),$(eval $(call base-count-pos,$(chr))))
 
 define snp-pileup-tumor-normal
-facets/snp_pileup/$1_$2.bc.gz : bam/$1.bam bam/$2.bam
+facets/snp_pileup/$1_$2.bc.gz : bam/$1.bam bam/$2.bam $(foreach chr,$(CHROMOSOMES),$(GET_BASE_COUNTS_POS2)$(chr))
 	$$(call LSCRIPT_CHECK_MEM,3G,00:59:59,"$$(LOAD_PERL_MODULE); $$(GET_BASE_COUNTS) bam/$2.bam bam/$1.bam $$@ \
-	$$(REF_FASTA) $$(TARGETS_FILE_INTERVALS) $$(GET_BASE_COUNTS_MIN_DEPTH) $$(GET_BASE_COUNTS_MAX_DEPTH) $$(GET_BASE_COUNTS_POS)")
+	$$(REF_FASTA) $$(TARGETS_FILE_INTERVALS) $$(GET_BASE_COUNTS_MIN_DEPTH) $$(GET_BASE_COUNTS_MAX_DEPTH) $$(GET_BASE_COUNTS_POS2)")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
@@ -55,4 +71,6 @@ facets/geneCN%heatmap.pdf  : facets/geneCN%txt
 	$(call LSCRIPT_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(FACETS_PLOT_GENE_CN) $(FACETS_PLOT_GENE_CN_OPTS) $< $@")
 
 include usb-modules/variant_callers/gatk.mk
+include usb-modules/vcf_tools/vcftools.mk
+include usb-modules/variant_callers/gatkVariantCaller.mk
 include usb-modules/bam_tools/processBam.mk

@@ -2,14 +2,12 @@ ifndef SOMATIC_VARIANT_CALLER_INC
 
 ### Filters
 SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft) som_ad_ft
-#SOMATIC_FILTERS += $(if $(findstring strelka,$1),,som_ad_ft)
-SOMATIC_FILTERS += hotspot
-#SOMATIC_FILTERS += ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 4),nft)
+SOMATIC_FILTERS += $(if $(findstring GRCm38,$(REF)),,hotspot)
 
 SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
 
 ### Annotation
-SOMATIC_COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),mgp_dbsnp, \
+SOMATIC_COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),eff dbsnp, \
         eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
 
 ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 4; echo $$?),0)
@@ -26,8 +24,6 @@ SOMATIC_INDEL_ANNS = $(SOMATIC_COMMON_ANNS)
 #hrun $(if $(findstring b37,$(REF)),provean mut_taste)
 
 SOMATIC_ANNS = $(if $(findstring indel,$1),$(SOMATIC_INDEL_ANNS),$(SOMATIC_SNV_ANNS))
-
-#pathogenic
 SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 
 # filters that are run after first round of annotations
@@ -38,16 +34,12 @@ SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 #SOMATIC_POST_ANN_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_POST_ANNS,$1)))
 
 SOMATIC_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) $(SOMATIC_ANN_SUFFIX)))
-SOMATICGT_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) pass eff))
 
 SOMATIC_EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous
 SOMATIC_VCF_SUFFIXES = $(foreach type,$1,$(call SOMATIC_SUFFIX,$(type)))
-SOMATICGT_VCF_SUFFIXES = $(foreach type,$1,$(call SOMATICGT_SUFFIX,$(type)))
 
 SOMATIC_TABLE_EXTENSIONS = tab $(foreach eff,$(SOMATIC_EFF_TYPES),tab.$(eff))
 SOMATIC_TABLE_SUFFIXES = $(foreach suff,$(call SOMATIC_VCF_SUFFIXES,$1),\
-				 $(foreach ext,$(SOMATIC_TABLE_EXTENSIONS),$(suff).$(ext)))
-SOMATICGT_TABLE_SUFFIXES = $(foreach suff,$(call SOMATICGT_VCF_SUFFIXES,$1),\
 				 $(foreach ext,$(SOMATIC_TABLE_EXTENSIONS),$(suff).$(ext)))
 
 SOMATIC_VCFS = $(foreach pair,$(SAMPLE_PAIRS),\

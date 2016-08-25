@@ -39,7 +39,7 @@ merge_fastq :
 
 TARGETS += gatk
 gatk : 
-	$(call RUN_MAKE,modules/variant_callers/gatkVariantCaller.mk)
+	$(call RUN_MAKE,usb-modules/variant_callers/gatkVariantCaller.mk)
 
 TARGETS += bwa
 #bwa : NUM_ATTEMPTS = 5

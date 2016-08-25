@@ -22,69 +22,67 @@ include usb-modules/config.inc
 
 #### if SPLIT_CHR is set to true, we will split gatk processing by chromosome
 ifeq ($(SPLIT_CHR),true)
+## call sample sets
+ifdef SAMPLE_SET_PAIRS
+define hapcall-vcf-sets-chr
+gatk/chr_vcf/$1.$2.variants.vcf : $$(foreach sample,$$(samples.$1),gatk/chr_vcf/$$(sample).$2.variants.intervals) $$(foreach sample,$$(samples.$1),bam/$$(sample).bam bam/$$(sample).bai)
+	$$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
+	$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) $$(foreach intervals,$$(filter %.intervals,$$^),-L $$(intervals) ) -o $$@")
+endef
+$(foreach chr,$(CHROMOSOMES),$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call hapcall-vcf-sets-chr,$(set),$(chr)))))
 
-	## call sample sets
-	ifdef SAMPLE_SET_PAIRS
-		define hapcall-vcf-sets-chr
-			gatk/chr_vcf/$1.$2.variants.vcf : $$(foreach sample,$$(samples.$1),gatk/chr_vcf/$$(sample).$2.variants.intervals) $$(foreach sample,$$(samples.$1),bam/$$(sample).bam bam/$$(sample).bai)
-				$$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
-				$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) $$(foreach intervals,$$(filter %.intervals,$$^),-L $$(intervals) ) -o $$@")
-		endef
-		$(foreach chr,$(CHROMOSOMES),$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call hapcall-vcf-sets-chr,$(set),$(chr)))))
+define merge-chr-variants-sets
+gatk/vcf/$1.variants.vcf : $$(foreach chr,$$(CHROMOSOMES),gatk/chr_vcf/$1.$$(chr).variants.vcf)
+	$$(call LSCRIPT_CHECK_MEM,9G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,8G) \
+	--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
+endef
+$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call merge-chr-variants-sets,$(set))))
+endif # def SAMPLE_SET_PAIRS
 
-		define merge-chr-variants-sets
-			gatk/vcf/$1.variants.vcf : $$(foreach chr,$$(CHROMOSOMES),gatk/chr_vcf/$1.$$(chr).variants.vcf)
-				$$(call LSCRIPT_CHECK_MEM,9G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,8G) \
-				--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
-		endef
-		$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call merge-chr-variants-sets,$(set))))
-	endif # def SAMPLE_SET_PAIRS
+define chr-variants
+gatk/chr_vcf/%.$1.variants.vcf : bam/%.bam bam/%.bai
+	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,7G) $$(HAPLOTYPE_CALLER_OPTS) \
+	-L $1 -I $$< -o $$@")
+endef
+$(foreach chr,$(CHROMOSOMES),$(eval $(call chr-variants,$(chr))))
 
-	define chr-variants
-		gatk/chr_vcf/%.$1.variants.vcf : bam/%.bam bam/%.bai
-			$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,7G) $$(HAPLOTYPE_CALLER_OPTS) \
-			-L $1 -I $$< -o $$@")
-	endef
-	$(foreach chr,$(CHROMOSOMES),$(eval $(call chr-variants,$(chr))))
-
-	define merge-chr-variants
-		gatk/vcf/$1.variants.vcf : $$(foreach chr,$$(CHROMOSOMES),gatk/chr_vcf/$1.$$(chr).variants.vcf)
-			$$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,8G) \
-			--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
-	endef
-	$(foreach sample,$(SAMPLES),$(eval $(call merge-chr-variants,$(sample))))
+define merge-chr-variants
+gatk/vcf/$1.variants.vcf : $$(foreach chr,$$(CHROMOSOMES),gatk/chr_vcf/$1.$$(chr).variants.vcf)
+	$$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,8G) \
+	--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
+endef
+$(foreach sample,$(SAMPLES),$(eval $(call merge-chr-variants,$(sample))))
 
 else #### no splitting by chr ####
+## call sample sets
+ifdef SAMPLE_SETS
+define hapcall-vcf-sets
+gatk/vcf/$1.variants.vcf : $$(foreach sample,$$(samples.$1),gatk/vcf/$$(sample).variants.vcf) $$(foreach sample,$$(samples.$1),bam/$$(sample).bam bam/$$(sample).bai)
+	$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
+	$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) $$(foreach vcf,$$(filter %.vcf,$$^),-L $$(vcf) ) -o $$@")
+endef
+$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call hapcall-vcf-sets,$(set))))
+endif
 
-	## call sample sets
-	ifdef SAMPLE_SETS
-		define hapcall-vcf-sets
-			gatk/vcf/$1.variants.vcf : $$(foreach sample,$$(samples.$1),gatk/vcf/$$(sample).variants.vcf) $$(foreach sample,$$(samples.$1),bam/$$(sample).bam bam/$$(sample).bai)
-				$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
-			$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) $$(foreach vcf,$$(filter %.vcf,$$^),-L $$(vcf) ) -o $$@")
-		endef
-		$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call hapcall-vcf-sets,$(set))))
-	endif
-
-	define hapcall-vcf
-		gatk/vcf/$1.variants.vcf : bam/$1.bam bam/$1.bai
-			$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
-				-I $$< -o $$@")
-	endef
-	$(foreach sample,$(SAMPLES),$(eval $(call hapcall-vcf,$(sample))))
+define hapcall-vcf
+gatk/vcf/$1.variants.vcf : bam/$1.bam bam/$1.bai
+	$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
+	-I $$< -o $$@")
+endef
+$(foreach sample,$(SAMPLES),$(eval $(call hapcall-vcf,$(sample))))
 
 endif # split by chr
 
 gatk/vcf/%.variants.snps.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf.idx
 	$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANT,7G) \
-		-R $(REF_FASTA) --variant $<  -o $@ -selectType SNP")
+	-R $(REF_FASTA) --variant $<  -o $@ -selectType SNP")
 
 gatk/vcf/%.variants.indels.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf.idx
 	$(call LSCRIPT_CHECK_MEM,8G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANT,7G) \
-		-R $(REF_FASTA) --variant $<  -o $@ -selectType INDEL")
+	-R $(REF_FASTA) --variant $<  -o $@ -selectType INDEL")
 
-%.bai : %.bam
-	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< $@")
+#%.bai : %.bam
+#	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< $@")
 
 $(REF_FASTA).fai : $(REF_FASTA)
 	$(call LSCRIPT_CHECK_MEM,4G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) faidx $<")
@@ -110,46 +108,46 @@ endef
 #$(call APPLY_VARIANT_RECAL,$@,input,recal-file)
 define APPLY_VARIANT_RECAL
 	$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call APPLY_RECALIBRATION,8G) \
-		-R $(REF_FASTA) -input $2 -recalFile $3 \
-		--ts_filter_level $(VARIANT_RECAL_TRUTH_SENSITIVITY_LEVEL) \
-		-tranchesFile $(basename $3).tranches -o $1")
+	-R $(REF_FASTA) -input $2 -recalFile $3 \
+	--ts_filter_level $(VARIANT_RECAL_TRUTH_SENSITIVITY_LEVEL) \
+	-tranchesFile $(basename $3).tranches -o $1")
 endef
 
 # apply variant recal %=sample
 ifeq ($(GATK_HARD_FILTER_SNPS),true)
-	gatk/vcf/%.variants.snps.filtered.vcf : gatk/vcf/%.variants.snps.vcf gatk/vcf/%.variants.snps.vcf.idx
-		$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,8G) -R $(REF_FASTA) $(SNP_FILTERS) -o $@ \
-		--variant $<")
+gatk/vcf/%.variants.snps.filtered.vcf : gatk/vcf/%.variants.snps.vcf gatk/vcf/%.variants.snps.vcf.idx
+	$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,8G) -R $(REF_FASTA) $(SNP_FILTERS) -o $@ \
+	--variant $<")
 else 
 
 # pool sample vcfs for recalibration
-	ifeq ($(GATK_POOL_SNP_RECAL),true)
-		gatk/vcf/samples.snps.recal.vcf : $(foreach sample,$(SAMPLES),gatk/vcf/$(sample).variants.snps.vcf) $(foreach sample,$(SAMPLES),gatk/vcf/$(sample).variants.snps.vcf.idx)
-			$(call VARIANT_RECAL,$@,$^)
+ifeq ($(GATK_POOL_SNP_RECAL),true)
+gatk/vcf/samples.snps.recal.vcf : $(foreach sample,$(SAMPLES),gatk/vcf/$(sample).variants.snps.vcf) $(foreach sample,$(SAMPLES),gatk/vcf/$(sample).variants.snps.vcf.idx)
+	$(call VARIANT_RECAL,$@,$^)
 
-		define sample-apply-recal
-			gatk/vcf/$1.variants.snps.filtered.vcf : gatk/vcf/$1.variants.snps.vcf gatk/vcf/samples.snps.recal.vcf gatk/vcf/samples.snps.recal.vcf.idx gatk/vcf/$1.variants.snps.vcf.idx 
-				$$(call APPLY_VARIANT_RECAL,$$@,$$<,$$(word 2,$$^))
-		endef
-		$(foreach sample,$(SAMPLES),$(eval $(call sample-apply-recal,$(sample))))
+define sample-apply-recal
+gatk/vcf/$1.variants.snps.filtered.vcf : gatk/vcf/$1.variants.snps.vcf gatk/vcf/samples.snps.recal.vcf gatk/vcf/samples.snps.recal.vcf.idx gatk/vcf/$1.variants.snps.vcf.idx 
+	$$(call APPLY_VARIANT_RECAL,$$@,$$<,$$(word 2,$$^))
+endef
+$(foreach sample,$(SAMPLES),$(eval $(call sample-apply-recal,$(sample))))
 
-		ifdef SAMPLE_SETS
-			gatk/vcf/sets.snps.recal.vcf : $(foreach set,$(SAMPLE_SET_PAIRS),gatk/vcf/$(set).variants.snps.vcf gatk/vcf/$(set).variants.snps.vcf.idx )
-				$(call VARIANT_RECAL,$@,$^)
+ifdef SAMPLE_SETS
+gatk/vcf/sets.snps.recal.vcf : $(foreach set,$(SAMPLE_SET_PAIRS),gatk/vcf/$(set).variants.snps.vcf gatk/vcf/$(set).variants.snps.vcf.idx )
+	$(call VARIANT_RECAL,$@,$^)
 			
-			define sets-apply-recal
-				gatk/vcf/$1.variants.snps.filtered.vcf : gatk/vcf/$1.variants.snps.vcf gatk/vcf/sets.snps.recal.vcf gatk/vcf/sets.snps.recal.vcf.idx gatk/vcf/$1.variants.snps.vcf.idx 
-					$$(call APPLY_VARIANT_RECAL,$$@,$$<,$$(word 2,$$^))
-			endef
-			$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call sets-apply-recal,$(set))))
-		endif
-	else 
-		gatk/vcf/%.variants.snps.recal.vcf : gatk/vcf/%.variants.snps.vcf gatk/vcf/%.variants.snps.vcf.idx
-			$(call VARIANT_RECAL,$@,$^)
+define sets-apply-recal
+gatk/vcf/$1.variants.snps.filtered.vcf : gatk/vcf/$1.variants.snps.vcf gatk/vcf/sets.snps.recal.vcf gatk/vcf/sets.snps.recal.vcf.idx gatk/vcf/$1.variants.snps.vcf.idx 
+	$$(call APPLY_VARIANT_RECAL,$$@,$$<,$$(word 2,$$^))
+endef
+$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call sets-apply-recal,$(set))))
+endif
+else 
+gatk/vcf/%.variants.snps.recal.vcf : gatk/vcf/%.variants.snps.vcf gatk/vcf/%.variants.snps.vcf.idx
+	$(call VARIANT_RECAL,$@,$^)
 
-		gatk/vcf/%.variants.snps.filtered.vcf : gatk/vcf/%.variants.snps.vcf gatk/vcf/%.variants.snps.recal.vcf gatk/vcf/%.variants.snps.vcf.idx gatk/vcf/%.variants.snps.recal.vcf.idx
-			$(call APPLY_VARIANT_RECAL,$@,$<,$(word 2,$^))
-	endif
+gatk/vcf/%.variants.snps.filtered.vcf : gatk/vcf/%.variants.snps.vcf gatk/vcf/%.variants.snps.recal.vcf gatk/vcf/%.variants.snps.vcf.idx gatk/vcf/%.variants.snps.recal.vcf.idx
+	$(call APPLY_VARIANT_RECAL,$@,$<,$(word 2,$^))
+endif
 endif
 
 # hard filter indels %=sample

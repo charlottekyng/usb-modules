@@ -369,6 +369,7 @@ REPORT_STRATIFICATION := Filter
 ##################################
 
 VALIDATION ?= false
+ANNOTATE_VARIANTS ?= true
 
 HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,$$(1))
 UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,$$(1))

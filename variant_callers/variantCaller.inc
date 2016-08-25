@@ -2,28 +2,33 @@ ifndef VARIANT_CALLER_INC
 
 
 ### Filters
-FILTERS = pass
 FILTERS += $(if $(TARGETS_FILE_INTERVALS),target_ft)
 FILTERS += dp_ft
-FILTERS += $(if $(NORMAL_VCF),nft)
 FILTERS += pass
 
 ### Annotation
-COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),mgp_dbsnp, \
+COMMON_ANNS := $(if $(findstring GRCm38,$(REF)), eff dbsnp, \
         eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
 
 SNV_ANNS = $(COMMON_ANNS) $(if $(findstring b37,$(REF)),chasm fathmm) 
 
-INDEL_ANNS = $(COMMON_ANNS) hrun $(if $(findstring b37,$(REF)),provean mut_taste)
+INDEL_ANNS = $(COMMON_ANNS)
+#hrun $(if $(findstring b37,$(REF)),provean mut_taste)
 
-ANNOTATIONS = $(if $(findstring indel,$1),$(INDEL_ANNS),$(SNV_ANNS)) pathogenic
+ANNOTATIONS = $(if $(findstring indel,$1),$(INDEL_ANNS),$(SNV_ANNS)) 
 
 #POSTANN_FILTERS += cft common
 
 FILTER_SUFFIX = $1.$(subst $( ),.,$(strip $(call FILTERS,$1)))
-ANN_SUFFIX = pass.$(subst $( ),.,$(strip $(call ANNOTATIONS,$1)))
+ANN_SUFFIX = $(subst $( ),.,$(strip $(call ANNOTATIONS,$1)))
 #POSTANN_SUFFIX = $(subst $( ),.,$(strip $(call POSTANN_FILTERS,$1))).pass2
-SUFFIX = $(FILTER_SUFFIX).$(ANN_SUFFIX) #.$(POSTANN_SUFFIX)
+
+$(info ANNOTATE_VARIANTS $(ANNOTATE_VARIANTS))
+ifeq ($(ANNOTATE_VARIANTS),true)
+SUFFIX = $(FILTER_SUFFIX).$(ANN_SUFFIX)
+else
+SUFFIX = $(FILTER_SUFFIX)
+endif
 
 EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous
 
