@@ -21,8 +21,8 @@ endif
 
 ### GENERAL REFERENCES ###
 
-REF_FASTA := $(REF_DIR)/genomes/GRCm38_68.fa
-REF_DICT := $(REF_DIR)/genomes/GRCm38_68.fa.dict
+REF_FASTA := $(REF_DIR)/genomes/GRCm38_68.resorted.fa
+REF_DICT := $(REF_DIR)/genomes/GRCm38_68.fa.resorted.dict
 
 SNP_EFF_GENOME = GRCm38.79
 DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.indels.dbSNP142_noGT.vcf
