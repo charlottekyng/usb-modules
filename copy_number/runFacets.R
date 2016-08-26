@@ -108,8 +108,8 @@ formatSegmentOutput <- function(out,sampID) {
 		lims=range(out$jointseg$maploc[(out$jointseg$chrom==out$out$chr[i] & out$jointseg$seg==out$out$seg[i])],na.rm=T)
 		seg$loc.start[i]=lims[1]
 		seg$loc.end[i]=lims[2]
-	}
-	as.data.frame(seg)
+	}	
+	as.data.frame(seg))
 }
 id <- paste(tumorName, normalName, sep = '_')
 out2$IGV = formatSegmentOutput(out2, id)
