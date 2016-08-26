@@ -25,7 +25,7 @@ REF_FASTA := $(REF_DIR)/genomes/GRCm38_68.fa
 REF_DICT := $(REF_DIR)/genomes/GRCm38_68.fa.dict
 
 SNP_EFF_GENOME = GRCm38.79
-DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.dbSNP142.vcf
+DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.indels.dbSNP142_noGT.vcf
 KNOWN_INDELS := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.indels.dbSNP142.normed.noGT.vcf
 
 GET_BASE_COUNTS_POS ?= $(REF_DIR)/facets/pileup_GRCm38/snplocs_chr

@@ -1,20 +1,7 @@
-#SEQ_PLATFORM = ILLUMINA
-#REF = GRCm38
-#PANEL = AGILENT_ALLEXON
-#CAPTURE_METHOD = BAITS
-
-#NUM_ATTEMPTS = 1
-#ANN_FACETS = false
-#FACETS_GATK_VARIANTS = true
-
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
+include usb-modules/variant_callers/variantCaller.inc 
 
-ANNOTATE_VARIANTS ?= false
-ANNOTATE_VARIANTS= false
-$(info ANNOTATE_VARIANTS $(ANNOTATE_VARIANTS))
-include usb-modules/variant_callers/variantCaller.inc
-$(info ANNOTATE_VARIANTS $(ANNOTATE_VARIANTS))
 LOGDIR ?= log/facets.$(NOW)
 
 .SECONDARY:
@@ -27,7 +14,7 @@ facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt) facets/gen
 ifeq ($(FACETS_GATK_VARIANTS),true)
 GET_BASE_COUNTS_POS2 = facets/base_pos/snploc_chr
 else
-GET_BASE_COUNTS_POS2 = GET_BASE_COUNTS_POS
+GET_BASE_COUNTS_POS2 = $(GET_BASE_COUNTS_POS)
 endif
 
 #facets/base_pos/gatk.vcf : $(foreach normalsample,$(NORMAL_SAMPLES),vcf/$(normalsample).$(call VCF_SUFFIXES,gatk_snps).vcf)
@@ -36,12 +23,12 @@ facets/base_pos/gatk.vcf : $(foreach normalsample,$(NORMAL_SAMPLES),vcf/$(normal
 		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
 
 define base-count-pos
-facets/base_pos/snploc_chr$1 : facets/base_pos/gatk.vcf $$(GET_BASE_COUNTS_POS)$1
+facets/base_pos/snploc_chr$1 : facets/base_pos/gatk.pass.vcf $$(GET_BASE_COUNTS_POS)$1
 	$(INIT) \
-	$(MKDIR) facets/basepos/ && \
-	cut -f1 $< | grep -v "#" > $@ && \
-	cat $(word 2,$^) >> $@ && \
-	sort -n $@ > $@.tmp && mv $@.tmp $@;	
+	$(MKDIR) facets/base_pos/ && \
+	perl -p -e "/^$$$$1\t/;" $$< | cut -f2 > $$@ && \
+	cat $$(word 2,$$^) >> $$@ && \
+	sort -n $$@ > $$@.tmp && mv $$@.tmp $$@;	
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call base-count-pos,$(chr))))
 

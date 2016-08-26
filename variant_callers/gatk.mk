@@ -74,11 +74,11 @@ $(foreach sample,$(SAMPLES),$(eval $(call hapcall-vcf,$(sample))))
 endif # split by chr
 
 gatk/vcf/%.variants.snps.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf.idx
-	$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANT,7G) \
+	$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
 	-R $(REF_FASTA) --variant $<  -o $@ -selectType SNP")
 
 gatk/vcf/%.variants.indels.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf.idx
-	$(call LSCRIPT_CHECK_MEM,8G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANT,7G) \
+	$(call LSCRIPT_CHECK_MEM,8G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
 	-R $(REF_FASTA) --variant $<  -o $@ -selectType INDEL")
 
 #%.bai : %.bam
