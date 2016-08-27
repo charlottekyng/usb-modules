@@ -26,7 +26,7 @@ define base-count-pos
 facets/base_pos/snploc_chr$1 : facets/base_pos/gatk.pass.vcf $$(GET_BASE_COUNTS_POS)$1
 	$(INIT) \
 	$(MKDIR) facets/base_pos/ && \
-	perl -p -e "/^$$$$1\t/;" $$< | cut -f2 > $$@ && \
+	grep -v "^\#" $$< | perl -p -e "/^$$$$1\t/;" | cut -f2 > $$@ && \
 	cat $$(word 2,$$^) >> $$@ && \
 	sort -n $$@ > $$@.tmp && mv $$@.tmp $$@;	
 endef
@@ -43,7 +43,7 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(p
 	
 
 facets/cncf/%.cncf.txt : facets/snp_pileup/%.bc.gz
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) \
+	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(GET_BASE_COUNTS_MIN_DEPTH) \
 	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
 	--outPrefix $(@D)/$* $<")
 

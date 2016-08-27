@@ -18,6 +18,7 @@ if (!interactive()) {
 optList <- list(
 	make_option("--seed", default = 1234),
 	make_option("--snp_nbhd", default = 250, type = 'integer', help = "window size"),
+	make_option("--minNDepth", default = 25, type = 'integer', help = "minimum depth in normal to keep the position"),
 	make_option("--pre_cval", default = 50, type = 'integer', help = "pre-processing critical value"),
 	make_option("--cval1", default = 150, type = 'integer', help = "critical value for estimating diploid log Ratio"),
 	make_option("--cval2", default = 50, type = 'integer', help = "starting critical value for segmentation (increases by 10 until success)"),
@@ -70,7 +71,7 @@ chromLevels_bed=sort(unique(read.delim(gzfile(baseCountFile), as.is=T,sep=" ")[,
 chromLevels <- chromLevels[which(chromLevels %in% chromLevels_bed)]
 print (chromLevels)
 
-preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, cval = opt$pre_cval, chromlevels = chromLevels)
+preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, chromlevels = chromLevels)
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)
 
 print ("Completed preProc and proc")
@@ -109,7 +110,7 @@ formatSegmentOutput <- function(out,sampID) {
 		seg$loc.start[i]=lims[1]
 		seg$loc.end[i]=lims[2]
 	}	
-	as.data.frame(seg))
+	as.data.frame(seg)
 }
 id <- paste(tumorName, normalName, sep = '_')
 out2$IGV = formatSegmentOutput(out2, id)
