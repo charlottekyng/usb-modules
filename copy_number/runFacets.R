@@ -114,7 +114,7 @@ formatSegmentOutput <- function(out,sampID) {
 }
 id <- paste(tumorName, normalName, sep = '_')
 out2$IGV = formatSegmentOutput(out2, id)
-save(out2, fit, fit2, file = str_c(opt$outPrefix, ".Rdata"), compress=T)
+save(preOut, out1, out2, fit, fit2, file = str_c(opt$outPrefix, ".Rdata"), compress=T)
 
 ff = str_c(opt$outPrefix, ".out")
 cat("# Version =", version, "\n", file = ff, append = T)

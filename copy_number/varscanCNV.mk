@@ -47,7 +47,7 @@ varscan/copycall/%.copycall : varscan/copynum/%.copynumber
 
 varscan/segment/%.segment.Rdata : varscan/copycall/%.copycall
 	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(CBS_SEGMENTCNV) --alpha $(CBS_SEG_ALPHA) --smoothRegion $(CBS_SEG_SMOOTH) \
-	--undoSD $(CBS_SEG_SD) --centromereFile=$(CENTROMERE_TABLE) --prefix=$(@D)/$* $<")
+	--undoSD $(CBS_SEG_SD) $(if $(CENTROMERE_TABLE),--centromereFile=$(CENTROMERE_TABLE)) --prefix=$(@D)/$* $<")
 
 varscan/segment/geneCN.txt : $(foreach pair,$(SAMPLE_PAIRS),varscan/segment/$(pair).collapsed_seg.txt)
 	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(VARSCAN_GENE_CN) $(VARSCAN_GENE_CN_OPTS) --outFile $@ $^")	
@@ -55,7 +55,7 @@ varscan/segment/geneCN.txt : $(foreach pair,$(SAMPLE_PAIRS),varscan/segment/$(pa
 define varscan-segment-sd-alpha-smooth
 varscan/segment_sd$1_alpha$2_smooth$3/%.segment.Rdata : varscan/copycall/%.copycall
 	$$(call LSCRIPT_CHECK_NAMED_MEM,$$*_seg_$1_$2_$3,4G,00:29:29,"$$(LOAD_R_MODULE); $$(CBS_SEGMENTCNV) --undoSD $1 \
-	--alpha $2 --smoothRegion $3 --centromereFile=$$(CENTROMERE_TABLE) --prefix=$$(@D)/$$* $$<")
+	--alpha $2 --smoothRegion $3 $$(if $$(CENTROMERE_TABLE),--centromereFile=$$(CENTROMERE_TABLE)) --prefix=$$(@D)/$$* $$<")
 endef
 $(foreach sd,$(SEG_SDS),\
 	$(foreach alpha,$(SEG_ALPHAS),\

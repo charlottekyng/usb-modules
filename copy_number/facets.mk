@@ -43,7 +43,7 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(p
 	
 
 facets/cncf/%.cncf.txt : facets/snp_pileup/%.bc.gz
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(GET_BASE_COUNTS_MIN_DEPTH) \
+	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(GET_BASE_COUNTS_MIN_DEPTH) --snp_nbhd $(FACETS_WINDOW_SIZE) \
 	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
 	--outPrefix $(@D)/$* $<")
 
