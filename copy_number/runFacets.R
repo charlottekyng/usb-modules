@@ -50,14 +50,13 @@ tumorName <- baseCountFile %>% sub('.*/', '', .) %>% sub('_.*', '', .)
 normalName <- baseCountFile %>% sub('.*/', '', .) %>% sub('.*_', '', .) %>% sub('\\..*', '', .)
 
 switch(opt$genome,
-       b37={ data(hg19gcpct); chromLevels=c(1:22, "X") },
-       GRCh37={ data(hg19gcpct); chromLevels=c(1:22, "X") },
-       hg19={ data(hg19gcpct); chromLevels=c(1:22, "X") },
-       mm9={ data(mm9gcpct); chromLevels=c(1:19, "X") },
-       GRCm38={data(mm10gcpct); chromLevels=c(1:19, "X")},
+	b37={gbuild="hg19"},
+	GRCh37={gbuild="hg19"},
+	hg19={gbuid="hg19"},
+	mm9={gbuild="mm9"},
+	mm10={gbuild="mm10"},
+	GRCm38={gbuild="mm10"},
        { stop(paste("Invalid Genome",opt$genome)) })
-
-#if(!is.null(chroms)) { chromLevels=chroms; }
 
 buildData=installed.packages()["facets",]
 cat("#Module Info\n")
@@ -67,22 +66,23 @@ for(fi in c("Package","LibPath","Version","Built")){
 version=buildData["Version"]
 cat("\n")
 
-chromLevels_bed=sort(unique(read.delim(gzfile(baseCountFile), as.is=T,sep=" ")[,1]))
-chromLevels <- chromLevels[which(chromLevels %in% chromLevels_bed)]
-print (chromLevels)
+rcmat <- readSnpMatrix(gzfile(baseCountFile))
+chromLevels=sort(unique(rcmat[,1]))
 
-#preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, chromlevels = chromLevels)
+if (gbuild %in% c("hg19", "hg18")) { chromLevels=intersect(chromLevels, c(1:22,"X"))
+} else { chromLevels=intersect(chromLevels, c(1:19,"X"))}
 
-pmat <- procSnps(baseCountFile, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, chromlevels = chromLevels, unmatched=F)
+preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, gbuild=gbuild, ndepthmax=1000)
 
-pmat$keep[which(pmat$chrom==17 & pmat$maploc>=24595816 & pmat$maploc<=24632627)] <- 1
-pmat$keep[which(pmat$chrom==19 & pmat$maploc>=32757577 & pmat$maploc<=32826160)] <- 1
+#pmat <- procSnps(baseCountFile, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, chromlevels = chromLevels, unmatched=F)
 
-dmat <- counts2logROR(pmat[pmat$rCountT > 0, ])
-tmp <- segsnps(dmat, opt$pre_cval, hetscale=F)
-out <- list(pmat = pmat)
-preOut <- c(out,tmp)
+#pmat$keep[which(pmat$chrom==17 & pmat$maploc>=24595816 & pmat$maploc<=24632627)] <- 1
+#pmat$keep[which(pmat$chrom==19 & pmat$maploc>=32757577 & pmat$maploc<=32826160)] <- 1
 
+#dmat <- counts2logROR(pmat[pmat$rCountT > 0, ])
+#tmp <- segsnps(dmat, opt$pre_cval, hetscale=F)
+#out <- list(pmat = pmat)
+#preOut <- c(out,tmp)
 
 
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)

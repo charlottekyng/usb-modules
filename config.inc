@@ -72,8 +72,6 @@ MIN_TN_AD_RATIO ?= 5.0
 HRUN ?= false
 HRUN_FILTER ?= 4
 
-ANN_FACETS ?= true ## useful mostly for exomes
-
 include usb-modules/genome_inc/$(REF).inc
 ##################################
 ####### Environmental var ########
@@ -519,9 +517,12 @@ CLASSIFY_PATHOGENICITY = $(PYTHON) modules/vcf_tools/classify_pathogenicity_vcf.
 ########## Copy number ###########
 ##################################
 
-GET_BASE_COUNTS = $(PERL) usb-modules/copy_number/facets-snp-pileup.pl
-GET_BASE_COUNTS_MIN_DEPTH ?= 25
-GET_BASE_COUNTS_MAX_DEPTH ?= 1000
+FACETS_UNION_GATK_DBSNP ?= false
+FACETS_SNP_PILEUP = $(BINDIR)/snp-pileup
+FACETS_SNP_PILEUP_MIN_DEPTH ?= 25
+FACETS_SNP_PILEUP_MAX_DEPTH ?= 4000
+FACETS_SNP_PILEUP_MINMAPQ ?= 1
+FACETS_SNP_PILEUP_MINBASEQ ?= 13
 
 FACETS_WINDOW_SIZE ?= 250
 FACETS_PRE_CVAL ?= 50
@@ -530,13 +531,6 @@ FACETS_CVAL2 ?= 50
 FACETS_MIN_NHET ?= 25
 FACETS_GATK_VARIANTS ?= false
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
-
-FACETS_UNION_GATK_DBSNP ?= false
-ifeq ($(FACETS_UNION_GATK_DBSNP),true)
-FACETS_SNP_VCF = facets/vcf/dbsnp_het_gatk.snps.vcf.gz
-else
-FACETS_SNP_VCF = $(FACETS_DBSNP)
-endif
 
 FACETS_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCN.R
 FACETS_FILL_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsFillGeneCN.R
