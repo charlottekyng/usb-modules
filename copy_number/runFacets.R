@@ -71,7 +71,20 @@ chromLevels_bed=sort(unique(read.delim(gzfile(baseCountFile), as.is=T,sep=" ")[,
 chromLevels <- chromLevels[which(chromLevels %in% chromLevels_bed)]
 print (chromLevels)
 
-preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, chromlevels = chromLevels)
+#preOut <- baseCountFile %>% preProcSample(snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, chromlevels = chromLevels)
+
+pmat <- procSnps(baseCountFile, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, chromlevels = chromLevels, unmatched=F)
+
+pmat$keep[which(pmat$chrom==17 & pmat$maploc>=24595816 & pmat$maploc<=24632627)] <- 1
+pmat$keep[which(pmat$chrom==19 & pmat$maploc>=32757577 & pmat$maploc<=32826160)] <- 1
+
+dmat <- counts2logROR(pmat[pmat$rCountT > 0, ])
+tmp <- segsnps(dmat, opt$pre_cval, hetscale=F)
+out <- list(pmat = pmat)
+preOut <- c(out,tmp)
+
+
+
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)
 
 print ("Completed preProc and proc")

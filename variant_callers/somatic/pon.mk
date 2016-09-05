@@ -12,7 +12,7 @@ define mutect2-pon-chr
 mutect2/chr_vcf_pon/$1.$2.mutect2.vcf : bam/$1.bam
 	$$(MKDIR) mutect2/chr_vcf_pon; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(call MUTECT2,18G) \
 		--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --artifact_detection_mode \
-		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $2 \
+		--dbsnp $$(DBSNP) $$(if $$(findstring GRCm38,$$(REF)),,--cosmic $$(COSMIC)) --intervals $2 \
 		--annotation TandemRepeatAnnotator --annotation OxoGReadCounts \
 		--out mutect2/chr_vcf_pon/$1.$2.mutect2.vcf")
 endef
