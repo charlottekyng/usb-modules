@@ -67,7 +67,7 @@ version=buildData["Version"]
 cat("\n")
 
 rcmat <- readSnpMatrix(gzfile(baseCountFile))
-chromLevels=sort(unique(rcmat[,1]))
+chromLevels=unique(rcmat[,1])
 
 if (gbuild %in% c("hg19", "hg18")) { chromLevels=intersect(chromLevels, c(1:22,"X"))
 } else { chromLevels=intersect(chromLevels, c(1:19,"X"))}
@@ -160,8 +160,8 @@ dev.off()
 if("clonal.cluster" %in% colnames(fit2$cncf)) { clonal.cluster = fit2$cncf$clonal.cluster
 } else { clonal.cluster <- rep(NA, nrow(fit2$cncf))}
 
-writetable <- cbind(fit2$cncf[,c("chrom", "seg", "num.mark", "nhet", "cnlr.median", "mafR", "segclust", "cnlr.median.clust", "mafR.clust")],
-	start=fit2$start, end=fit2$end, fit2$cncf[,c("cf.em", "tcn.em", "lcn.em")], clonal.cluster=clonal.cluster)
+writetable <- cbind(fit2$cncf[,c("chrom", "seg", "num.mark", "nhet", "cnlr.median", "mafR", "segclust", "cnlr.median.clust", "mafR.clust", "start", "end")],
+	 fit2$cncf[,c("cf.em", "tcn.em", "lcn.em")], clonal.cluster=clonal.cluster)
 
 write.table(writetable, str_c(opt$outPrefix, ".cncf.txt"), row.names = F, quote = F, sep = '\t')
 warnings()
