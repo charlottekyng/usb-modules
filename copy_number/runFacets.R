@@ -19,6 +19,7 @@ optList <- list(
 	make_option("--seed", default = 1234),
 	make_option("--snp_nbhd", default = 250, type = 'integer', help = "window size"),
 	make_option("--minNDepth", default = 25, type = 'integer', help = "minimum depth in normal to keep the position"),
+	make_option("--maxNDepth", default= 1000, type= 'integer', help = "maximum depth in normal to keep the position"),
 	make_option("--pre_cval", default = 50, type = 'integer', help = "pre-processing critical value"),
 	make_option("--cval1", default = 150, type = 'integer', help = "critical value for estimating diploid log Ratio"),
 	make_option("--cval2", default = 50, type = 'integer', help = "starting critical value for segmentation (increases by 10 until success)"),
@@ -72,16 +73,18 @@ chromLevels=unique(rcmat[,1])
 if (gbuild %in% c("hg19", "hg18")) { chromLevels=intersect(chromLevels, c(1:22,"X"))
 } else { chromLevels=intersect(chromLevels, c(1:19,"X"))}
 
-preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, gbuild=gbuild, ndepthmax=1000)
-
-#pmat <- procSnps(baseCountFile, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, chromlevels = chromLevels, unmatched=F)
-
-#pmat$keep[which(pmat$chrom==17 & pmat$maploc>=24595816 & pmat$maploc<=24632627)] <- 1
+preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, gbuild=gbuild, ndepthmax=opt$maxNDepth)
+### Used this instead of preProc for wes_hall_pe
+#    if (gbuild %in% c("hg19", "hg18"))
+#        nX <- 23
+#    if (gbuild %in% c("mm9", "mm10"))
+#        nX <- 20
+#pmat <- facets:::procSnps(rcmat, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, gbuild=gbuild, unmatched=F, ndepthmax=opt$maxNDepth)
+#pmat$keep[which(pmat$chrom==2 & pmat$maploc>=28641233 & pmat$maploc<=28691172)] <- 1
 #pmat$keep[which(pmat$chrom==19 & pmat$maploc>=32757577 & pmat$maploc<=32826160)] <- 1
-
-#dmat <- counts2logROR(pmat[pmat$rCountT > 0, ])
-#tmp <- segsnps(dmat, opt$pre_cval, hetscale=F)
-#out <- list(pmat = pmat)
+#dmat <- facets:::counts2logROR(pmat[pmat$rCountT > 0, ], gbuild, unmatched=F)
+#tmp <- facets:::segsnps(dmat, opt$pre_cval, hetscale=F)
+#out <- list(pmat = pmat, gbuild=gbuild, n=nX)
 #preOut <- c(out,tmp)
 
 
