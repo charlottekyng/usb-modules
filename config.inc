@@ -517,7 +517,7 @@ CLASSIFY_PATHOGENICITY = $(PYTHON) modules/vcf_tools/classify_pathogenicity_vcf.
 ########## Copy number ###########
 ##################################
 
-FACETS_UNION_GATK_DBSNP ?= false
+FACETS_GATK_VARIANTS ?= false
 FACETS_SNP_PILEUP = $(BINDIR)/snp-pileup
 FACETS_SNP_PILEUP_MIN_DEPTH ?= 25
 FACETS_SNP_PILEUP_MAX_DEPTH ?= 4000
@@ -529,7 +529,6 @@ FACETS_PRE_CVAL ?= 50
 FACETS_CVAL1 ?= 150
 FACETS_CVAL2 ?= 50
 FACETS_MIN_NHET ?= 15
-FACETS_GATK_VARIANTS ?= false
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
 
 FACETS_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCN.R
