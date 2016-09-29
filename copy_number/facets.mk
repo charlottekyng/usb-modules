@@ -32,7 +32,8 @@ endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 facets/snp_pileup/%/TSVC_variants.vcf : bam/%.bam
-	$(call LSCRIPT_CHECK_MEM,20G,00:59:59,"$(TVC) -s $(DBSNP) -i $< -r $$(REF_FASTA) -o $(@D) -N 8 -t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)
+	$(call LSCRIPT_PARALLEL_MEM,8,5G,00:59:59,"$(TVC) -s $(DBSNP) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
+	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
 
 define snp-pileup-tumor-normal
 facets/snp_pileup/$1_$2.bc.gz : facets/snp_pileup/$2/TSVC_variants.vcf facets/snp_pileup/$1/TSVC_variants.vcf

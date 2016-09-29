@@ -389,6 +389,9 @@ CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/str
 STRELKA_CONFIG = /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/etc/strelka_config_bwa_default.ini
 ANNOTATE_STRELKA = $(PERL) usb-modules/variant_callers/somatic/annotate_strelka.pl
 
+TVC_ROOT_DIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/tvc-5.0.3-CentOS_6.5_x86_64-binary
+TVC = $(TVC_ROOT_DIR)/bin/variant_caller_pipeline.py
+
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
 #NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
 

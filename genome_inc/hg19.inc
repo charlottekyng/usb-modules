@@ -4,43 +4,25 @@ REF_DIR = $(HOME)/ref_nobackup
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 ifeq ($(PANEL),CHPv2)
-<<<<<<< HEAD
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19/AmpliSeq_CancerHotspotPanelv2.106003.designed.unmerged.bed
-endif
-ifeq ($(PANEL),CCP)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeq.CCP.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeq.CCP.20131001.hotspots.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19/AmpliSeq.CCP.20131001.designed.unmerged.bed
-endif
-ifeq ($(PANEL),EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19/AmpliSeqExome.20131001.designed.unmerged.bed
-endif
-ifeq ($(PANEL),HCC)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
-=======
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.unmerged.bed
 endif
 ifeq ($(PANEL),CCP)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.hotspots.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.unmerged.bed
 endif
 ifeq ($(PANEL),EXOME)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.unmerged.bed
 endif
 ifeq ($(PANEL),HCC)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
->>>>>>> 6b588426e407e8827e0e767b9ed8df054c195698
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
 endif
 endif
 
