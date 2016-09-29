@@ -53,7 +53,7 @@ normalName <- baseCountFile %>% sub('.*/', '', .) %>% sub('.*_', '', .) %>% sub(
 switch(opt$genome,
 	b37={gbuild="hg19"},
 	GRCh37={gbuild="hg19"},
-	hg19={gbuid="hg19"},
+	hg19={gbuild="hg19"},
 	mm9={gbuild="mm9"},
 	mm10={gbuild="mm10"},
 	GRCm38={gbuild="mm10"},
