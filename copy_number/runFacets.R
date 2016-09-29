@@ -69,10 +69,10 @@ cat("\n")
 
 rcmat <- readSnpMatrix(gzfile(baseCountFile))
 chromLevels=unique(rcmat[,1])
-
+print(chromLevels)
 if (gbuild %in% c("hg19", "hg18")) { chromLevels=intersect(chromLevels, c(1:22,"X"))
 } else { chromLevels=intersect(chromLevels, c(1:19,"X"))}
-
+print(chromLevels)
 preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, gbuild=gbuild, ndepthmax=opt$maxNDepth)
 ### Used this instead of preProc for wes_hall_pe
 #    if (gbuild %in% c("hg19", "hg18"))
