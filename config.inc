@@ -116,6 +116,8 @@ LOAD_R_MODULE ?= module load $(R_MODULE)
 R ?= R
 RSCRIPT ?= Rscript
 
+SWEAVE = $(RSCRIPT) usb-modules/scripts/Sweave.R
+
 JAVA_ARGS = -Djava.io.tmpdir=$(TMPDIR)
 JAVA6_MODULE ?= Java/1.6.0_24
 JAVA7_MODULE ?= Java/1.7.0_80
@@ -578,6 +580,11 @@ MUTSIGCV_SEQ_REF_DIR ?= $(MUTSIGCV_REF_DIR)/chr_files_hg19/
 
 CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
 CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
+
+DESEQ_CONDITION ?= condition
+DESEQ_REF_CONDITION ?= ref
+DESEQ_ALT_CONDITION ?= alt
+DESEQ_PHENO_FILE ?= pheno.txt
 
 ##################################
 ########## Fusions ###############
