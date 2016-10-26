@@ -1,15 +1,35 @@
-include modules/Makefile.inc
-include modules/variant_callers/somatic/somaticVariantCaller.inc
+include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
-LOGDIR ?= log/vcf.$(NOW)
+ifeq ($(findstring true,$(SOMATIC_ANN)),true)
+include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
+else
+include usb-modules/variant_callers/variantCaller.inc
+endif
 
-EXT_NAME ?= ext
+
+LOGDIR ?= log/ann_ext_vcf.$(NOW)
+
+EXT_NAME ?=
 
 SOMATIC_FILTERS := 
 
-ext_ann : ext_vcfs ext_tables
 
+ann_ext_vcf : ext_vcfs
+#ext_tables
+
+ifeq ($(findstring true,$(SOMATIC_ANN)),true)
 ext_vcfs : $(call SOMATIC_VCFS,$(EXT_NAME))
 ext_tables : $(call SOMATIC_TABLES,$(EXT_NAME))
+else
+ext_vcfs : $(call VCFS,$(EXT_NAME))
+ext_tables : $(call TABLES,$(EXT_NAME))
+endif
 
-include modules/vcf_tools/vcftools.mk
+$(info $(EXT_NAME))
+
+.DELETE_ON_ERROR:
+.SECONDARY:
+.PHONY : ann_ext_vcf
+
+include usb-modules/vcf_tools/vcftools.mk

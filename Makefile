@@ -374,10 +374,12 @@ merge_bam :
 # annotate external vcfs
 TARGETS += ann_ext_vcf
 ann_ext_vcf: 
-	$(call RUN_MAKE,modules/bam_tools/mergeBam.mk)
+	$(call RUN_MAKE,usb-modules/vcf_tools/annotateExtVcf.mk)
 
 TARGETS += mutsigcv
 mutsigcv :
 	$(call RUN_MAKE,usb-modules/siggenes/mutsigcv.mk)
+
+
 
 .PHONY : $(TARGETS)
