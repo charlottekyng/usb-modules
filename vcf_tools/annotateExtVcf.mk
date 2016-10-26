@@ -15,8 +15,7 @@ EXT_NAME ?=
 SOMATIC_FILTERS := 
 
 
-ann_ext_vcf : ext_vcfs
-#ext_tables
+ann_ext_vcf : ext_vcfs ext_tables
 
 ifeq ($(findstring true,$(SOMATIC_ANN)),true)
 ext_vcfs : $(call SOMATIC_VCFS,$(EXT_NAME))
