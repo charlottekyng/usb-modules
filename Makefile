@@ -144,15 +144,6 @@ TARGETS += merge_vcfTN
 merge_vcfTN :
 	$(call RUN_MAKE,modules/vcf_tools/vcfMergeTN.mk)
 
-#TARGETS += somatic_sniper
-#somatic_sniper :
-#	$(call RUN_MAKE,modules/variant_callers/somatic/somaticSniper.mk)
-
-
-TARGETS += som_indels
-som_indels :
-	$(call RUN_MAKE,modules/variant_callers/somatic/somaticIndelDetector.mk)
-
 TARGETS += compare_vcf
 compare_vcf :
 	$(call RUN_MAKE,modules/vcf_tools/vcfCompare.mk)
@@ -164,10 +155,6 @@ merge_vcf_platform :
 TARGETS += compare_vcfTN
 compare_vcfTN :
 	$(call RUN_MAKE,modules/vcf_tools/vcfCompareTN.mk)
-
-#TARGETS += read_depth
-#read_depth :
-#	$(call RUN_MAKE,modules/qc/readDepth.mk)
 
 TARGETS += qualimap
 qualimap :
@@ -185,30 +172,9 @@ TARGETS += sum_reads
 sum_reads :
 	$(call RUN_MAKE,usb-modules/rnaseq/sumRNASeqReads.mk)
 
-
-#TARGETS += exomecnv
-#exomecnv : 
-#	$(call RUN_MAKE,modules/copy_number/exomeCNV.mk)
-
-#TARGETS += exomecnvloh
-#exomecnvloh : 
-#	$(call RUN_MAKE,modules/copy_number/exomeCNVLOH.mk)
-
 TARGETS += gistic
 gistic :
 	$(call RUN_MAKE,modules/copy_number/gistic.mk)
-
-#TARGETS += freec
-#freec : 
-#	$(call RUN_MAKE,modules/copy_number/controlFreeC.mk)
-
-#TARGETS += freecTN
-#freecTN : 
-#	$(call RUN_MAKE,modules/copy_number/controlFreeCTN.mk)
-
-#TARGETS += freec_lohTN
-#freec_lohTN : 
-#	$(call RUN_MAKE,modules/copy_number/controlFreeCLOHTN.mk)
 
 NUM_DEFUSE_JOBS ?= 5
 TARGETS += defuse
@@ -268,19 +234,6 @@ TARGETS += crest
 crest :
 	$(call RUN_MAKE,modules/sv_callers/crest.mk)
 
-#TARGETS += pyloh
-#pyloh :
-#	$(call RUN_MAKE,modules/ploidy/pyloh.mk)
-
-#TARGETS += clonehd
-#clonehd :
-#	$(call RUN_MAKE,modules/clonality/clonehd.mk)
-
-#TARGETS += emu
-#emu :
-#	$(call RUN_MAKE,modules/mut_sigs/emu.mk)
-
-
 TARGETS += extract_fastq
 extract_fastq :
 	$(call RUN_MAKE,modules/fastq_tools/extractFastq.mk)
@@ -316,7 +269,6 @@ integrate_rnaseq :
 TARGETS += integrate
 integrate :
 	$(call RUN_MAKE,modules/sv_callers/integrate.mk)
-
 
 TARGETS += merge_split_fastq
 merge_split_fastq :
@@ -380,6 +332,13 @@ TARGETS += mutsigcv
 mutsigcv :
 	$(call RUN_MAKE,usb-modules/siggenes/mutsigcv.mk)
 
+TARGETS += tvc
+tvc :
+	$(call RUN_MAKE,usb-modules/variant_callers/TVC.mk)
+
+TARGETS += tvc_somatic
+tvc_somatic :
+	$(call RUN_MAKE,usb-modules/variant_callers/somatic/TVC.mk)
 
 
 .PHONY : $(TARGETS)

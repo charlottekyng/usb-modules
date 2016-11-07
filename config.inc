@@ -388,11 +388,13 @@ VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.2.jar
 VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
 
 CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
-STRELKA_CONFIG = /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/etc/strelka_config_bwa_default.ini
+STRELKA_CONFIG = usb-modules/variant_callers/somatic/strelka_config_bwa_default.ini
 ANNOTATE_STRELKA = $(PERL) usb-modules/variant_callers/somatic/annotate_strelka.pl
 
 TVC_ROOT_DIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/tvc-5.0.3-CentOS_6.5_x86_64-binary
 TVC = $(TVC_ROOT_DIR)/bin/variant_caller_pipeline.py
+TVC_SOMATIC_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters.json
+TVC_MOTIF = $(TVC_ROOT_DIR)/share/TVC/sse/ampliseqexome_germline_p1_hiq_motifset.txt
 
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
 #NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
@@ -467,56 +469,54 @@ ANN_FIELDS = $(addprefix ANN[*].,ALLELE EFFECT IMPACT GENE GENEID FEATURE FEATUR
 VCF_EFF_ONE_PER_LINE = $(PERL) $(SNP_EFF_DIR)/scripts/vcfEffOnePerLine.pl
 VCF_JOIN_EFF = $(PERL) usb-modules/scripts/joinEff.pl
 
-ANNOVAR = $(PERL) $(HOME)/share/usr/annovar/table_annovar.pl
-ANNOVAR_PROTOCOL ?= refGene$(,)cytoBand$(,)genomicSuperDups$(,)esp6500siv2_all$(,)1000g2014oct_all$(,)1000g2014oct_afr$(,)1000g2014oct_eas$(,)1000g2014oct_eur$(,)snp138$(,)ljb26_all
-ANNOVAR_OPERATION ?= g$(,)r$(,)r$(,)f$(,)f$(,)f$(,)f$(,)f$(,)f$(,)f
-ANNOVAR_OPTS = --dot2underline -remove -protocol $(ANNOVAR_PROTOCOL) -operation $(ANNOVAR_OPERATION) -nastring . -vcfinput -buildver $(ANNOVAR_REF)
+#ANNOVAR = $(PERL) $(HOME)/share/usr/annovar/table_annovar.pl
+#ANNOVAR_PROTOCOL ?= refGene$(,)cytoBand$(,)genomicSuperDups$(,)esp6500siv2_all$(,)1000g2014oct_all$(,)1000g2014oct_afr$(,)1000g2014oct_eas$(,)1000g2014oct_eur$(,)snp138$(,)ljb26_all
+#ANNOVAR_OPERATION ?= g$(,)r$(,)r$(,)f$(,)f$(,)f$(,)f$(,)f$(,)f$(,)f
+#ANNOVAR_OPTS = --dot2underline -remove -protocol $(ANNOVAR_PROTOCOL) -operation $(ANNOVAR_OPERATION) -nastring . -vcfinput -buildver $(ANNOVAR_REF)
 
 
-CHASM = $(RSCRIPT) modules/vcf_tools/chasmVcf.R
+#CHASM = $(RSCRIPT) modules/vcf_tools/chasmVcf.R
 #CHASM_DIR = /ifs/opt/common/CHASM/CHASMDL.1.0.7
-CHASM_DIR = $(HOME)/share/usr/CHASM
-CHASM_PYTHON_ENV = $(HOME)/share/usr/anaconda-envs/pyenv27-chasm
-CHASM_CLASSIFIER ?= Breast
+#CHASM_DIR = $(HOME)/share/usr/CHASM
+#CHASM_PYTHON_ENV = $(HOME)/share/usr/anaconda-envs/pyenv27-chasm
+#CHASM_CLASSIFIER ?= Breast
 
-FATHMM = $(MY_RSCRIPT) modules/vcf_tools/fathmmVcf.R
-FATHMM_DIR = $(HOME)/share/usr/fathmm
-FATHMM_PYTHON = $(HOME)/share/usr/bin/python
-FATHMM_PYTHONPATH = $(HOME)/share/usr/lib/python:$(HOME)/share/usr/lib/python2.7
-FATHMM_OPTS = --genome $(REF) --ensemblTxdb $(ENSEMBL_TXDB) --ref $(REF_FASTA) --fathmmDir $(FATHMM_DIR) --python $(FATHMM_PYTHON) \
-	--mysqlHost $(EMBL_MYSQLDB_HOST) --mysqlPort $(EMBL_MYSQLDB_PORT) --mysqlUser $(EMBL_MYSQLDB_USER) \
-	--mysqlPassword $(EMBL_MYSQLDB_PW) --mysqlDb (EMBL_MYSQLDB_DB)
-TRANSFIC = $(RSCRIPT) modules/vcf_tools/transficVcf.R
-TRANSFIC_PERL_SCRIPT = $(HOME)/share/usr/transfic/bin/transf_scores.pl
+#FATHMM = $(MY_RSCRIPT) modules/vcf_tools/fathmmVcf.R
+#FATHMM_DIR = $(HOME)/share/usr/fathmm
+#FATHMM_PYTHON = $(HOME)/share/usr/bin/python
+#FATHMM_PYTHONPATH = $(HOME)/share/usr/lib/python:$(HOME)/share/usr/lib/python2.7
+#FATHMM_OPTS = --genome $(REF) --ensemblTxdb $(ENSEMBL_TXDB) --ref $(REF_FASTA) --fathmmDir $(FATHMM_DIR) --python $(FATHMM_PYTHON) \
+#	--mysqlHost $(EMBL_MYSQLDB_HOST) --mysqlPort $(EMBL_MYSQLDB_PORT) --mysqlUser $(EMBL_MYSQLDB_USER) \
+#	--mysqlPassword $(EMBL_MYSQLDB_PW) --mysqlDb (EMBL_MYSQLDB_DB)
+#TRANSFIC = $(RSCRIPT) modules/vcf_tools/transficVcf.R
+#TRANSFIC_PERL_SCRIPT = $(HOME)/share/usr/transfic/bin/transf_scores.pl
 
-PROVEAN = $(RSCRIPT) modules/vcf_tools/proveanVcf.R
-PROVEAN_OPTS = --genome $(REF) --aaTable $(AA_TABLE) --ensemblTxdb $(ENSEMBL_TXDB) --mysqlHost $(EMBL_MYSQLDB_HOST) \
-			   --mysqlPort $(EMBL_MYSQLDB_PORT) --mysqlUser $(EMBL_MYSQLDB_USER) --mysqlPassword $(EMBL_MYSQLDB_PW) \
-			   --mysqlDb $(EMBL_MYSQLDB_DB) --numThreads 8 --memPerThread 1G --queue $(QUEUE) --qsubPriority $(QSUB_PRIORITY)
+#PROVEAN = $(RSCRIPT) modules/vcf_tools/proveanVcf.R
+#PROVEAN_OPTS = --genome $(REF) --aaTable $(AA_TABLE) --ensemblTxdb $(ENSEMBL_TXDB) --mysqlHost $(EMBL_MYSQLDB_HOST) \
+#			   --mysqlPort $(EMBL_MYSQLDB_PORT) --mysqlUser $(EMBL_MYSQLDB_USER) --mysqlPassword $(EMBL_MYSQLDB_PW) \
+#			   --mysqlDb $(EMBL_MYSQLDB_DB) --numThreads 8 --memPerThread 1G --queue $(QUEUE) --qsubPriority $(QSUB_PRIORITY)
 
-AA_TABLE = $(HOME)/share/reference/aa_table.tsv
+#AA_TABLE = $(HOME)/share/reference/aa_table.tsv
 
-MUT_ASS = $(RSCRIPT) usb-modules/vcf_tools/mutAssVcf.R
-MUTATION_TASTER = $(PYTHON) usb-modules/vcf_tools/mutation_taster_vcf.py
+#MUT_ASS = $(RSCRIPT) usb-modules/vcf_tools/mutAssVcf.R
+#MUTATION_TASTER = $(PYTHON) usb-modules/vcf_tools/mutation_taster_vcf.py
 
-ADD_GENE_LIST_ANNOTATION = $(RSCRIPT) usb-modules/vcf_tools/addGeneListAnnotationToVcf.R
+#ADD_GENE_LIST_ANNOTATION = $(RSCRIPT) usb-modules/vcf_tools/addGeneListAnnotationToVcf.R
 
-NON_SILENT_EFF = START_GAINED SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
-NON_SILENT_CODING_EFF = START_GAINED START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
+#NON_SILENT_EFF = START_GAINED SPLICE_SITE_ACCEPTOR SPLICE_SITE_DONOR START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
+#NON_SILENT_CODING_EFF = START_GAINED START_LOST NON_SYNONYMOUS_CODING FRAME_SHIFT CODON_CHANGE CODON_INSERTION CODON_CHANGE_PLUS_CODON_INSERTION CODON_DELETION CODON_CHANGE_PLUS_CODON_DELETION STOP_GAINED STOP_LOST NON_SYNONYMOUS_START
 
-EMBL_MYSQLDB_HOST ?= 10.0.200.71
-EMBL_MYSQLDB_PORT ?= 38493
-EMBL_MYSQLDB_USER ?= embl
-EMBL_MYSQLDB_PW ?= embl
-EMBL_MYSQLDB_DB ?= homo_sapiens_core_75_37
+#EMBL_MYSQLDB_HOST ?= 10.0.200.71
+#EMBL_MYSQLDB_PORT ?= 38493
+#EMBL_MYSQLDB_USER ?= embl
+#EMBL_MYSQLDB_PW ?= embl
+#EMBL_MYSQLDB_DB ?= homo_sapiens_core_75_37
 
 ANNOTATE_FACETS_VCF = $(RSCRIPT) usb-modules/copy_number/annotateFacets2Vcf.R
 
 #NORMAL_VCF ?= $(HOME)/share/reference/spowellnormal.gatk_variants.vcf
-
-CANCER_HOTSPOT_ANNOTATION_SCRIPT = python modules/vcf_tools/hotspot_vcf.py
-
-CLASSIFY_PATHOGENICITY = $(PYTHON) modules/vcf_tools/classify_pathogenicity_vcf.py
+#CANCER_HOTSPOT_ANNOTATION_SCRIPT = python modules/vcf_tools/hotspot_vcf.py
+#CLASSIFY_PATHOGENICITY = $(PYTHON) modules/vcf_tools/classify_pathogenicity_vcf.py
 #COMMON_FILTER_VCF = $(PYTHON) modules/vcf_tools/common_filter_vcf.py
 ##################################
 ########## Copy number ###########
@@ -578,8 +578,8 @@ MUTSIGCV_SEQ_REF_DIR ?= $(MUTSIGCV_REF_DIR)/chr_files_hg19/
 ########## Gene expression #######
 ##################################
 
-CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
-CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
+#CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
+#CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
 
 DESEQ_CONDITION ?= condition
 DESEQ_REF_CONDITION ?= ref
@@ -590,8 +590,8 @@ DESEQ_PHENO_FILE ?= pheno.txt
 ########## Fusions ###############
 ##################################
 
-DEFUSE ?= $(PERL) $(HOME)/share/usr/defuse-0.6.1/scripts/defuse.pl
-INTEGRATE ?= $(HOME)/share/usr/Integrate_0.2.0/bin/Integrate
-ONCOFUSE_JAR ?= $(JARDIR)/Oncofuse.jar
+#DEFUSE ?= $(PERL) $(HOME)/share/usr/defuse-0.6.1/scripts/defuse.pl
+#INTEGRATE ?= $(HOME)/share/usr/Integrate_0.2.0/bin/Integrate
+#ONCOFUSE_JAR ?= $(JARDIR)/Oncofuse.jar
 endif
 CONFIG_INC = true
