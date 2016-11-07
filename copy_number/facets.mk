@@ -31,12 +31,9 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(p
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
-facets/snp_pileup/%/TSVC_variants.vcf : bam/%.bam
-	$(call LSCRIPT_PARALLEL_MEM,8,5G,00:59:59,"$(TVC) -s $(DBSNP) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
-	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
 
 define snp-pileup-tumor-normal
-facets/snp_pileup/$1_$2.bc.gz : facets/snp_pileup/$2/TSVC_variants.vcf facets/snp_pileup/$1/TSVC_variants.vcf
+facets/snp_pileup/$1_$2.bc.gz : tvc/dbsnp/$2/TSVC_variants.vcf tvc/dbsnp/$1/TSVC_variants.vcf
 	$$(call LSCRIPT_CHECK_MEM,20G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,19G) \
 	$$(foreach vcf,$$^,--variant $$(vcf) ) --genotypemergeoption UNSORTED -R $$(REF_FASTA) | \
 	$$(SNP_SIFT) extractFields - CHROM POS REF ALT GEN[0].FRO GEN[0].FAO GEN[0].FXX GEN[0].FXX GEN[1].FRO GEN[1].FAO GEN[1].FXX GEN[1].FXX | \
@@ -68,6 +65,7 @@ facets/geneCN%heatmap.pdf  : facets/geneCN%txt
 	$(call LSCRIPT_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(FACETS_PLOT_GENE_CN) $(FACETS_PLOT_GENE_CN_OPTS) $< $@")
 
 include usb-modules/variant_callers/gatk.mk
+include usb-modules/variant_callers/TVC.mk
 include usb-modules/bam_tools/processBam.mk
 include usb-modules/vcf_tools/vcftools.mk
 include usb-modules/variant_callers/gatkVariantCaller.mk
