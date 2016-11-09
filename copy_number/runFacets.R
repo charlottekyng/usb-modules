@@ -154,7 +154,7 @@ cat("# loglik =", fit$loglik, "\n", file = ff, append = T)
 
 if(sum(out2$out$num.mark)<=10000) { height=4; width=7} else { height=6; width=9}
 pdf(file = str_c(opt$outPrefix, ".cncf.pdf"), height = height, width = width)
-plotSample(out2, fit, chromlevels = chromLevels)
+plotSample(out2, fit)
 dev.off()
 
 #tab <- cbind(out2$IGV[, 1:4], fit$cncf[, 2:ncol(fit$cncf)])

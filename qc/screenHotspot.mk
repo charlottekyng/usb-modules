@@ -31,10 +31,20 @@ endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 	$(eval $(call hotspot-samplepairs-screen,$(tumor.$(pair)),$(normal.$(pair)))))
 
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 hotspots/%.snps.vcf : bam/%.bam hotspots/sites.to.screen.vcf
 	$(call LSCRIPT_PARALLEL_MEM,4,5G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call UNIFIED_GENOTYPER,4G) \
 		-nt 4 -R $(REF_FASTA) --dbsnp $(DBSNP) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(word 2,$^) -o $@ --output_mode EMIT_ALL_SITES")
+endif
+
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+hotspots/%.snps.vcf : bam/%.bam hotspots/sites.to.screen.vcf
+	$(call LSCRIPT_PARALLEL_MEM,8,5G,00:59:59,"$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
+	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
+	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
+endif
+
 
 ifndef $(TARGETS_FILE_INTERVALS)
 hotspots/sites.to.screen.vcf : $(TARGETS_FILE_INTERVALS) $(CANCER_HOTSPOT_VCF)
@@ -44,6 +54,5 @@ else
 hotspots/sites.to.screen.vcf : $(CANCER_HOTSPOT_VCF)
 	$(INIT) ln $(CANCER_HOTSPOT_VCF) $@
 endif
-
 
 include usb-modules/vcf_tools/vcftools.mk
