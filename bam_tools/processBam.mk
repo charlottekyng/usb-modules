@@ -90,10 +90,22 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,6G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call CLEANBAM,5G) I=$< O=$@")
 
 # add rg
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 %.rg.bam : %.bam
 	$(call LSCRIPT_MEM,12G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call ADD_RG,11G) I=$< O=$@ RGLB=$(call strip-suffix,$(@F)) \
 		RGPL=$(SEQ_PLATFORM) RGPU=00000000 RGSM=$(call strip-suffix,$(@F)) RGID=$(call strip-suffix,$(@F)) \
 		VERBOSITY=ERROR && $(RM) $<")
+endif
+
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+%.rg.bam : %.bam
+	$(call LSCRIPT_MEM,6G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); \
+		samplename=\`basename \$$< .bam\`; \
+		$(SAMTOOLS) view -H $< | sed "s/SM:.*$/SM:\$$samplename/" > $@.header; \
+		$(SAMTOOLS) reheader $@.header $< > $@")
+endif
+
+
 
 %.read_len : %.bam
 	$(call LSCRIPT_MEM,4G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); \
