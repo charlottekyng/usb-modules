@@ -11,21 +11,23 @@ include usb-modules/aligners/align.inc
 
 star : $(foreach sample,$(SAMPLES),bam/$(sample).bam) star/all.ReadsPerGene.out.tab
 
-star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz
+
+star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz)
 	$(call LSCRIPT_PARALLEL_MEM,8,4G,00:59:59,"$(MKDIR) star star/firstpass/; \
 	$(LOAD_STAR_MODULE); STAR --runMode alignReads \
-	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< --readFilesCommand gunzip -c \
+	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< $(if $(findstring true,$(PAIRED_END)),$(word 2,$^)) \
+	--readFilesCommand gunzip -c \
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 1 --alignIntronMax 1000000 --alignMatesGapMax 1000000\
 	--outFilterType BySJout --outFilterMultimapNmax 20 --outFilterMismatchNmax 999 \
 	--outFileNamePrefix $(@D)/$*. \
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped Fastx --outMultimapperOrder Random --outSAMattrIHstart 0")
 
-
-bam/%.bam : fastq/%.1.fastq.gz $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
+bam/%.bam : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
 	$(call LSCRIPT_PARALLEL_MEM,8,8G,00:59:59,"$(MKDIR) star star/secondpass/; \
 	$(LOAD_STAR_MODULE); STAR --runMode alignReads \
-	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< --readFilesCommand gunzip -c \
+	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< $(if $(findstring true,$(PAIRED_END)),$(word 2,$^)) \
+	--readFilesCommand gunzip -c \
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 10 --alignIntronMax 200000 --alignMatesGapMax 200000 \
 	--alignSJstitchMismatchNmax 5 -1 5 5 --limitSjdbInsertNsj 5000000 \
 	--outFilterType BySJout --outFilterMultimapNmax 20 --outFilterMismatchNmax 999 \
