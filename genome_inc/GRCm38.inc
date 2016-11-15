@@ -41,5 +41,10 @@ GET_BASE_COUNTS_POS ?= $(REF_DIR)/facets/pileup_GRCm38/snplocs_chr
 #RIBOSOMAL_INTERVALS = $(REF_DIR)/mm10_rrna_intervals.txt
 #GENE_REF_FLAT = $(REF_DIR)/mm10_genes.refFlat.txt
 
+#### TOOL SPECIFIC OPTIONS ####
+
+STAR_GENOME_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/genome_index/star_GRCm38
+
+
 endif
 GRCM38_INC = true
