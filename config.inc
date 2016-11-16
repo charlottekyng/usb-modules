@@ -26,8 +26,8 @@ STRAND_SPECIFICITY ?= NONE
 TRIM_LENGTH ?= 150
 # trim is fixed length trim, cutadapt
 FASTQ_FILTER ?= cutadapt
-CLIP_FASTQ_R1 ?= OFF
-CLIP_FASTQ_R2 ?= OFF
+CLIP_FASTQ_R1 ?=
+CLIP_FASTQ_R2 ?=
 
 
 MERGE_SPLIT_BAMS ?= false  # merge processed split bams
