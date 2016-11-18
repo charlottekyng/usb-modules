@@ -25,7 +25,12 @@ STRAND_SPECIFICITY ?= NONE
 ## process FASTQs before alignment
 TRIM_LENGTH ?= 150
 # trim is fixed length trim, cutadapt
+ifeq ($(CAPTURE_METHOD),RNA)
 FASTQ_FILTER ?= cutadapt
+else
+FASTQ_FILTER ?=
+endif
+
 CLIP_FASTQ_R1 ?=
 CLIP_FASTQ_R2 ?=
 
