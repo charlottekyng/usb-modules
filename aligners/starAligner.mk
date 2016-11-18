@@ -9,7 +9,8 @@ LOGDIR ?= log/star.$(NOW)
 ALIGNER := star
 include usb-modules/aligners/align.inc
 
-star : $(foreach sample,$(SAMPLES),bam/$(sample).bam) star/all.ReadsPerGene.out.tab
+BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
+star : $(BAMS) $(addsuffix .bai,$(BAMS)) star/all.ReadsPerGene.out.tab
 
 
 star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz)
@@ -23,7 +24,7 @@ star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped Fastx --outMultimapperOrder Random --outSAMattrIHstart 0")
 
-bam/%.bam : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
+star/secondpass/%.Aligned.sortedByCoord.out.bam : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
 	$(call LSCRIPT_PARALLEL_MEM,8,8G,00:59:59,"$(MKDIR) star star/secondpass/; \
 	$(LOAD_STAR_MODULE); STAR --runMode alignReads \
 	--runThreadN 8 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< $(if $(findstring true,$(PAIRED_END)),$(word 2,$^)) \
@@ -36,8 +37,10 @@ bam/%.bam : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.f
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped None --outMultimapperOrder Random --outSAMattrIHstart 0 \
 	--chimSegmentMin 12 --chimJunctionOverhangMin 12 --chimSegmentReadGapMax parameter 3 \
-	--quantMode GeneCounts && \
-	ln star/secondpass/$*.Aligned.sortedByCoord.out.bam $@")
+	--quantMode GeneCounts")
+
+bam/%.bam : star/secondpass/%.Aligned.sortedByCoord.out.bam
+	$(INIT)	ln $< $@
 
 star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 	perl -p -e "s/N_unmapped/GENE\t\t\t\nN_unmapped/;" `ls star/secondpass/*.ReadsPerGene.out.tab|head -1` | cut -f 1 > $@; \
