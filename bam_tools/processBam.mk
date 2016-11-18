@@ -100,7 +100,7 @@ endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 %.rg.bam : %.bam
 	$(call LSCRIPT_MEM,6G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); \
-		samplename=\`basename \$$< .bam\`; \
+		samplename=`basename $< .bam`; \
 		$(SAMTOOLS) view -H $< | sed "s/SM:.*\$/SM:\$$samplename/" > $@.header; \
 		$(SAMTOOLS) reheader $@.header $< > $@")
 endif
