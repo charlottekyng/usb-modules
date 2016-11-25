@@ -10,22 +10,23 @@ endif
 
 LOGDIR ?= log/ann_ext_vcf.$(NOW)
 
-EXT_NAME ?=
+EXT_NAMES ?=
 
 SOMATIC_FILTERS := 
 
 
-ann_ext_vcf : ext_vcfs ext_tables
+ann_ext_vcf : ext_vcfs 
+#ext_tables
 
 ifeq ($(findstring true,$(SOMATIC_ANN)),true)
-ext_vcfs : $(call SOMATIC_VCFS,$(EXT_NAME))
-ext_tables : $(call SOMATIC_TABLES,$(EXT_NAME))
+ext_vcfs : $(foreach ext_name,$(EXT_NAMES),$(call SOMATIC_VCFS,$(ext_name)))
+ext_tables : $(foreach ext_name,$(EXT_NAMES),$(call SOMATIC_TABLES,$(ext_name)))
 else
-ext_vcfs : $(call VCFS,$(EXT_NAME))
-ext_tables : $(call TABLES,$(EXT_NAME))
+ext_vcfs : $(foreach ext_name,$(EXT_NAMES),$(call VCFS,$(EXT_NAME)))
+ext_tables : $(foreach ext_name,$(EXT_NAMES),$(call TABLES,$(EXT_NAME)))
 endif
 
-$(info $(EXT_NAME))
+#$(info $(EXT_NAMES))
 
 .DELETE_ON_ERROR:
 .SECONDARY:
