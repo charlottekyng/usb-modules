@@ -43,7 +43,8 @@ unprocessed_fastq/%.1.cutadapt.fastq.gz unprocessed_fastq/%.2.cutadapt.fastq.gz 
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --paired \
 	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
 	$(if $(CLIP_FASTQ_R2),--clip_R2 $(CLIP_FASTQ_R2)) \
-	$^ && rename _trimmed.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%.[12]*trimmed.fq.gz")
+	$^ && rename _val_1.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_1.fq.gz
+	&& rename _val_2.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_2.fq.gz")
 else
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
