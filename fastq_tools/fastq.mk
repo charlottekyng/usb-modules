@@ -37,12 +37,20 @@ endif
 unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) -l $(TRIM_LENGTH) | gzip -c > $@ ")
 
+ifeq ($(PAIRED_END),true)
+unprocessed_fastq/%.1.cutadapt.fastq.gz unprocessed_fastq/%.2.cutadapt.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
+	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
+	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --paired \
+	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
+	$(if $(CLIP_FASTQ_R2),--clip_R2 $(CLIP_FASTQ_R2)) \
+	$^ && rename _trimmed.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%.[12]*trimmed.fq.gz")
+else
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq \
 	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
-	$(if $(CLIP_FASTQ_R2),--clip_R2 $(CLIP_FASTQ_R2)) \
 	$^ && mv unprocessed_fastq/$*_trimmed.fq.gz $@")
+endif
 
 unprocessed_fastq/%.readtrim.1.fastq.gz unprocessed_fastq/%.readtrim.2.fastq.gz : %.bam %.read_len
 	$(call LSCRIPT_MEM,10G,02:59:59,"$(LOAD_JAVA8_MODULE); NUM_READS=`awk '{ sum += $$1 } END { print sum }' $(word 2,$^)`; \
