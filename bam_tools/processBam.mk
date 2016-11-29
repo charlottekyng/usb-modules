@@ -48,7 +48,7 @@ endif
 index : $(addsuffix .bai,$(BAMS))
 
 %.bam.bai : %.bam
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $<")
+	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< && ln $@ %.bai")
 
 %.bai : %.bam.bai
 	$(INIT) cp $< $@
