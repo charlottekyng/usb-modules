@@ -19,7 +19,7 @@ tvc/dbsnp/%/TSVC_variants.vcf : bam/%.bam
 
 define tvc-vcf
 tvc/vcf/$1/TSVC_variants.vcf.gz : bam/$1.bam bam/$1.bai
-	$$(call LSCRIPT_PARALLEL_MEN,8,3G,00:59:59,"$$(TVC) -i $$< -r $$(REF_FASTA) -o $$(@D) -N 8 \
+	$$(call LSCRIPT_PARALLEL_MEN,8,3G,00:29:59,"$$(TVC) -i $$< -r $$(REF_FASTA) -o $$(@D) -N 8 \
 	$$(if $(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED)")
 endef
