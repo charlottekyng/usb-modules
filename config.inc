@@ -46,22 +46,26 @@ SAMTOOLS_DOWNSAMPLE_FACTOR ?= 0.2
 ifeq ($(CAPTURE_METHOD),RNA)
 BAM_DUP_TYPE ?= none
 BAM_NO_FILTER ?= true
-BAM_NO_RECAL ?= true
+BAM_SPLIT_N_TRIM ?= true
+BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= true
 else
 ifeq ($(CAPTURE_METHOD),PCR)
 BAM_DUP_TYPE ?= none
 BAM_NO_FILTER ?= true
+BAM_SPLIT_N_TRIM ?= false
 BAM_NO_RECAL ?= true
 BAM_NO_REALN ?= true
 else
 BAM_DUP_TYPE ?= markdup
 BAM_NO_FILTER ?= false
+BAM_SPLIT_N_TRIM ?= false
 BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= false
 endif
 BAM_DUP_TYPE ?= markdup
 BAM_NO_FILTER ?= false
+BAM_SPLIT_N_TRIM ?= false
 BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= false
 endif
@@ -336,7 +340,7 @@ GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1)
 
 REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
 INDEL_REALIGN ?= $(call GATK,IndelRealigner,$$(1))
-
+SPLIT_N_TRIM ?= $(call GATK, SplitNCigarReads,$$(1))
 ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,$$(1))
 BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,$$(1))
 

@@ -85,6 +85,10 @@ index : $(addsuffix .bai,$(BAMS))
 %.rmdup.bam : %.bam
 	$(call LSCRIPT_MEM,4G,02:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) rmdup $< $@ && $(RM) $<")
 
+%.splitntrim.bam : %.bam
+	$(call LSCRIPT_MEM,6G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SPLIT_N_TRIM,5G) I=$< O=$@ \
+		-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS")
+
 # clean sam files
 %.clean.bam : %.bam
 	$(call LSCRIPT_MEM,6G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call CLEANBAM,5G) I=$< O=$@")

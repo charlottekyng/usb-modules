@@ -6,6 +6,7 @@ BAM_SUFFIX = $(subst $( ),.,$(strip \
         $(if $(findstring true,$(BAM_FIX_RG)),rg)\
         $(if $(findstring rmdup,$(BAM_DUP_TYPE)),rmdup)\
         $(if $(findstring markdup,$(BAM_DUP_TYPE)),markdup)\
+	$(if $(findstring true,$(BAM_SPLIT_N_TRIM)),splitntrim)\
         $(if $(findstring false,$(BAM_NO_REALN)),realn)\
         $(if $(findstring false,$(BAM_NO_RECAL)),recal)\
         bam))
