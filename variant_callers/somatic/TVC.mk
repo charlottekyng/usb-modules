@@ -38,3 +38,4 @@ vcf/%.tvc_indels.vcf : tvc/vcf/%/TSVC_variants.indels.vcf
 	$(INIT) ln -f $< $@
 
 include usb-modules/vcf_tools/vcftools.mk
+include usb-modules/variant_callers/TVC.mk
