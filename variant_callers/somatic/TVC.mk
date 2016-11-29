@@ -4,11 +4,11 @@ include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
 LOGDIR ?= log/tvc_somtic.$(NOW)
 
-PHONY += tvc_vcfs tvc_tables
+PHONY += tvc_somatic_vcfs tvc_somatic_tables
 
 VARIANT_TYPES ?= tvc_snps tvc_indels
-tvc_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)) $(addsuffix .idx,$(call SOMATIC_VCFS,$(type))))
-tvc_tables : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_TABLES,$(type)))
+tvc_somatic_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)) $(addsuffix .idx,$(call SOMATIC_VCFS,$(type))))
+tvc_somatic_tables : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_TABLES,$(type)))
 
 .DELETE_ON_ERROR:
 .SECONDARY:
@@ -18,24 +18,11 @@ define tvc-somatic-vcf
 tvc/vcf/$1_$2/TSVC_variants.vcf.gz : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
 	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -p $$(TVC_SOMATIC_JSON) -m $$(TVC_MOTIF) \
-	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(1)")
+	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<))")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
 
-tvc/vcf/%/TSVC_variants.snps.vcf : tvc/vcf/%/TSVC_variants.vcf.gz
-	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
-	-R $(REF_FASTA) --variant $< -o $@ -selectType SNP")
-
-tvc/vcf/%/TSVC_variants.indels.vcf : tvc/vcf/%/TSVC_variants.vcf.gz
-	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
-	-R $(REF_FASTA) --variant $< -o $@ -selectType INDEL")
-
-vcf/%.tvc_snps.vcf : tvc/vcf/%/TSVC_variants.snps.vcf
-	$(INIT) ln -f $< $@
-
-vcf/%.tvc_indels.vcf : tvc/vcf/%/TSVC_variants.indels.vcf
-	$(INIT) ln -f $< $@
 
 include usb-modules/vcf_tools/vcftools.mk
 include usb-modules/variant_callers/TVC.mk
