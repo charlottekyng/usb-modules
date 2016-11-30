@@ -4,7 +4,8 @@ include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
 LOGDIR ?= log/tvc_somtic.$(NOW)
 
-PHONY += tvc_somatic_vcfs tvc_somatic_tables
+PHONY += tvc_somatic tvc_somatic_vcfs tvc_somatic_tables
+tvc_somatic : tvc_somatic_vcfs tvc_somatic_tables
 
 VARIANT_TYPES ?= tvc_snps tvc_indels
 tvc_somatic_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)) $(addsuffix .idx,$(call SOMATIC_VCFS,$(type))))
