@@ -44,7 +44,7 @@ GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/hg19
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 	REF_FASTA ?= $(REF_DIR)/ion_reference/hg19.fasta
-	DBSNP ?= $(REF_DIR)/annotation_data/hg19_ionreference/dbsnp_138.hg19.vcf
+	DBSNP ?= $(REF_DIR)/annotation_data/hg19_ionref/dbsnp_138.hg19.vcf
 	DBSNP_TARGETS_INTERVALS	?= $(DBSNP)
 	DBSNP_TARGETS_INTERVALS_COMMON ?= $(DBSNP_TARGETS_INTERVALS)
 endif
