@@ -12,7 +12,7 @@ tvc_vcfs : $(foreach type,$(VARIANT_TYPES),$(call VCFS,$(type)) $(addsuffix .idx
 tvc_tables : $(foreach type,$(VARIANT_TYPES),$(call TABLES,$(type)))
 
 tvc/dbsnp/%/TSVC_variants.vcf : bam/%.bam
-	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(TVC) -s $(DBSNP) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
+	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(TVC) -s $(DBSNP_TARGETS_INTERVALS) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
 

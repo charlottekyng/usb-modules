@@ -23,6 +23,8 @@ TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Cl
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_TargetGeneSymbols.txt
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.common.vcf
 endif
 ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
@@ -52,6 +54,9 @@ ANN_DIR ?= $(REF_DIR)/annotation_data/b37
 CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 
 DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.vcf
+DBSNP_TARGETS_INTERVALS ?= $(DBSNP)
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(DBSNP_TARGETS_INTERVALS)
+
 KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.b37.vcf
 OMNI ?= $(GSA_REF_DIR)/1000G_omni2.5.b37.vcf
 HAPMAP ?= $(GSA_REF_DIR)/hapmap_3.3.b37.vcf

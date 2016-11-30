@@ -12,17 +12,23 @@ ifeq ($(PANEL),CCP)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.hotspots.bed
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.unmerged.bed
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.dbsnp_138.vcf
 endif
 ifeq ($(PANEL),EXOME)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.unmerged.bed
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.common.vcf
 endif
 ifeq ($(PANEL),HCC)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 endif
 endif
 
@@ -39,6 +45,8 @@ GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/hg19
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 	REF_FASTA ?= $(REF_DIR)/ion_reference/hg19.fasta
 	DBSNP ?= $(REF_DIR)/annotation_data/hg19_ionreference/dbsnp_138.hg19.vcf
+	DBSNP_TARGETS_INTERVALS	?= $(DBSNP)
+	DBSNP_TARGETS_INTERVALS_COMMON ?= $(DBSNP_TARGETS_INTERVALS)
 endif
 
 ### ANNOTATION SETS ####

@@ -13,12 +13,12 @@ facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-facets/base_pos/%.gatk.vcf : vcf/%.gatk_snps.vcf
-	$(INIT) ln $< $@
+#facets/base_pos/%.gatk.vcf : vcf/%.gatk_snps.vcf
+#	$(INIT) ln $< $@
 
-facets/base_pos/%.gatk.dbsnp.vcf : facets/base_pos/%.gatk.vcf $(DBSNP)
+facets/base_pos/%.gatk.dbsnp.vcf : gatk/dbsnp/%.gatk_snps.vcf gatk/vcf/%.variants.vcf
 	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call COMBINE_VARIANTS,21G) \
-	--variant $(word 1,$^) --variant $(word 2,$^) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
+		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
 
 define snp-pileup-tumor-normal
 facets/snp_pileup/$2_$1.bc.gz : bam/$1.bam bam/$2.bam $$(if $$(findstring true,$$(FACETS_GATK_VARIANTS)),facets/base_pos/$1.gatk.dbsnp.vcf,$$(DBSNP))

@@ -222,8 +222,6 @@ endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call hrun-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 endif
 
-
-
 # extract vcf to table
 tables/%.opl_tab.txt : vcf/%.vcf
 	$(call LSCRIPT_CHECK_MEM,2G,00:29:29,"$(LOAD_SNP_EFF_MODULE); \
