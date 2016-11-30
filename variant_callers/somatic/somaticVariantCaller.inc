@@ -42,7 +42,13 @@ SOMATIC_VCF_SUFFIXES = $(foreach type,$1,$(call SOMATIC_SUFFIX,$(type)))
 
 SOMATIC_TABLE_EXTENSIONS = tab $(foreach eff,$(SOMATIC_EFF_TYPES),tab.$(eff))
 SOMATIC_TABLE_SUFFIXES = $(foreach suff,$(call SOMATIC_VCF_SUFFIXES,$1),\
-				 $(foreach ext,$(SOMATIC_TABLE_EXTENSIONS),$(suff).$(ext)))
+	 $(foreach ext,$(SOMATIC_TABLE_EXTENSIONS),$(suff).$(ext)))
+
+SUFAM_ANN_SUFFIX = $(subst $( ),.,$(strip $(if $(findstring GRCm38,$(REF)),,hotspot) $(call SOMATIC_ANNS,$1)))
+SUFAM_SUFFIX = $(subst $( ),.,$(strip $1 $(SUFAM_ANN_SUFFIX)))
+SUFAM_VCF_SUFFIXES = $(foreach type,$1,$(call SUFAM_SUFFIX,$(type)))
+SUFAM_TABLE_SUFFIXES = $(foreach suff,$(call SUFAM_VCF_SUFFIXES,$1),\
+	 $(foreach ext,$(SOMATIC_TABLE_EXTENSIONS),$(suff).$(ext)))
 
 SOMATIC_VCFS = $(foreach pair,$(SAMPLE_PAIRS),\
     $(foreach suff,$(call SOMATIC_VCF_SUFFIXES,$1), \
@@ -52,14 +58,12 @@ SOMATIC_TABLES = $(foreach pair,$(SAMPLE_PAIRS),\
 		tables/$(pair).$(suff).txt))
 SOMATIC_TABLES += $(foreach suff,$(call SOMATIC_TABLE_SUFFIXES,$1),alltables/allTN.$(suff).txt)
 
-SOMATIC_VCFS_HOTSPOTGT = $(foreach pair,$(SAMPLE_PAIRS),\
-	$(foreach suff,$(call SOMATICGT_VCF_SUFFIXES,$1),\
-		vcf/$(pair).$(suff).vcf))
-
-SOMATIC_TABLES_HOTSPOTGT = $(foreach pair,$(SAMPLE_PAIRS),\
-	$(foreach suff,$(call SOMATICGT_TABLE_SUFFIXES,$1),\
-		tables/$(pair).$(suff).txt))
-SOMATIC_TABLES_HOTSPOTGT += $(foreach suff,$(call SOMATICGT_TABLE_SUFFIXES,$1),alltables/allTN.$(suff).txt)
+SOMATIC_VCFS_SETS = $(foreach set,$(SAMPLE_SETS),\
+	$(foreach suff,$(call SUFAM_VCF_SUFFIXES,$1), \
+	vcf/$(set).$(suff).vcf))
+SOMATIC_TABLES_SETS = $(foreach set,$(SAMPLE_SETS),\
+	$(foreach suff,$(call SUFAM_TABLE_SUFFIXES,$1),\
+		tables/$(set).$(suff).txt))
 
 endif
 SOMATIC_VARIANT_CALLER_INC = true

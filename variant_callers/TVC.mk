@@ -40,6 +40,11 @@ vcf/%.tvc_snps.vcf : tvc/vcf/%/TSVC_variants.snps.vcf
 vcf/%.tvc_indels.vcf : tvc/vcf/%/TSVC_variants.indels.vcf
 	$(INIT) ln -f $< $@
 
+vcf/%.tvc_snps_sufam.vcf : tvc/sufam/%.tvc_snps_sufam.vcf
+	$(INIT) ln -f $< $@
+
+vcf/%.tvc_indels_sufam.vcf : tvc/sufam/%.tvc_indels_sufam.vcf
+	$(INIT) ln -f $< $@
 
 .DELETE_ON_ERROR:
 .SECONDARY:
