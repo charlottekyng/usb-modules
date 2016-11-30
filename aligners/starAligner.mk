@@ -7,15 +7,15 @@ LOGDIR ?= log/star.$(NOW)
 .DELETE_ON_ERROR:
 
 ALIGNER := star
-include usb-modules/aligners/align.inc
+override BAM_NO_SORT := true
+override BAM_FIX_RG := true
+override BAM_DUP_TYPE := markdup
 
-BAM_NO_SORT = true
-BAM_FIX_RG = true
-BAM_DUP_TYPE = markdup
+$(info BAM_FIX_RG $(BAM_FIX_RG))
+include usb-modules/aligners/align.inc
 
 BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).originalstar.bam) $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 star : $(BAMS) $(addsuffix .bai,$(BAMS)) star/all.ReadsPerGene.out.tab
-
 
 star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz)
 	$(call LSCRIPT_PARALLEL_MEM,4,10G,00:59:59,"$(MKDIR) star star/firstpass/; \
