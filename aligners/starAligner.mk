@@ -37,7 +37,7 @@ star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRE
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 10 --alignIntronMax 200000 --alignMatesGapMax 200000 \
 	--alignSJstitchMismatchNmax 5 -1 5 5 --limitSjdbInsertNsj 5000000 \
 	--outFilterType BySJout --outFilterMultimapNmax 20 --outFilterMismatchNmax 999 \
-	--outFileNamePrefix star/secondpass/$$*. \
+	--outFileNamePrefix star/secondpass/$$(basename $$(basename $$(notdir $$@))). \
 	--sjdbFileChrStartEnd $$(filter %.SJ.out.tab,$$^) \
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped None --outMultimapperOrder Random --outSAMattrIHstart 0 \
