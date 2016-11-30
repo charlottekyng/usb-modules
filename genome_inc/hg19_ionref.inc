@@ -1,21 +1,29 @@
-ifndef HG19_INC
-REF = hg19
+ifndef HG19_IONREF_INC
+REF = hg19_ionref
 REF_DIR = $(HOME)/ref_nobackup
 
-ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-ifeq ($(PANEL),AGILENT_CLINICAL_EXOME)
-TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/hg19/S06588914_Agilent_Clinical_Exome_Covered_noHeader_noAnn.bed
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/S06588914_Agilent_Clinical_Exome_Padded_noAnn.bed
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+ifeq ($(PANEL),CHPv2)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.unmerged.bed
 endif
-#ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
-#TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/impact410_b37.bed
-#TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/impact410_b37.bed
-#endif
-#ifeq ($(PANEL),IMPACT341)
-#TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19/impact341_b37.bed
-#TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19/impact341_b37.bed
-#endif
+ifeq ($(PANEL),CCP)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.hotspots.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.unmerged.bed
+endif
+ifeq ($(PANEL),EXOME)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.unmerged.bed
+endif
+ifeq ($(PANEL),HCC)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
+endif
 endif
 
 ifndef $(TARGETS_FILE_INTERVALS)
@@ -28,31 +36,31 @@ endif
 
 GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/hg19
 
-ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-	REF_FASTA ?= $(GSA_REF_DIR)/ucsc.hg19.fasta
-	DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.hg19.vcf
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+	REF_FASTA ?= $(REF_DIR)/ion_reference/hg19.fasta
+	DBSNP ?= $(REF_DIR)/annotation_data/hg19_ionreference/dbsnp_138.hg19.vcf
 endif
 
 ### ANNOTATION SETS ####
 
-ANN_DIR ?= $(REF_DIR)/annotation_data/hg19
+ANN_DIR ?= $(REF_DIR)/annotation_data/hg19_ionref
 
-CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
+#CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 
 KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 OMNI ?= $(GSA_REF_DIR)/1000G_omni2.5.hg19.sites.vcf
 HAPMAP ?= $(GSA_REF_DIR)/hapmap_3.3.hg19.sites.vcf
 
-CLINVAR = $(ANN_DIR)/clinvar.vcf
-EXAC_NONTCGA = $(ANN_DIR)/ExAC_nonTCGA.r0.3.1.sites.vep.vcf
+CLINVAR ?= $(ANN_DIR)/clinvar.vcf
+EXAC_NONTCGA ?= $(ANN_DIR)/ExAC_nonTCGA.r0.3.1.sites.vep.vcf
 COSMIC ?= $(ANN_DIR)/CosmicCodingMuts.sorted.vcf
+CANCER_HOTSPOT_VCF ?= $(ANN_DIR)/hotspot.vcf
 
 HAPLOTYPE_INSUF_BED = $(ANN_DIR)/haploinsufficient.genes.bed
 CANCER_GENE_CENSUS_BED = $(ANN_DIR)/cancer_gene_census.bed
 KANDOTH_BED = $(ANN_DIR)/kandoth127smg.bed
 LAWRENCE_BED = $(ANN_DIR)/lawrence_cancer5000s.bed
 DGD_BED = $(ANN_DIR)/dgd_Hsa_all_v71.bed
-CANCER_HOTSPOT_VCF = $(ANN_DIR)/hotspot.vcf
 
 #FALSE_POSITIVE_BED = $(HOME)/share/reference/fuentes_blacklist.include_cosmic.hg19.bed
 #ENCODE_BED = $(HOME)/share/reference/wgEncodeDacMapabilityConsensusExcludable.include_cosmic.bed
@@ -117,5 +125,5 @@ ANNOVAR_DB = $(HOME)/share/usr/annovar/humandb
 HISAT_REF = $(HOME)/share/reference/hisat/grch37_snp_tran/genome_snp_tran
 
 endif
-HG19_INC = true
+HG19_IONREF_INC = true
 

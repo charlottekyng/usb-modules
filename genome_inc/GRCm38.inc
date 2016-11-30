@@ -5,7 +5,7 @@ REF = GRCm38
 REF_DIR = $(HOME)/ref_nobackup
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-ifeq ($(PANEL),AGILENT_ALLEXON)
+ifeq ($(PANEL),AGILENT_ALLEXON_MOUSE)
 TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/GRCm38/S0276129_Covered_noAnn_noHeader_GRCm37liftover.bed
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/GRCm38/S0276129_Padded_noAnn_noHeader_GRCm37liftover.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/GRCm38/S0276129_Padded_noAnn_noHeader_GRCm37liftover.bed

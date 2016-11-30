@@ -9,13 +9,13 @@ BINDIR ?= $(HOME)/usr_nobackup/local/bin
 ############################################################
 
 # default reference:
-# possible values: mm10, hg19, b37
+# possible values: mm10, hg19, b37, hg19_ionref
 REF ?= b37
 # possible values: ILLUMINA, IONTORRENT
 SEQ_PLATFORM ?= ILLUMINA
 # possible values: NONE, BAITS, PCR, RNA
 CAPTURE_METHOD ?= NONE
-# possible values: NONE, AGILENT_CLINICAL_EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341
+# possible values: NONE, AGILENT_CLINICAL_EXOME, IMPACTv5, CCP, CHPv2, IMPACT410, IMPACT341, AGILENT_ALLEXON_MOUSE
 PANEL ?= NONE
 # SE/PE
 PAIRED_END ?= true
