@@ -26,6 +26,12 @@ TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.common.vcf
 endif
+ifeq ($(PANEL),NOVARTIS_PC2)
+TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis.dbsnp_138.vcf
+endif
 ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
