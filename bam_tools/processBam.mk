@@ -51,7 +51,7 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< && ln -f $@ $*.bai")
 
 %.bai : %.bam.bai
-	$(INIT) cp $< $@
+	$(INIT) ln -f $@ $<
 
 # limit coverage
 #%.dcov.bam : %.bam
