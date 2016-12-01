@@ -17,7 +17,7 @@ CLUSTER_VCF = $(RSCRIPT) usb-modules/qc/clusterVcf.R
 all : genotype/snps_filtered.sdp_ft.clust.png
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-genotype/snps.vcf : $(foreach sample,$(SAMPLES),gatk/dbsnp/$(sample).gatk_snps.vcf))
+genotype/snps.vcf : $(foreach sample,$(SAMPLES),gatk/dbsnp/$(sample).gatk_snps.vcf)
 	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call COMBINE_VARIANTS,21G) \
 		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
 endif
@@ -63,3 +63,4 @@ genotype/%.clust.png : genotype/%.vcf
 
 include usb-modules/vcf_tools/vcftools.mk
 include usb-modules/variant_callers/TVC.mk
+include usb-modules/variant_callers/gatk.mk
