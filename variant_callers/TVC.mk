@@ -18,7 +18,7 @@ tvc/dbsnp/%/TSVC_variants.vcf : bam/%.bam
 
 
 define tvc-vcf
-tvc/vcf/$1/TSVC_variants.vcf.gz : bam/$1.bam bam/$1.bai
+tvc/vcf/$1/TSVC_variants.vcf : bam/$1.bam bam/$1.bai
 	$$(call LSCRIPT_PARALLEL_MEN,4,8G,00:29:59,"$$(TVC) -i $$< -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED)")
@@ -26,11 +26,11 @@ endef
 $(foreach sample,$(SAMPLES), \
 	$(eval $(call tvc-vcf,$(sample))))
 
-tvc/vcf/%/TSVC_variants.snps.vcf : tvc/vcf/%/TSVC_variants.vcf.gz
+tvc/vcf/%/TSVC_variants.snps.vcf : tvc/vcf/%/TSVC_variants.vcf
 	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
 	-R $(REF_FASTA) --variant $< -o $@ -selectType SNP")
 
-tvc/vcf/%/TSVC_variants.indels.vcf : tvc/vcf/%/TSVC_variants.vcf.gz
+tvc/vcf/%/TSVC_variants.indels.vcf : tvc/vcf/%/TSVC_variants.vcf
 	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
 	-R $(REF_FASTA) --variant $< -o $@ -selectType INDEL")
 

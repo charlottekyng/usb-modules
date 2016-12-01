@@ -21,25 +21,27 @@ tvc_somatic_tables_sets : $(foreach type,$(VARIANT_TYPES_SETS),$(call SOMATIC_TA
 .PHONY : $(PHONY)
 
 define tvc-somatic-vcf
-tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
+tvc/vcf/$1_$2/TSVC_variants_tumor.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
 	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -p $$(TVC_SOMATIC_JSON) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<)) \
-	&& mv $$(@D)/TSVC_variants.vcf $$(@D)/TSVC_variants_preliminary.vcf")
+	&& $$(LOAD_JAVA8_MODULE) && $$(call SELECT_VARIANTS,4G) -sn $$(basename $$(notdir $$<)) -R $$(REF_FASTA) \
+	-V $$(@D)/TSVC_variants.vcf -o $$@ && rm $$(@D)/TSVC_variants.vcf")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
 
 define tvc-somatic-vcf-retrieve-normal
-tvc/vcf/$1_$2/TSVC_variants_normal.vcf : bam/$2.bam bam/$2.bam.bai
-	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<) -i $$(<<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
-		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED)")
+tvc/vcf/$1_$2/TSVC_variants_normal.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2/TSVC_variants_tumor.vcf
+	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
+		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) \
+	&& mv $$(@D)/TSVC_variants.vcf $$@")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf-retrieve-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
 define tvc-somatic-vcf-merge-normal
-tvc/vcf/$1_$2/TSVC_variants.vcf.gz : tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf tvc/vcf/$1_$2/TSVC_variants_normal.vcf
+tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/TSVC_variants_tumor.vcf tvc/vcf/$1_$2/TSVC_variants_normal.vcf
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
 endef
@@ -66,11 +68,10 @@ tvc/sufam/$1/$2.tvc_indels_sufam.vcf : $2.bam tvc/sufam/$1/sufampos_indels.vcf
 endef
 $(foreach set,$(SAMPLE_SETS),\
 	$(foreach sample,$(subst _,$( ),$(set)),\
-		$(eval $(call tvc-somatic-sufam-merge,$(set),$(sample) )) ) )
+		$(eval $(call tvc-somatic-sufam-merge,$(set),$(sample)))))
 
-#$(info INFO $(foreach sample,$(subst _,$( ),pt4PL_pt4RABx_pt4U_pt4BCnormal),tvc/sufam/pt4PL_pt4RABx_pt4U_pt4BCnormal/$(sample).tvc_snps_sufam.vcf))
 define tvc-somatic-sufam-merge
-$(info INFO $(foreach sample,$(subst _,$( ),pt4PL_pt4RABx_pt4U_pt4BCnormal),tvc/sufam/pt4PL_pt4RABx_pt4U_pt4BCnormal/$(sample).tvc_snps_sufam.vcf))
+$(info INFO $(foreach sample,$(subst _,$( ),$1),tvc/sufam/$1/$(sample).tvc_snps_sufam.vcf))
 tvc/sufam/$1.tvc_snps_sufam.vcf : $(foreach sample,$(subst _,$( ),$1),tvc/sufam/$1/$(sample).tvc_snps_sufam.vcf)
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA))")
@@ -80,7 +81,7 @@ tvc/sufam/$1.tvc_indels_sufam.vcf : $(foreach sample,$(subst _,$( ),$1),tvc/sufa
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA))")
 endef
 $(foreach set,$(SAMPLE_SETS),\
-	$(eval $(call tvc-somatic-sufam-merge,$(set) )) )
+	$(eval $(call tvc-somatic-sufam-merge,$(set))))
 
 
 include usb-modules/vcf_tools/vcftools.mk
