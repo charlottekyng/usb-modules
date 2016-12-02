@@ -87,7 +87,7 @@ index : $(addsuffix .bai,$(BAMS))
 
 %.splitntrim.bam : %.bam
 	$(call LSCRIPT_MEM,6G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SPLIT_N_TRIM,5G) -I $< -o $@ \
-		-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -R $(REF_FASTA)")
+		-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -R $(REF_FASTA) && $(RM) $<")
 
 # clean sam files
 %.clean.bam : %.bam
