@@ -5,8 +5,10 @@ include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 LOGDIR ?= log/tvc_somtic.$(NOW)
 
 $(info TARGETS_FILE_INTERVALS $(TARGETS_FILE_INTERVALS))
-PHONY += tvc_somatic tvc_somatic_vcfs tvc_somatic_tables tvc_somatic_vcfs_sets tvc_somatic_tables_sets
-tvc_somatic : tvc_somatic_vcfs tvc_somatic_tables tvc_somatic_vcfs_sets tvc_somatic_tables_sets
+PHONY += tvc_somatic tvc_somatic_vcfs tvc_somatic_tables
+#tvc_somatic_vcfs_sets tvc_somatic_tables_sets
+tvc_somatic : tvc_somatic_vcfs tvc_somatic_tables
+#tvc_somatic_vcfs_sets tvc_somatic_tables_sets
 
 VARIANT_TYPES ?= tvc_snps tvc_indels
 tvc_somatic_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)) $(addsuffix .idx,$(call SOMATIC_VCFS,$(type))))
@@ -21,32 +23,28 @@ tvc_somatic_tables_sets : $(foreach type,$(VARIANT_TYPES_SETS),$(call SOMATIC_TA
 .PHONY : $(PHONY)
 
 define tvc-somatic-vcf
-tvc/vcf/$1_$2/TSVC_variants_tumor.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
+tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
 	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -p $$(TVC_SOMATIC_JSON) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<)) \
-	&& $$(LOAD_JAVA8_MODULE) && $$(call SELECT_VARIANTS,4G) -sn $$(basename $$(notdir $$<)) -R $$(REF_FASTA) \
-	-V $$(@D)/TSVC_variants.vcf -o $$@ && rm $$(@D)/TSVC_variants.vcf")
-endef
-$(foreach pair,$(SAMPLE_PAIRS), \
-	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
-
-define tvc-somatic-vcf-retrieve-normal
-tvc/vcf/$1_$2/TSVC_variants_normal.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2/TSVC_variants_tumor.vcf
-	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
-		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) \
 	&& mv $$(@D)/TSVC_variants.vcf $$@")
-endef
-$(foreach pair,$(SAMPLE_PAIRS), \
-	$(eval $(call tvc-somatic-vcf-retrieve-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
-define tvc-somatic-vcf-merge-normal
-tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/TSVC_variants_tumor.vcf tvc/vcf/$1_$2/TSVC_variants_normal.vcf
+tvc/vcf/$1_$2/tumor/TSVC_variants.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf
+	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D)/tumor/ -N 4 \
+		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) \
+	&& mv $$(@D)/tumor/TSVC_variants.vcf $$@")
+
+tvc/vcf/$1_$2/normal/TSVC_variants.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf
+	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D)/normal/ -N 4 \
+		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) \
+	&& mv $$(@D)/normal/TSVC_variants.vcf $$@")
+
+tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/tumor/TSVC_variants.vcf tvc/vcf/$1_$2/normal/TSVC_variants.vcf
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
-	$(eval $(call tvc-somatic-vcf-merge-normal,$(tumor.$(pair)),$(normal.$(pair)))))
+	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
 
 ################## SUFAM from here ####################
 #define tvc-somatic-sufam-get-positions
