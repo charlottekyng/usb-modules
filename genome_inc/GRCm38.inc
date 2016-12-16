@@ -38,8 +38,9 @@ GET_BASE_COUNTS_POS ?= $(REF_DIR)/facets/pileup_GRCm38/snplocs_chr
 #ENSEMBL_TXDB = $(REF_DIR)/mus_musculus_ensembl_biomart.2014-04-28.sqlite
 #TXDB = $(HOME)/ensmusg70.08032013.sqlite
 
-#RIBOSOMAL_INTERVALS = $(REF_DIR)/mm10_rrna_intervals.txt
-#GENE_REF_FLAT = $(REF_DIR)/mm10_genes.refFlat.txt
+GENE_REF_FLAT = $(REF_DIR)/annotation_data/GRCm38/refFlat.txt
+RIBOSOMAL_INTERVALS = $(REF_DIR)/annotation_data/GRCm38/ribosomalRNA.interval_list
+
 
 #### TOOL SPECIFIC OPTIONS ####
 

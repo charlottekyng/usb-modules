@@ -19,18 +19,18 @@ endif
 ifdef FASTQ_FILTER
 ifeq ($(PAIRED_END),true)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz unprocessed_fastq/%.2.$(FASTQ_FILTER).fastq.gz
-	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz
+	$(INIT) ln -f $< fastq/$*.1.fastq.gz && ln -f $(word 2,$(^)) fastq/$*.2.fastq.gz
 else
 fastq/%.1.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz
-	$(INIT) ln $< fastq/$*.1.fastq.gz
+	$(INIT) ln -f $< fastq/$*.1.fastq.gz
 endif
 else
 ifeq ($(PAIRED_END),true)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
-	$(INIT) ln $< fastq/$*.1.fastq.gz && ln $(word 2,$(^)) fastq/$*.2.fastq.gz && cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
+	$(INIT) ln -f $< fastq/$*.1.fastq.gz && ln -f $(word 2,$(^)) fastq/$*.2.fastq.gz && cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
 else
 fastq/%.1.fastq.gz : unprocessed_fastq/%.1.fastq.gz
-	$(INIT) ln $< fastq/$*.1.fastq.gz && cp $< fastq/$*.1.fastq.gz
+	$(INIT) ln -f $< fastq/$*.1.fastq.gz && cp $< fastq/$*.1.fastq.gz
 endif
 endif
 
@@ -43,7 +43,7 @@ unprocessed_fastq/%.1.cutadapt.fastq.gz unprocessed_fastq/%.2.cutadapt.fastq.gz 
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --paired \
 	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
 	$(if $(CLIP_FASTQ_R2),--clip_R2 $(CLIP_FASTQ_R2)) \
-	$^ && rename _val_1.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_1.fq.gz
+	$^ && rename _val_1.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_1.fq.gz \
 	&& rename _val_2.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_2.fq.gz")
 else
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
