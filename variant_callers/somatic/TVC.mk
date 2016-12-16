@@ -30,18 +30,23 @@ tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.b
 	&& mv $$(@D)/TSVC_variants.vcf $$@")
 
 tvc/vcf/$1_$2/tumor/TSVC_variants.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf
-	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D)/tumor/ -N 4 \
-		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) \
-	&& mv $$(@D)/tumor/TSVC_variants.vcf $$@")
+	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
+		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
+	$$(LOAD_JAVA8_MODULE) && \
+	$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$@ -o $$@.tmp --concordance $$(<<<) && \
+	mv $$@.tmp $$@")
 
 tvc/vcf/$1_$2/normal/TSVC_variants.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf
-	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D)/normal/ -N 4 \
-		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) \
-	&& mv $$(@D)/normal/TSVC_variants.vcf $$@")
+	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
+		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
+	$$(LOAD_JAVA8_MODULE) && \
+	$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$@ -o $$@.tmp --concordance $$(<<<) && \
+	mv $$@.tmp $$@")
 
 tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/tumor/TSVC_variants.vcf tvc/vcf/$1_$2/normal/TSVC_variants.vcf
-	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
-		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
+	grep "^#" $$< | perl -ne 'if (/^#CHROM/) { s/$1/$1\t$2/; } print;' > $$@.tmp && \
+	grep -v "^#" $$< > $$@.tmp_tumor && grep -v "^#" $$(<<) | cut -f10 > $$@.tmp_normal && \
+	paste $$@.tmp_tumor $$@.tmp_normal  >> $$@.tmp && mv $$@.tmp $$@ && rm $$@.tmp_normal $$@.tmp_tumor
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
