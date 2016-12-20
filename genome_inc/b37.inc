@@ -26,6 +26,22 @@ TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.common.vcf
 endif
+ifeq ($(PANEL),AGILENT_ALLEXON_V4)
+TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_Padded_noHeader_noAnn.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_TargetGeneSymbols.txt
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4.dbsnp_138.common.vcf
+endif
+ifeq ($(PANEL),AGILENT_ALLEXON_V6)
+TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_Padded_noHeader_noAnn.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_TargetGeneSymbols.txt
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6.dbsnp_138.common.vcf
+endif
 ifeq ($(PANEL),NOVARTIS_PC2)
 TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Covered_noHeader_noAnn.bed
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
