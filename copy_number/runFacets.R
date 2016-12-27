@@ -54,6 +54,7 @@ switch(opt$genome,
 	b37={gbuild="hg19"},
 	GRCh37={gbuild="hg19"},
 	hg19={gbuild="hg19"},
+	hg19_ionref={gbuild="hg19"},
 	mm9={gbuild="mm9"},
 	mm10={gbuild="mm10"},
 	GRCm38={gbuild="mm10"},
@@ -91,6 +92,8 @@ preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cva
 out1 <- preOut %>% procSample(cval = opt$cval1, min.nhet = opt$min_nhet)
 
 print ("Completed preProc and proc")
+save(preOut, out1, file = str_c(opt$outPrefix, ".Rdata"), compress=T)
+
 cval <- opt$cval2
 success <- F
 while (!success && cval < opt$max_cval) {
