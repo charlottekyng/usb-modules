@@ -27,12 +27,10 @@ $(foreach sample,$(SAMPLES), \
 	$(eval $(call tvc-vcf,$(sample))))
 
 tvc/vcf/%/TSVC_variants.snps.vcf : tvc/vcf/%/TSVC_variants.vcf
-	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
-	-R $(REF_FASTA) --variant $< -o $@ -selectType SNP")
+	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_VCFTOOLS_MODULE); $(VCFTOOLS) --vcf $< --remove-indels --recode --recode-INFO-all --out $@ && mv $@.recode.vcf $@")
 
 tvc/vcf/%/TSVC_variants.indels.vcf : tvc/vcf/%/TSVC_variants.vcf
-	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
-	-R $(REF_FASTA) --variant $< -o $@ -selectType INDEL")
+	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_VCFTOOLS_MODULE); $(VCFTOOLS) --vcf $< --keep-only-indels --recode --recode-INFO-all --out $@ && mv $@.recode.vcf $@")
 
 vcf/%.tvc_snps.vcf : tvc/vcf/%/TSVC_variants.snps.vcf
 	$(INIT) ln -f $< $@

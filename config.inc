@@ -226,7 +226,7 @@ GET_INSERT_SIZE ?= $(HOME)/share/usr/bin/getInsertSize.py
 TABIX_MODULE ?= tabix/0.2.6-goolf-1.4.10
 LOAD_TABIX_MODULE ?= module load $(TABIX_MODULE)
 BGZIP ?= bgzip
-TABIX ?= tabix -p
+TABIX ?= tabix -p vcf
 
 
 ##################################

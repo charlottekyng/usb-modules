@@ -17,7 +17,7 @@ LOGDIR ?= log/vcf.$(NOW)
 	$(call LSCRIPT_MEM,3G,00:29:29,"$(LOAD_TABIX_MODULE); $(BGZIP) -c -f $< >$@")
 
 %.vcf.gz.tbi : %.vcf.gz
-	$(call LSCRIPT_MEM,3G,00:29:29,"$(LOAD_TABIX_MODULE); $(TABIX)  $<")
+	$(call LSCRIPT_MEM,3G,00:29:29,"$(LOAD_TABIX_MODULE); $(TABIX) $<")
 
 #%.vcf : %.vcf.gz
 #	$(call LSCRIPT_MEM,3G,00:29:29,"$(LOAD_TABIX_MODULE); $(BGZIP) -c -d $< > $@")
