@@ -30,6 +30,14 @@ PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 endif
+ifeq ($(PANEL),BREAST)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
+TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.genes.txt
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.unmerged.bed
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
+endif
 endif
 
 ifndef $(TARGETS_FILE_INTERVALS)
