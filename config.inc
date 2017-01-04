@@ -189,8 +189,6 @@ BEDTOOLS_MODULE ?= BEDTools/2.25.0-goolf-1.4.10
 LOAD_BEDTOOLS_MODULE ?= module load $(BEDTOOLS_MODULE)
 BEDTOOLS ?= bedtools
 
-BGZIP ?= $(HOME)/share/usr/bin/bgzip #### NOT UPDATED
-
 IGVTOOLS_MODULE ?= IGVTools/2.3.60-Java-1.7.0_21
 LOAD_IGVTOOLS_MODULE ?= module load $(IGVTOOLS_MODULE)
 IGVTOOLS ?= igvtools
@@ -198,6 +196,7 @@ IGVTOOLS ?= igvtools
 VCFTOOLS_MODULE ?= VCFtools/0.1.14-goolf-1.4.10-Perl-5.16.3
 LOAD_VCFTOOLS_MODULE ?= module load $(VCFTOOLS_MODULE)
 VCFTOOLS ?= vcftools
+VCFTOOLS_MERGE ?= vcf-merge
 
 VCF_SORT ?= $(PERL) $(SCRIPTSDIR)/vcfsorter.pl 
 
@@ -224,8 +223,10 @@ RBIND ?= $(MODULE_SCRIPTS_DIR)/rbind.R
 
 GET_INSERT_SIZE ?= $(HOME)/share/usr/bin/getInsertSize.py
 
-VT ?= $(HOME)/share/usr/bin/vt
-TABIX ?= $(HOME)/share/usr/bin/tabix
+TABIX_MODULE ?= tabix/0.2.6-goolf-1.4.10
+LOAD_TABIX_MODULE ?= module load $(TABIX_MODULE)
+BGZIP ?= bgzip
+TABIX ?= tabix -p
 
 
 ##################################

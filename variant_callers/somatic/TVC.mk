@@ -43,10 +43,8 @@ tvc/vcf/$1_$2/normal/TSVC_variants.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2
 	$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$@ -o $$@.tmp --concordance $$(<<<) && \
 	mv $$@.tmp $$@")
 
-tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/tumor/TSVC_variants.vcf tvc/vcf/$1_$2/normal/TSVC_variants.vcf
-	grep "^#" $$< | perl -ne 'if (/^#CHROM/) { s/$1/$1\t$2/; } print;' > $$@.tmp && \
-	grep -v "^#" $$< > $$@.tmp_tumor && grep -v "^#" $$(<<) | cut -f10 > $$@.tmp_normal && \
-	paste $$@.tmp_tumor $$@.tmp_normal  >> $$@.tmp && mv $$@.tmp $$@ && rm $$@.tmp_normal $$@.tmp_tumor
+tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/tumor/TSVC_variants.vcf.gz tvc/vcf/$1_$2/normal/TSVC_variants.vcf.gz tvc/vcf/$1_$2/tumor/TSVC_variants.vcf.gz.tbi tvc/vcf/$1_$2/normal/TSVC_variants.vcf.gz.tbi
+	$$(call LSCRIPT_MEM,5G,00:29:29,"$(LOAD_VCFTOOLS_MODULE); $(VCFTOOLS_MERGE) $$< $$<< > $$@")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
