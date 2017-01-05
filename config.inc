@@ -337,7 +337,7 @@ COLLECT_GCBIAS_METRICS = $(call PICARD,CollectGcBiasMetrics,$$(1))
 ##################################
 
 GATK_JAR ?= $(JARDIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
-GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1)
+GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1) -filterNoBases
 
 REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
 INDEL_REALIGN ?= $(call GATK,IndelRealigner,$$(1))
