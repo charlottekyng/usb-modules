@@ -84,7 +84,7 @@ gatk/vcf/%.variants.indels.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf
 gatk/dbsnp/%.gatk_snps.vcf : bam/%.bam bam/%.bai
 	$(call LSCRIPT_PARALLEL_MEM,4,5G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call UNIFIED_GENOTYPER,4G) \
 		-nt 4 -R $(REF_FASTA) --dbsnp $(DBSNP_TARGETS_INTERVALS) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
-		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(DBSNP) -o $@ --output_mode EMIT_ALL_SITES")
+		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(DBSNP_TARGETS_INTERVALS) -o $@ --output_mode EMIT_ALL_SITES")
 
 $(REF_FASTA).fai : $(REF_FASTA)
 	$(call LSCRIPT_CHECK_MEM,4G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) faidx $<")

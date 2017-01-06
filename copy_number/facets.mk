@@ -13,19 +13,15 @@ facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-#facets/base_pos/%.gatk.vcf : vcf/%.gatk_snps.vcf
-#	$(INIT) ln $< $@
-
 facets/base_pos/%.gatk.dbsnp.vcf : gatk/dbsnp/%.gatk_snps.vcf gatk/vcf/%.variants.vcf
 	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call COMBINE_VARIANTS,21G) \
 		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
 
 define snp-pileup-tumor-normal
-facets/snp_pileup/$2_$1.bc.gz : bam/$1.bam bam/$2.bam $$(if $$(findstring true,$$(FACETS_GATK_VARIANTS)),facets/base_pos/$1.gatk.dbsnp.vcf,$$(DBSNP))
+facets/snp_pileup/$1_$2.bc.gz : bam/$1.bam bam/$2.bam $$(if $$(findstring true,$$(FACETS_GATK_VARIANTS)),facets/base_pos/$1.gatk.dbsnp.vcf,$$(DBSNP_TARGETS_INTERVALS))
 	$$(call LSCRIPT_CHECK_MEM,3G,00:59:59,"$$(FACETS_SNP_PILEUP) -A -d $$(FACETS_SNP_PILEUP_MAX_DEPTH) -g \
 	-q $$(FACETS_SNP_PILEUP_MINMAPQ) -Q $$(FACETS_SNP_PILEUP_MINBASEQ) -r $$(FACETS_SNP_PILEUP_MIN_DEPTH)$$(,)0 \
-	$$(word 3,$$^) $$@ $$(word 1,$$^) $$(word 2,$$^)")
-# && $$(RM) $$(word 3,$$^)")
+	$$(word 3,$$^) $$@ $$(word 2,$$^) $$(word 1,$$^)")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 endif
@@ -45,8 +41,6 @@ endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 endif
 
-#facets/params.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/snp_pileup/$(pair).bc.gz)
-	
 
 facets/cncf/%.cncf.txt : facets/snp_pileup/%.bc.gz
 	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(FACETS_SNP_PILEUP_MIN_DEPTH) \
