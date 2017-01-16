@@ -41,7 +41,7 @@ tvc/vcf/$1_$2/normal/TSVC_variants.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2
 	mv $$@.tmp $$@")
 
 tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/tumor/TSVC_variants.vcf.gz tvc/vcf/$1_$2/normal/TSVC_variants.vcf.gz tvc/vcf/$1_$2/tumor/TSVC_variants.vcf.gz.tbi tvc/vcf/$1_$2/normal/TSVC_variants.vcf.gz.tbi
-	$$(call LSCRIPT_MEM,5G,00:29:29,"$$(LOAD_VCFTOOLS_MODULE); $$(LOAD_TABIX_MODULE); $$(VCFTOOLS_MERGE) $$< $$(word 2,$$^) > $$@")
+	$$(call LSCRIPT_MEM,5G,00:29:29,"$$(LOAD_VCFTOOLS_MODULE); $$(LOAD_TABIX_MODULE); $$(VCFTOOLS_MERGE) $$< $$(word 2,$$^) | perl -p -e "s/NOCALL/PASS/g;" > $$@")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
