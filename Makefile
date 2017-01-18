@@ -125,7 +125,7 @@ varscan_cnv :
 
 TARGETS += varscanTN
 varscanTN :
-	$(call RUN_MAKE,modules/variant_callers/somatic/varscanTN.mk)
+	$(call RUN_MAKE,usb-modules/variant_callers/somatic/varscanTN.mk)
 
 TARGETS += varscan
 varscan :

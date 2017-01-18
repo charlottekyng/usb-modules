@@ -3,6 +3,7 @@ ifndef CONFIG_INC
 JARDIR ?= $(HOME)/usr_nobackup/local/lib/java
 SCRIPTSDIR ?= $(HOME)/usr_nobackup/local/scripts
 BINDIR ?= $(HOME)/usr_nobackup/local/bin
+MODULE_SCRIPTS_DIR ?= usb-modules/scripts
 
 ############################################################
 ########## OPTIONS MOST LIKELY NEED TO CUSTOMIZED ##########
@@ -77,6 +78,9 @@ MIN_NORMAL_DEPTH ?= 5
 MIN_TUMOR_DEPTH ?= 10
 MIN_TUMOR_AD ?= 3
 MIN_TN_AD_RATIO ?= 5.0
+MIN_MQ ?= 10
+MIN_AF_SNP ?= 0.01
+MIN_AF_INDEL ?= 0.02
 
 HRUN ?= false
 HRUN_FILTER ?= 4
@@ -179,7 +183,7 @@ SAMTOOLS ?= samtools
 
 SAMTOOLS_SORT_MEM = 2000000000
 
-VCFUTILS ?= $(HOME)/share/usr/bin/vcfutils.pl ##### NOT UPDATED
+#VCFUTILS ?= $(HOME)/share/usr/bin/vcfutils.pl ##### NOT UPDATED
 
 BCFTOOLS_MODULE ?= BCFtools/1.2-goolf-1.4.10
 LOAD_BCFTOOLS_MODULE ?= module load $(BCFTOOLS_MODULE)
@@ -206,28 +210,28 @@ MAF2VCF ?= $(PERL) $(SCRIPTSDIR)/maf2vcf.pl
 VEP_PATH ?= /opt/common/CentOS_6/vep/v82
 VEP_DATA ?= /opt/common/CentOS_6/vep/v82
 
-BAM2FASTX = $(HOME)/usr/bin/bam2fastx
+#BAM2FASTX = $(HOME)/usr/bin/bam2fastx
 EXTRACT_TOOL ?= PICARD
-BAM_TO_FASTQ ?= xxx
+#BAM_TO_FASTQ ?= xxx
 
 FASTQ_TRIMMER = $(PERL) usb-modules/fastq_tools/trimFastq.pl
 TRIM_GALORE_MODULE = Trim_Galore/0.4.1-goolf-1.4.10-Perl-5.16.3
 LOAD_TRIM_GALORE_MODULE ?= module load $(TRIM_GALORE_MODULE)
 TRIM_GALORE ?= trim_galore
 
-MODULE_SCRIPTS_DIR ?= usb-modules/scripts
 MERGE ?= $(MODULE_SCRIPTS_DIR)/merge.R
 VCF_TO_TABLE ?= $(MODULE_SCRIPTS_DIR)/vcfToTable.R
 INTRON_POSN_LOOKUP ?= $(MODULE_SCRIPTS_DIR)/posnGeneLookup.pl
 RBIND ?= $(MODULE_SCRIPTS_DIR)/rbind.R
 
-GET_INSERT_SIZE ?= $(HOME)/share/usr/bin/getInsertSize.py
+#GET_INSERT_SIZE ?= $(HOME)/share/usr/bin/getInsertSize.py
 
 TABIX_MODULE ?= tabix/0.2.6-goolf-1.4.10
 LOAD_TABIX_MODULE ?= module load $(TABIX_MODULE)
 BGZIP ?= bgzip
 TABIX ?= tabix -p vcf
 
+BAM_READCOUNT ?= $(BINDIR)/bam-readcount
 
 ##################################
 ########## QC/metrics ############
@@ -394,8 +398,9 @@ MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
 
 MUTECT ?= $(JAVA) -Xmx11G -jar $(MUTECT_JAR) --analysis_type MuTect
 
-VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.2.jar
+VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.3.jar
 VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
+VARSCAN_OPTS=--output-vcf 1 --mpileup 1 --min-var-freq $(MIN_AF_SNP)
 
 CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
 STRELKA_CONFIG = usb-modules/variant_callers/somatic/strelka_config_bwa_default.ini
