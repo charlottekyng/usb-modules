@@ -8,14 +8,22 @@ LOGDIR = log/summary.$(NOW)
 .SECONDARY: 
 PHONY : mutation_summary
 
-ALLTABLES_HIGH_MODERATE_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.high_moderate.txt
-ALLTABLES_LOW_MODIFIER_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.low_modifier.txt
-ALLTABLES_SYNONYMOUS_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.synonymous.txt
-ALLTABLES_NONSYNONYMOUS_MUTECT = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous.txt
-ALLTABLES_HIGH_MODERATE_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.high_moderate.txt
-ALLTABLES_LOW_MODIFIER_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.low_modifier.txt
-ALLTABLES_SYNONYMOUS_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.synonymous.txt
-ALLTABLES_NONSYNONYMOUS_STRELKA = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous.txt
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
+ALLTABLES_LOW_MODIFIER_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.low_modifier.txt
+ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.synonymous.txt
+ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous.txt
+ALLTABLES_LOW_MODIFIER_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.low_modifier.txt
+ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous.txt
+endif
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+ALLTABLES_LOW_MODIFIER_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.low_modifier.txt
+ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.synonymous.txt
+ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous.txt
+ALLTABLES_LOW_MODIFIER_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.low_modifier.txt
+ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous.txt
+endif
+
+
 
 # Add optional absolute results to excel
 # the $(wildcard x) syntax is used to check for existence of file
@@ -37,8 +45,10 @@ EXCEL_MAX_EXAC_AF ?= 1
 
 mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
 
-summary/mutation_summary.xlsx : $(ALLTABLES_NONSYNONYMOUS_MUTECT) $(ALLTABLES_SYNONYMOUS_MUTECT) $(ALLTABLES_LOW_MODIFIER_MUTECT) $(ALLTABLES_NONSYNONYMOUS_STRELKA) $(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
+summary/mutation_summary.xlsx : $(ALLTABLES_NONSYNONYMOUS_SNPS) $(ALLTABLES_SYNONYMOUS_SNPS) $(ALLTABLES_LOW_MODIFIER_SNPS) $(ALLTABLES_NONSYNONYMOUS_INDELS) $(ALLTABLES_LOW_MODIFIER_INDELS)
 	$(call LSCRIPT_CHECK_MEM,9G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
 	--outFile $@ $(wordlist 1,4,$^)")
 	
 #	python usb-modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@
+#$(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
+
