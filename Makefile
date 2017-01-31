@@ -136,8 +136,9 @@ screen_hotspots :
 	$(call RUN_MAKE,usb-modules/qc/screenHotspot.mk)
 
 TARGETS += pon_bam
-pon_bam :
-	$(call RUN_MAKE,usb-modules/bam_tools/ponBam.mk)
+poolednorm_bam :
+	$(call RUN_MAKE,usb-modules/bam_tools/poolednormBam.mk)
+
 # single sample mutation seq
 
 TARGETS += merge_vcfTN

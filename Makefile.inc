@@ -72,6 +72,7 @@ ifneq ($(wildcard $(SAMPLE_SET_FILE)),)
   $(foreach i,$(SETS_SEQ), \
 	$(eval normal.$(call get_underscore_sets,$i) := $(call get_normal,$(set.$i))))
   NORMAL_SAMPLES = $(foreach i,$(SETS_SEQ),$(call get_normal,$(set.$i)))
+  NORMAL_SAMPLES = $(filter-out,poolednorm,$(NORMAL_SAMPLES))
   TUMOR_SAMPLES = $(foreach i,$(SETS_SEQ),$(call get_tumors,$(set.$i)))
   SAMPLE_PAIRS = $(foreach set,$(SAMPLE_SETS),$(foreach tumor,$(tumor.$(set)),$(tumor)_$(normal.$(set))))
   # define tumor.pair and normal.pair to retrieve tumor/normal from pairs
