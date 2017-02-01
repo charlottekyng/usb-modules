@@ -20,7 +20,7 @@ ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 genotype/snps.vcf : $(foreach sample,$(SAMPLES),gatk/dbsnp/$(sample).gatk_snps.vcf)
 	$(call LSCRIPT_MEM,95G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call COMBINE_VARIANTS,96G) \
 		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED \
-		$(if $(findstring AGILENT_CLINICAL_EXOME,$(PANEL),-L 1,) -R $(REF_FASTA)")
+		$(if $(findstring AGILENT_CLINICAL_EXOME,$(PANEL)),-L 1,) -R $(REF_FASTA)")
 endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 genotype/snps.vcf : $(foreach sample,$(SAMPLES),tvc/dbsnp/$(sample)/TSVC_variants.vcf)
