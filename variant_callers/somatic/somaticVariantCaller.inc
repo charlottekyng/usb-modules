@@ -20,6 +20,9 @@ ifeq ($(findstring true,$(ANN_FACETS)),true)
 	SOMATIC_COMMON_ANNS += facets
 endif
 
+$(info normal $(NORMAL_SAMPLES))
+$(info ann-extension $(SOMATIC_COMMON_ANNS))
+
 SOMATIC_SNV_ANNS = $(SOMATIC_COMMON_ANNS)
 SOMATIC_INDEL_ANNS = $(SOMATIC_COMMON_ANNS)
 
