@@ -5,6 +5,7 @@ LOGDIR = log/screen_hotspot.$(NOW)
 ##### MAKE INCLUDES #####
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
+#include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
 VPATH ?= bam
 
@@ -12,34 +13,39 @@ VPATH ?= bam
 .SECONDARY: 
 .PHONY : all
 
-all : $(foreach pair,$(SAMPLE_PAIRS),hotspots/$(pair).snps.screened.target_ft.dp_ft.hotspot.pass.eff.vcf)
+#all : $(foreach pair,$(SAMPLE_PAIRS),hotspots/$(pair).snps.screened.target_ft.dp_ft.hotspot.pass.eff.vcf)
+all : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf)
 
-define hotspot-samplepairs
-hotspots/$1_$2.snps.vcf : hotspots/$1.snps.vcf hotspots/$2.snps.vcf
-	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
-		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
-endef
-$(foreach pair,$(SAMPLE_PAIRS),\
-	$(eval $(call hotspot-samplepairs,$(tumor.$(pair)),$(normal.$(pair)))))
+#mutect : mutect_vcfs mutect_tables ext_output
+#mutect_vcfs : $(call SOMATIC_VCFS,mutect) $(addsuffix .idx,$(call SOMATIC_VCFS,mutect))
+#mutect_tables : $(call SOMATIC_TABLES,mutect)
 
-define hotspot-samplepairs-screen
-hotspots/$1_$2.snps.screened.vcf : hotspots/$1_$2.snps.vcf
-	$$(call LSCRIPT_MEM,8G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
-		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 1 || vc.getGenotype(\"$1\").getAD().2 > 1 || vc.getGenotype(\"$1\").getAD().3 > 1' \
-		--filterName presentInTumor")
-endef
-$(foreach pair,$(SAMPLE_PAIRS),\
-	$(eval $(call hotspot-samplepairs-screen,$(tumor.$(pair)),$(normal.$(pair)))))
+#define hotspot-samplepairs
+#hotspots/$1_$2.hotspotscreen.vcf : hotspots/$1.hotspotscreen.vcf hotspots/$2.hotspotscreen.vcf
+#	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
+#		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
+#endef
+#$(foreach pair,$(SAMPLE_PAIRS),\
+#	$(eval $(call hotspot-samplepairs,$(tumor.$(pair)),$(normal.$(pair)))))
+
+#define hotspot-samplepairs-screen
+#hotspots/$1_$2.snps.screened.vcf : hotspots/$1_$2.hotspotscreen.vcf
+#	$$(call LSCRIPT_MEM,8G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
+#		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 1 || vc.getGenotype(\"$1\").getAD().2 > 1 || vc.getGenotype(\"$1\").getAD().3 > 1' \
+#		--filterName presentInTumor")
+#endef
+#$(foreach pair,$(SAMPLE_PAIRS),\
+#	$(eval $(call hotspot-samplepairs-screen,$(tumor.$(pair)),$(normal.$(pair)))))
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-hotspots/%.snps.vcf : bam/%.bam hotspots/sites.to.screen.vcf
-	$(call LSCRIPT_PARALLEL_MEM,4,5G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call UNIFIED_GENOTYPER,4G) \
-		-nt 4 -R $(REF_FASTA) --dbsnp $(DBSNP) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
+hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
+	$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call UNIFIED_GENOTYPER,4G) \
+		-nt 8 -R $(REF_FASTA) --dbsnp $(DBSNP) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(word 2,$^) -o $@ --output_mode EMIT_ALL_SITES")
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
-hotspots/%.snps.vcf : bam/%.bam hotspots/sites.to.screen.vcf
+hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
 	$(call LSCRIPT_PARALLEL_MEM,8,5G,00:59:59,"$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")

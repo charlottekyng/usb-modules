@@ -12,7 +12,7 @@ $$(ALIGNER)/bam/$1.$$(ALIGNER).sorted.bam : $$(ALIGNER)/sam/$1.header.sam $$(for
 	$$(call LSCRIPT_MEM,12G,02:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$(@) $$(filter %.bam,$$^) && $$(RM) $$^")
 endef
 define rename-bam
-$$(ALIGNER)/bam/$1.$$(ALIGNER).bam : $$(ALIGNER)/bam/$2.$$(ALIGNER).bam
+$$(ALIGNER)/bam/$1.$$(ALIGNER).sorted.bam : $$(ALIGNER)/bam/$2.$$(ALIGNER).sorted.bam
 	mv $$< $$@
 endef
 $(foreach sample,$(SAMPLES),\

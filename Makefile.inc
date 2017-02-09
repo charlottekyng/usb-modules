@@ -139,11 +139,9 @@ MKDIRS = $(MKDIR) $(LOGDIR)/$(@D) $(@D)
 LOG = $(LOGDIR)/$(@).log
 
 # SGE variables
-#QUEUE ?= jrf.q
-#SGE_RREQ = -q $(QUEUE) -N X$(@F) -V -cwd
-SGE_RREQ = -N X$(@F) -cwd
+HOSTNAME = "*"
+SGE_RREQ = -N X$(@F) -cwd -l hostname=$(HOSTNAME)
 PARALLEL_ENV = smp
-#MEM_FREE = -l virtual_free=$1,h_vmem=$2
 MEM_BY_CORE = -l membycore=$1
 RUN_TIME = -l runtime=$1
 REQ = SGE_RREQ="$(SGE_RREQ)"

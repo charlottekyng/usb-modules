@@ -44,7 +44,7 @@ endif
 
 facets/cncf/%.cncf.txt : facets/snp_pileup/%.bc.gz
 	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(FACETS_SNP_PILEUP_MIN_DEPTH) \
-	--maxNDepth $(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $(FACETS_WINDOW_SIZE) \
+	--maxNDepth $(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $(FACETS_WINDOW_SIZE) --minGC $(FACETS_MINGC) --maxGC $(FACETS_MAXGC) \
 	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
 	--outPrefix $(@D)/$* $<")
 

@@ -135,7 +135,7 @@ TARGETS += screen_hotspots
 screen_hotspots :
 	$(call RUN_MAKE,usb-modules/qc/screenHotspot.mk)
 
-TARGETS += pon_bam
+TARGETS += poolednorm_bam
 poolednorm_bam :
 	$(call RUN_MAKE,usb-modules/bam_tools/poolednormBam.mk)
 
@@ -310,6 +310,10 @@ recurrent_mutations :
 TARGETS += facets
 facets :
 	$(call RUN_MAKE,usb-modules/copy_number/facets.mk)
+
+TARGETS += facets_poolednorm
+facets_poolednorm :
+	$(call RUN_MAKE,usb-modules/copy_number/facets_poolednorm.mk)
 
 TARGETS += brass
 brass :

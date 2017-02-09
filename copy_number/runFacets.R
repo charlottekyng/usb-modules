@@ -27,7 +27,9 @@ optList <- list(
 	make_option("--min_nhet", default = 25, type = 'integer', help = "minimum number of heterozygote snps in a segment used for bivariate t-statistic during clustering of segment"),
 	make_option("--gene_loc_file", default = '~/share/reference/IMPACT410_genes_for_copynumber.txt', type = 'character', help = "file containing gene locations"),
 	make_option("--genome", default = 'b37', type = 'character', help = "genome of counts file"),
-#	make_option("--chroms", default=NULL, type='character', help="chromosomes"),
+	make_option("--unmatched", default=FALSE, type=NULL,  help="is it unmatched?"),
+	make_option("--minGC", default = 0, type = NULL, help = "min GC of position"),
+	make_option("--maxGC", default = 1, type = NULL, help = "max GC of position"),
 	make_option("--outPrefix", default = NULL, help = "output prefix"))
 
 parser <- OptionParser(usage = "%prog [options] [tumor-normal base counts file]", option_list = optList);
@@ -74,7 +76,23 @@ print(chromLevels)
 if (gbuild %in% c("hg19", "hg18")) { chromLevels=intersect(chromLevels, c(1:22,"X"))
 } else { chromLevels=intersect(chromLevels, c(1:19,"X"))}
 print(chromLevels)
-preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, gbuild=gbuild, ndepthmax=opt$maxNDepth)
+
+if (opt$minGC == 0 & opt$maxGC == 1) {
+	preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, 
+		gbuild=gbuild, ndepthmax=opt$maxNDepth, unmatched=opt$unmatched)
+} else {
+    if (gbuild %in% c("hg19", "hg18"))
+      	 nX <- 23
+    if (gbuild %in% c("mm9", "mm10"))
+	 nX <- 20
+	pmat <- facets:::procSnps(rcmat, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, 
+		gbuild=gbuild, unmatched=F, ndepthmax=opt$maxNDepth)
+	dmat <- facets:::counts2logROR(pmat[pmat$rCountT > 0, ], gbuild, unmatched=opt$unmatched)
+        dmat$keep[which(dmat$gcpct>=opt$maxGC | dmat$gcpct<=opt$minGC)] <- 0
+	tmp <- facets:::segsnps(dmat, opt$pre_cval, hetscale=F)
+	out <- list(pmat = pmat, gbuild=gbuild, n=nX)
+	preOut <- c(out,tmp)
+}
 ### Used this instead of preProc for wes_hall_pe
 #    if (gbuild %in% c("hg19", "hg18"))
 #        nX <- 23

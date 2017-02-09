@@ -145,12 +145,12 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample realn chromosome bams
 %.realn.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bai)
-	$(call LSCRIPT_PARALLEL_MEM,2,10G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) $(foreach i,$(filter %.bam,$^), I=$(i)) \
+	$(call LSCRIPT_PARALLEL_MEM,2,16G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,14G) $(foreach i,$(filter %.bam,$^), I=$(i)) \
 	SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.realn.bam=.bam)")
 
 # merge sample recal chromosome bams
 %.recal.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bai)
-	$(call LSCRIPT_PARALLEL_MEM,2,10G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
+	$(call LSCRIPT_PARALLEL_MEM,4,10G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
 
 define chr-recal

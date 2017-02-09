@@ -30,7 +30,7 @@ bam/%.bam : bwamem/bam/%.bwamem.$(BAM_SUFFIX)
 #$(call align-split-fastq,name,split-name,fastqs)
 define align-split-fastq
 bwamem/bam/$2.bwamem.bam : $3
-	$$(call LSCRIPT_PARALLEL_MEM,$$(BWA_NUM_CORES),1G,01:29:59,"$$(LOAD_BWA_MODULE); $$(LOAD_SAMTOOLS_MODULE); \
+	$$(call LSCRIPT_PARALLEL_MEM,$$(BWA_NUM_CORES),4G,01:29:59,"$$(LOAD_BWA_MODULE); $$(LOAD_SAMTOOLS_MODULE); \
 		$$(BWA_MEM) -t $$(BWA_NUM_CORES) $$(BWA_ALN_OPTS) \
 		-R \"@RG\tID:$2\tLB:$1\tPL:$${SEQ_PLATFORM}\tSM:$1\" $$(REF_FASTA) $$^ | $$(SAMTOOLS) view -bhS - > $$@")
 endef
@@ -38,14 +38,16 @@ $(foreach ss,$(SPLIT_SAMPLES),$(if $(fq.$(ss)),$(eval $(call align-split-fastq,$
 
 bwamem/bam/%.bwamem.bam : fastq/%.1.fastq.gz fastq/%.2.fastq.gz
 	LBID=`echo "$*" | sed 's/_[A-Za-z0-9]\+//'`; \
-	$(call LSCRIPT_PARALLEL_MEM,$(BWA_NUM_CORES),1G,01:29:59,"$(LOAD_BWA_MODULE); $(LOAD_SAMTOOLS_MODULE); \
+	$(call LSCRIPT_PARALLEL_MEM,$(BWA_NUM_CORES),4G,01:29:59,"$(LOAD_BWA_MODULE); $(LOAD_SAMTOOLS_MODULE); \
 		$(BWA_MEM) -t $(BWA_NUM_CORES) $(BWA_ALN_OPTS) \
-		-R \"@RG\tID:$*\tLB:$${LBID}\tPL:${SEQ_PLATFORM}\tSM:$${LBID}\" $(REF_FASTA) $^ | $(SAMTOOLS) view -bhS - > $@")
+		-R \"@RG\tID:$*\tLB:$${LBID}\tPL:${SEQ_PLATFORM}\tSM:$${LBID}\" $(REF_FASTA) $^ | \
+		$(SAMTOOLS) view -bhS - > $@")
 
 bwamem/bam/%.bwamem.bam : fastq/%.fastq.gz
 	LBID=`echo "$*" | sed 's/_[A-Za-z0-9]\+//'`; \
-	$(call LSCRIPT_PARALLEL_MEM,8,1G,01:29:59,"$(LOAD_BWA_MODULE); $(LOAD_SAMTOOLS_MODULE); \
-		$(BWA_MEM) -t 8 $(BWA_ALN_OPTS) -R \"@RG\tID:$*\tLB:$${LBID}\tPL:${SEQ_PLATFORM}\tSM:$${LBID}\" $(REF_FASTA) $^ | \
+	$(call LSCRIPT_PARALLEL_MEM,$(BWA_NUM_CORES),4G,01:29:59,"$(LOAD_BWA_MODULE); $(LOAD_SAMTOOLS_MODULE); \
+		$(BWA_MEM) -t $(BWA_NUM_CORES) $(BWA_ALN_OPTS) \
+		-R \"@RG\tID:$*\tLB:$${LBID}\tPL:${SEQ_PLATFORM}\tSM:$${LBID}\" $(REF_FASTA) $^ | \
 		$(SAMTOOLS) view -bhS - > $@")
 
 fastq/%.fastq.gz : fastq/%.fastq

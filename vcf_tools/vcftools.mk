@@ -45,6 +45,9 @@ LOGDIR ?= log/vcf.$(NOW)
 %.het_ft.vcf : %.vcf
 	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --genotypeFilterExpression 'isHet == 1' --genotypeFilterName 'Heterozygous positions'")
+%.altad_ft.vcf : %.vcf
+	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
+		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'vc.getGenotype(\"$1\").getAD().1 < 0' --filterName nonZeroAD && $(RM) $< $<.idx")
 
 #%.mapq_ft.vcf : %.vcf.gz %.vcf.gz.tbi $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 #	$(call 
@@ -426,3 +429,4 @@ endif
 
 VCFTOOLS_MK = true
 
+#include usb-modules/copy_number/facets.mk
