@@ -46,9 +46,5 @@ EXCEL_MAX_EXAC_AF ?= 1
 mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
 
 summary/mutation_summary.xlsx : $(ALLTABLES_NONSYNONYMOUS_SNPS) $(ALLTABLES_SYNONYMOUS_SNPS) $(ALLTABLES_LOW_MODIFIER_SNPS) $(ALLTABLES_NONSYNONYMOUS_INDELS) $(ALLTABLES_LOW_MODIFIER_INDELS)
-	$(call LSCRIPT_CHECK_MEM,9G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	$(call LSCRIPT_CHECK_MEM,16G,05:59:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
 	--outFile $@ $(wordlist 1,4,$^)")
-	
-#	python usb-modules/summary/mutation_summary_excel.py --max_exac_af $(EXCEL_MAX_EXAC_AF) --output_tsv_dir $(@D)/tsv $(EXCEL_ABSOLUTE_PARAMS) $(EXCEL_FACETS_LOH_PARAMS) $(EXCEL_ANNOTATION_PARAMS) $(wordlist 1,8,$^) $@
-#$(ABSOLUTE_SOMATIC_TXTS) $(ABSOLUTE_SEGMENTS) $(EXCEL_FACETS_LOH) $(EXCEL_ANNOTATION)
-

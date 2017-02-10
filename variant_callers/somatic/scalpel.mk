@@ -2,6 +2,7 @@
 # vim: set ft=make :
 
 include usb-modules/Makefile.inc
+include usb-modules/config.inc
 include usb-modules/variant_callers/somatic/scalpel.inc
 include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 

@@ -28,7 +28,7 @@ geneCN : varscan/segment/geneCN.txt
 
 define varscan-copynum-tumor-normal
 varscan/copynum/$1_$2.copynumber :  bam/$1.bam bam/$2.bam
-	$$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA7_MODULE); \
+	$$(call LSCRIPT_CHECK_MEM,16G,01:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA7_MODULE); \
 	$$(SAMTOOLS) mpileup $$(CBS_MPILEUP_OPTS) -f $$(REF_FASTA) $$(word 2,$$^) $$< | awk 'NF == 9 { print }' |  \
 	$$(VARSCAN) copynumber - $$(basename $$@) --mpileup 1")
 endef
