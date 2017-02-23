@@ -9,6 +9,8 @@ include usb-modules/Makefile.inc
 include usb-modules/config.inc
 include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
+$(info CHR $(CHROMOSOMES))
+$(info TARGETS_FILE_INTERVALS $(TARGETS_FILE_INTERVALS))
 VPATH ?= bam
 
 VARIANT_TYPES = varscan_indels varscan_snps
@@ -33,8 +35,8 @@ varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf : varscan/chr_vcf/$1_$2.$3.varscan
 
 varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.fpft.vcf : varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.vcf bam/$1.bam bam/$1.bam.bai
 	$$(call LSCRIPT_MEM,4G,00:29:59,"awk '! /\#/' $$< | \
-	awk '{if(length($$$$4) > length($$$$5)) print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$4)-1); \
-	else print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$5)-1)}' > varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.vcf.region && \
+	awk '{if(length(\$$$$4) > length(\$$$$5)) print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length(\$$$$4)-1); \
+	else print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length(\$$$$5)-1)}' > varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.vcf.region && \
 	$$(BAM_READCOUNT) -f $$(REF_FASTA) -l varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.vcf.region $$(word 2,$$^) > \
 	varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.vcf.bamrc && \
 	$$(VARSCAN) fpfilter $$< varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.vcf.bamrc \
@@ -44,8 +46,8 @@ varscan/chr_vcf/$1_$2.$3.snp.Somatic.hc.fpft.vcf : varscan/chr_vcf/$1_$2.$3.snp.
 
 varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.fpft.vcf : varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf bam/$1.bam bam/$1.bam.bai
 	$$(call LSCRIPT_MEM,4G,00:29:59,"awk '! /\#/' $$< | \
-	awk '{if(length($$$$4) > length($$$$5)) print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$4)-1); \
-	else print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$5)-1)}' > varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.region && \
+	awk '{if(length(\$$$$4) > length(\$$$$5)) print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length($$$$4)-1); \
+	else print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length(\$$$$5)-1)}' > varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.region && \
 	$$(BAM_READCOUNT) -f $$(REF_FASTA) -l varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.region $$(word 2,$$^) > \
 	varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.bamrc && \
 	$$(VARSCAN) fpfilter $$< varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.bamrc \
