@@ -1,5 +1,6 @@
 # Merge samples using SAMPLE_SPLIT_FILE entries and then fix the read groups
 include usb-modules/Makefile.inc
+include usb-modules/config.inc
 
 LOGDIR = log/merge.$(NOW)
 
@@ -16,7 +17,7 @@ merged_bam/$1.header.sam : $$(foreach split,$$(split.$1),bam/$$(split).bam)
 	uniq $$@.tmp > $$@ && $$(RM) $$@.tmp
 
 merged_bam/$1.bam : merged_bam/$1.header.sam $$(foreach split,$$(split.$1),bam/$$(split).bam)
-	$$(call LSCRIPT_MEM,12G,00:29:29,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$(@) $$(filter %.bam,$$^)")
+	$$(call LSCRIPT_MEM,12G,02:29:29,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$(@) $$(filter %.bam,$$^)")
 endef
 $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call merged-bam,$(sample))))
 

@@ -326,7 +326,7 @@ mutsig_report :
 # standalone bam file merger
 TARGETS += merge_bam
 merge_bam :
-	$(call RUN_MAKE,modules/bam_tools/mergeBam.mk)
+	$(call RUN_MAKE,usb-modules/bam_tools/mergeBam.mk)
 
 # annotate external vcfs
 TARGETS += ann_ext_vcf
