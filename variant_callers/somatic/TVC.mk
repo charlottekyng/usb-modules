@@ -26,7 +26,7 @@ tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.b
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<)) \
 	&& mv $$(@D)/TSVC_variants.vcf $$@")
 
-tvc/vcf/$1_$2/TSVC_variants_prelimiary.fpft.vcf : tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf bam/$1.bam bam/$1.bam.bai
+tvc/vcf/$1_$2/TSVC_variants_preliminary.fpft.vcf : tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf bam/$1.bam bam/$1.bam.bai
 	$$(call LSCRIPT_MEM,4G,00:29:59,"awk '! /\#/' $$< | \
 	awk '{if(length($$$$4) > length($$$$5)) print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$4)-1); \
 	else print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$5)-1)}' > $$<.region && \
