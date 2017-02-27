@@ -86,11 +86,11 @@ if (opt$minGC == 0 & opt$maxGC == 1) {
     if (gbuild %in% c("mm9", "mm10"))
 	 nX <- 20
 	pmat <- facets:::procSnps(rcmat, ndepth=opt$minNDepth, het.thresh = 0.25, snp.nbhd = opt$snp_nbhd, 
-		gbuild=gbuild, unmatched=F, ndepthmax=opt$maxNDepth)
+		gbuild=gbuild, unmatched=opt$unmatched, ndepthmax=opt$maxNDepth)
 	dmat <- facets:::counts2logROR(pmat[pmat$rCountT > 0, ], gbuild, unmatched=opt$unmatched)
         dmat$keep[which(dmat$gcpct>=opt$maxGC | dmat$gcpct<=opt$minGC)] <- 0
 	tmp <- facets:::segsnps(dmat, opt$pre_cval, hetscale=F)
-	out <- list(pmat = pmat, gbuild=gbuild, n=nX)
+	out <- list(pmat = pmat, gbuild=gbuild, nX=nX)
 	preOut <- c(out,tmp)
 }
 ### Used this instead of preProc for wes_hall_pe
@@ -103,7 +103,7 @@ if (opt$minGC == 0 & opt$maxGC == 1) {
 #pmat$keep[which(pmat$chrom==19 & pmat$maploc>=32757577 & pmat$maploc<=32826160)] <- 1
 #dmat <- facets:::counts2logROR(pmat[pmat$rCountT > 0, ], gbuild, unmatched=F)
 #tmp <- facets:::segsnps(dmat, opt$pre_cval, hetscale=F)
-#out <- list(pmat = pmat, gbuild=gbuild, n=nX)
+#out <- list(pmat = pmat, gbuild=gbuild, nX=nX)
 #preOut <- c(out,tmp)
 
 
