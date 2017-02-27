@@ -19,14 +19,17 @@ else
 CHROMOSOMES ?= $(shell seq 1 19) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
 endif
 
+DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.indels.dbSNP142_noGT.vcf
+KNOWN_INDELS := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.indels.dbSNP142.normed.noGT.vcf
+
+FACETS_TARGETS_INTERVALS ?= $(DBSNP)
+
 ### GENERAL REFERENCES ###
 
 REF_FASTA := $(REF_DIR)/genomes/GRCm38_68.resorted.fa
 REF_DICT := $(REF_DIR)/genomes/GRCm38_68.resorted.dict
 
 SNP_EFF_GENOME = GRCm38.79
-DBSNP := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.snps_all.indels.dbSNP142_noGT.vcf
-KNOWN_INDELS := $(REF_DIR)/annotation_data/GRCm38/mgp.v5.merged.indels.dbSNP142.normed.noGT.vcf
 
 GET_BASE_COUNTS_POS ?= $(REF_DIR)/facets/pileup_GRCm38/snplocs_chr
 

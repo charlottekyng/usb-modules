@@ -58,6 +58,8 @@ TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
 endif
 endif
 
+FACETS_TARGETS_INTERVALS ?= $(DBSNP_TARGETS_INTERVALS)
+
 ifeq ($(findstring bed,$(TARGETS_FILE_INTERVALS)),bed)
 CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
 else
