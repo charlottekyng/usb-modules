@@ -68,7 +68,13 @@ varscan/vcf/$1_$2.snp.Somatic.hc.fpft.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES)
 	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
 
 varscan/vcf/$1_$2.indel.Somatic.hc.fpft.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).indel.Somatic.hc.fpft.vcf)
-	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >>$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+
+varscan/vcf/$1_$2.snp.Somatic.hc.fpfail.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).snp.Somatic.hc.fpfail.vcf)
+	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+
+varscan/vcf/$1_$2.indel.Somatic.hc.fpfail.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).indel.Somatic.hc.fpfail.vcf)
+	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 	$(eval $(call varscan-somatic-tumor-normal-merge,$(tumor.$(pair)),$(normal.$(pair)))))
