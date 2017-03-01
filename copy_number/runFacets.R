@@ -178,6 +178,13 @@ pdf(file = str_c(opt$outPrefix, ".cncf.pdf"), height = height, width = width)
 plotSample(out2, fit)
 dev.off()
 
+source("usb-modules/copy_number/runFacets_myplot.R")
+if(sum(out2$out$num.mark)<=10000) { height=2.5; width=7} else { height=2.5; width=8}
+pdf(file = str_c(opt$outPrefix, ".logR.pdf"), height = height, width = width)
+myPlotFACETS(out2, fit, plot.type="logR")
+dev.off()
+
+
 #tab <- cbind(out2$IGV[, 1:4], fit$cncf[, 2:ncol(fit$cncf)])
 #write.table(tab, str_c(opt$outPrefix, ".cncf.txt"), row.names = F, quote = F, sep = '\t')
 
