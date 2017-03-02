@@ -8,7 +8,7 @@ LOGDIR ?= log/facets.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets
 
-facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
+facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).out) facets/cncf/summary.txt
 #facets/geneCN.txt
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
@@ -42,11 +42,14 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(p
 endif
 
 
-facets/cncf/%.cncf.txt : facets/snp_pileup/%.bc.gz
+facets/cncf/%.out : facets/snp_pileup/%.bc.gz
 	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(FACETS_SNP_PILEUP_MIN_DEPTH) \
 	--maxNDepth $(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $(FACETS_WINDOW_SIZE) --minGC $(FACETS_MINGC) --maxGC $(FACETS_MAXGC) \
 	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
 	--outPrefix $(@D)/$* $<")
+
+facets/cncf/summary.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).out)
+	$(INIT) paste $^ > $@;
 
 facets/geneCN.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
 	$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$(LOAD_R_MODULE); $(FACETS_GENE_CN) $(FACETS_GENE_CN_OPTS) --outFile $@ $^")
