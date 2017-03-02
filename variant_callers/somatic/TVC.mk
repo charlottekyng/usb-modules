@@ -4,8 +4,10 @@ include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
 LOGDIR ?= log/tvc_somtic.$(NOW)
 
-PHONY += tvc_somatic tvc_somatic_vcfs tvc_somatic_tables tvc_somatic_vcfs_sets tvc_somatic_tables_sets
-tvc_somatic : tvc_somatic_vcfs tvc_somatic_tables tvc_somatic_vcfs_sets tvc_somatic_tables_sets
+PHONY += tvc_somatic tvc_somatic_vcfs tvc_somatic_tables 
+#tvc_somatic_vcfs_sets tvc_somatic_tables_sets
+tvc_somatic : tvc_somatic_vcfs tvc_somatic_tables 
+#tvc_somatic_vcfs_sets tvc_somatic_tables_sets
 
 VARIANT_TYPES ?= tvc_snps tvc_indels
 tvc_somatic_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)) $(addsuffix .idx,$(call SOMATIC_VCFS,$(type))))
@@ -27,12 +29,12 @@ tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.b
 	&& mv $$(@D)/TSVC_variants.vcf $$@")
 
 tvc/vcf/$1_$2/TSVC_variants_preliminary.fpft.vcf : tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf bam/$1.bam bam/$1.bam.bai
-	$$(call LSCRIPT_MEM,4G,00:29:59,"awk '! /\#/' $$< | \
-	awk '{if(length($$$$4) > length($$$$5)) print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$4)-1); \
-	else print $$$$1\"\t\"($$$$2-1)\"\t\"($$$$2+length($$$$5)-1)}' > $$<.region && \
+	$$(call LSCRIPT_MEM,4G,00:29:59,"$$(LOAD_JAVA8_MODULE); awk '! /\#/' $$< | \
+	awk '{if(length(\$$$$4) > length(\$$$$5)) print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length(\$$$$4)-1); \
+	else print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length(\$$$$5)-1)}' > $$<.region && \
 	$$(BAM_READCOUNT) -f $$(REF_FASTA) -l $$<.region $$(word 2,$$^) > $$<.bamrc && \
 	$$(VARSCAN) fpfilter $$< $$<.bamrc --output-file $$@ --filtered-file $$@.fail \
-	--min-var-freq $$(MIN_AF_SNP) --min-ref-readpos 0 --min-var-readpos 0 --min-ref-dist3 0 --min-var-dist3 0 && \
+	--min-var-freq $$(MIN_AF_SNP) --min-ref-readpos 0 --min-var-readpos 0 --min-ref-dist3 0 --min-var-dist3 0" && \
 	rm $$<.region $$<.bamrc")
 
 tvc/vcf/$1_$2/tumor/TSVC_variants.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf
