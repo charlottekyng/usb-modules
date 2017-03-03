@@ -142,10 +142,10 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 
 ifdef SAMPLE_PAIRS
 define annotate-facets-pair
-vcf/$1.%.facets.vcf : vcf/$1.%.vcf facets/cncf/$1.cncf.txt
-	$$(call LSCRIPT_MEM,4G,00:29:59,"$$(LOAD_R_MODULE); $$(ANNOTATE_FACETS_VCF) --facetsFile $$(<<) --outFile $$@ $$<")
+vcf/$1_$2.%.facets.vcf : vcf/$1_$2.%.vcf facets/cncf/$1_$2.Rdata
+	$$(call LSCRIPT_MEM,4G,00:29:59,"$$(LOAD_R_MODULE); $$(ANNOTATE_FACETS_VCF) --genome \"$$(REF)\" --tumor \"$1\" --facetsRdata $$(<<) --outFile $$@ $$<")
 endef
-$(foreach pair,$(SAMPLE_PAIRS),$(eval $(call annotate-facets-pair,$(pair))))
+$(foreach pair,$(SAMPLE_PAIRS),$(eval $(call annotate-facets-pair,$(tumor.$(pair)),$(normal.$(pair)))))
 endif
 
 

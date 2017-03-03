@@ -48,6 +48,8 @@ facets/cncf/%.out : facets/snp_pileup/%.bc.gz
 	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
 	--outPrefix $(@D)/$* $<")
 
+facets/cncf/%.Rdata : facets/cncf/%.out
+
 facets/cncf/summary.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).out)
 	$(INIT) paste $^ > $@;
 

@@ -61,7 +61,7 @@ if (any(grepl('chr', as.character(seqnames(vcf))))) {
 }
 facetsGr <- with(facetsSeg, GRanges(seqnames = chr,
                                     ranges = IRanges(start = start, end = end),
-                                    cf = cf.em, tcn = tcn.em, lcn = lcn.em, mafR = mafR))
+                                    cf.em = cf.em, tcn.em = tcn.em, lcn.em = lcn.em, mafR = mafR))
 medianMafR <- median(facetsGr$mafR)
 sdMafR <- sd(facetsGr$mafR)
 if (!is.null(opt$purity)) {
@@ -70,25 +70,17 @@ if (!is.null(opt$purity)) {
     purity <- fit$purity
 }
 
-# read file file
-#facetsSeg <- read.table(opt$facetsFile, sep = '\t', header = T)
-#facetsSeg$chrom[which(facetsSeg$chrom==23)] <- "X"
-#facetsGr <- with(facetsSeg, GRanges(seqnames = chrom,
-#                                    ranges = IRanges(start = start, end = end),
-#                                    #CF = cf, TCN = tcn, LCN = lcn,
-#                                    CF_EM = cf.em, TCN_EM = tcn.em, LCN_EM = lcn.em))
-
 info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Float",
                                                         Description = "facets cellular fraction",
                                                         row.names = "facetsCF"))
 info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Float",
-                                                        Description = "facets log ratio",
+                                                        Description = "facets mafR",
                                                         row.names = "facetsMafR"))
 info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer",
-                                                        Description = "facets total copy number",
+                                                        Description = "facets total copy number (EM)",
                                                         row.names = "facetsTCN_EM"))
 info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer",
-                                                        Description = "facets lesser copy number",
+                                                        Description = "facets lesser copy number (EM)",
                                                         row.names = "facetsLCN_EM"))
 info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "String",
                                                         Description = "facets call",
@@ -110,49 +102,10 @@ info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Fl
 info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer",
                                                         Description = "facets multiplicity", row.names = "facetsMultiplicity"))
 
-
-
-# output file
-#outfn <- opt$outFile
-#null <- suppressWarnings(file.remove(outfn))
-#out <- file(outfn, open = 'a')
-
-#input file
-#vcfFile <- arguments$args[1]
-#temp <- tempfile()
-#zipped <- bgzip(vcfFile, temp)
-#idx <- indexTabix(temp, "vcf")
-#tab <- TabixFile(zipped, idx, yieldSize = 8000)
-
-#open(tab)
-#while(nrow(vcf <- readVcf(tab, 'hg19'))) {
-#  info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Float", Description = "Facets cellular fraction", row.names = "facetsCF"))
-#  info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer", Description = "Facets total copy number", row.names = "facetsTCN"))
-#  info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer", Description = "Facets lesser copy number", row.names = "facetsLCN"))
-#  info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Float", Description = "Facets cellular fraction (EM)", row.names = "facetsCF_EM"))
-#  info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer", Description = "Facets total copy number (EM)", row.names = "facetsTCN_EM"))
-#  info(header(vcf)) <- rbind(info(header(vcf)), DataFrame(Number = "1", Type = "Integer", Description = "Facets lesser copy number (EM)", row.names = "facetsLCN_EM"))
-
-#  seqlevels(vcf) <- sub('chr', '', seqlevels(vcf))
-#  ol <- findOverlaps(rowRanges(vcf), facetsGr, select = 'first')
-#  if (sum(!is.na(ol)) > 0) {
-#    info(vcf)$facetsCF[!is.na(ol)] <- facetsGr$CF[ol[!is.na(ol)]]
-#    info(vcf)$facetsTCN[!is.na(ol)] <- facetsGr$TCN[ol[!is.na(ol)]]
-#    info(vcf)$facetsLCN[!is.na(ol)] <- facetsGr$LCN[ol[!is.na(ol)]]
-#    info(vcf)$facetsCF_EM[!is.na(ol)] <- facetsGr$CF_EM[ol[!is.na(ol)]]
-#    info(vcf)$facetsTCN_EM[!is.na(ol)] <- facetsGr$TCN_EM[ol[!is.na(ol)]]
-#    info(vcf)$facetsLCN_EM[!is.na(ol)] <- facetsGr$LCN_EM[ol[!is.na(ol)]]
-#  }
-#  writeVcf(vcf, out)
-#}
-#close(tab)
-#close(out)
-
-
 ol <- findOverlaps(rowRanges(vcf), facetsGr, select = 'first')
 if (sum(!is.na(ol)) > 0) {
-    tcn <- facetsGr[ol[!is.na(ol)], ]$tcn
-    lcn <- facetsGr[ol[!is.na(ol)], ]$lcn
+    tcn <- facetsGr[ol[!is.na(ol)], ]$tcn.em
+    lcn <- facetsGr[ol[!is.na(ol)], ]$lcn.em
     purity <- rep(purity, length(tcn))
 
     ref <- sapply(geno(vcf)$AD[!is.na(ol), tumorSample], function(x) x[1])
