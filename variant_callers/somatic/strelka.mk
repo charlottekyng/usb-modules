@@ -13,7 +13,8 @@ PHONY += strelka strelka_vcfs strelka_tables
 
 strelka : strelka_vcfs strelka_tables
 
-VARIANT_TYPES := strelka_snps strelka_indels
+VARIANT_TYPES := strelka_indels
+#strelka_snps strelka_indels
 strelka_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)))
 strelka_tables : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_TABLES,$(type)))
 
