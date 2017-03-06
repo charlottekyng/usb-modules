@@ -121,12 +121,12 @@ if (sum(!is.na(ol)) > 0) {
                            ifelse(round(ccfLower, 2) < 0.75 & ccfFit$ccf >= 0.8, 'likely_clonal', 
                                   "subclonal"))
 
-    info(vcf)$facetsCF[!is.na(ol)] <- facetsGr$cf[ol[!is.na(ol)]]
-    info(vcf)$facetsTCN_EM[!is.na(ol)] <- facetsGr$tcn[ol[!is.na(ol)]]
-    info(vcf)$facetsLCN_EM[!is.na(ol)] <- facetsGr$lcn[ol[!is.na(ol)]]
+    info(vcf)$facetsCF[!is.na(ol)] <- facetsGr$cf.em[ol[!is.na(ol)]]
+    info(vcf)$facetsTCN_EM[!is.na(ol)] <- facetsGr$tcn.em[ol[!is.na(ol)]]
+    info(vcf)$facetsLCN_EM[!is.na(ol)] <- facetsGr$lcn.em[ol[!is.na(ol)]]
     info(vcf)$facetsMafR[!is.na(ol)] <- facetsGr$mafR[ol[!is.na(ol)]]
-    info(vcf)$facetsLOH[!is.na(ol)] <- facetsGr$lcn[ol[!is.na(ol)]] == 0
-    info(vcf)$facetsLOHCall[!is.na(ol)] <- ifelse(facetsGr$lcn[ol[!is.na(ol)]] == 0, 'true', 'false')
+    info(vcf)$facetsLOH[!is.na(ol)] <- facetsGr$lcn.em[ol[!is.na(ol)]] == 0
+    info(vcf)$facetsLOHCall[!is.na(ol)] <- ifelse(facetsGr$lcn.em[ol[!is.na(ol)]] == 0, 'true', 'false')
     info(vcf)$facetsMultiplicity[!is.na(ol)] <- ccfFit$multiplicity
     info(vcf)$ccf[!is.na(ol)] <- ccfFit$ccf
     info(vcf)$clonalStatus[!is.na(ol)] <- clonalStatus

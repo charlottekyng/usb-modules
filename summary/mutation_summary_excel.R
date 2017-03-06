@@ -26,7 +26,7 @@ output_fields = c("TUMOR_SAMPLE", "NORMAL_SAMPLE", "ANN[*].GENE", "ANN[*].HGVS_P
 	"ANN[*].IMPACT", "ANN[*].BIOTYPE", "ANN[*].FEATURE", "ANN[*].FEATUREID", "TUMOR.FA", "NORMAL.FA", "TUMOR.AF", "NORMAL.AF",
 	"TUMOR.DP", "NORMAL.DP", "TUMOR.AD", "NORMAL.AD", "TUMOR.FAO", "NORMAL.FAO", "TUMOR.FDP", "NORMAL.FDP",
 	"cancer_gene_census", "kandoth", "lawrence", "hap_insuf", 
-	"facetsCF_EM", "facetsTCN_EM", "facetsLCN_EM",
+	"facetsCF", "facetsTCN_EM", "facetsLCN_EM", "facetsLOHCall", "facetsMultiplicity", "ccf", "clonalStatus", "ccfConfUpper", "ccfConfLower",
 	"duplicatedGenesDB", "dbNSFP_MutationTaster_pred", "dbNSFP_Polyphen2_HVAR_pred", "dbNSFP_Interpro_domain", 
 	"CHROM", "POS", "ID", "REF", "ALT", "FILTER", "dbNSFP_ExAC_AC", "dbNSFP_ExAC_AF", "dbNSFP_ExAC_Adj_AF", "dbNSFP_Uniprot_acc")
 
