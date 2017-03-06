@@ -40,7 +40,7 @@ SOMATIC_ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call SOMATIC_ANNS,$1)))
 
 SOMATIC_SUFFIX = $(subst $( ),.,$(strip $1 $(SOMATIC_FILTER_SUFFIX) $(SOMATIC_ANN_SUFFIX)))
 
-SOMATIC_EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous nonsynonymous_synonymous
+SOMATIC_EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous nonsynonymous_synonymous_hotspot_lincRNA
 SOMATIC_VCF_SUFFIXES = $(foreach type,$1,$(call SOMATIC_SUFFIX,$(type)))
 
 SOMATIC_TABLE_EXTENSIONS = tab $(foreach eff,$(SOMATIC_EFF_TYPES),tab.$(eff))
