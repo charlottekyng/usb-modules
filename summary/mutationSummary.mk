@@ -11,20 +11,20 @@ PHONY : mutation_summary
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ALLTABLES_COMPLETE_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
 ALLTABLES_COMPLETE_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
-#ALLTABLES_LOW_MODIFIER_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.low_modifier.txt
-#ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.synonymous.txt
-#ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous.txt
-#ALLTABLES_LOW_MODIFIER_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.low_modifier.txt
-#ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous.txt
+ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous_synonymous_hotspot.txt
+ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous_synonymous_hotspot.txt
+ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.synonymous.txt
+ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous.txt
+ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous.txt
 endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 ALLTABLES_COMPLETE_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
 ALLTABLES_COMPLETE_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
-#ALLTABLES_LOW_MODIFIER_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.low_modifier.txt
-#ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.synonymous.txt
-#ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous.txt
-#ALLTABLES_LOW_MODIFIER_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.low_modifier.txt
-#ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous.txt
+ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous_synonymous_hotspot.txt
+ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous_synonymous_hotspot.txt
+ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.synonymous.txt
+ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous.txt
+ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous.txt
 endif
 
 
@@ -59,10 +59,10 @@ endif
 ifeq ($(findstring TXT,$(MUTATION_SUMMARY_FORMAT)),TXT)
 mutation_summary : $(shell rm -f summary/mutation_summary_snps.txt) summary/mutation_summary_snps.txt $(shell rm -f summary/mutation_summary_indels.txt) summary/mutation_summary_indels.txt
 
-summary/mutation_summary_snps.txt : $(ALLTABLES_COMPLETE_SNPS)
+summary/mutation_summary_snps.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS),$(ALLTABLES_COMPLETE_SNPS))
 	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
 	--outFile $@ --outputFormat TXT $<")
-summary/mutation_summary_indels.txt : $(ALLTABLES_COMPLETE_INDELS)
+summary/mutation_summary_indels.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS),$(ALLTABLES_COMPLETE_INDELS))
 	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
 	--outFile $@ --outputFormat TXT $<")
 endif

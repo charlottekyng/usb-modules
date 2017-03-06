@@ -531,6 +531,7 @@ ADD_GENE_LIST_ANNOTATION = $(RSCRIPT) usb-modules/vcf_tools/addGeneListAnnotatio
 ANNOTATE_FACETS_VCF = $(RSCRIPT) usb-modules/copy_number/annotateFacets2Vcf.R
 
 MUTATION_SUMMARY_FORMAT ?= EXCEL
+INCLUDE_LINCRNA_IN_SUMMARY ?= false
 
 #NORMAL_VCF ?= $(HOME)/share/reference/spowellnormal.gatk_variants.vcf
 #CANCER_HOTSPOT_ANNOTATION_SCRIPT = python modules/vcf_tools/hotspot_vcf.py
