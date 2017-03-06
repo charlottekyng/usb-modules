@@ -3,7 +3,8 @@ suppressPackageStartupMessages(library("optparse"));
 suppressPackageStartupMessages(library("xlsx"));
 
 optList <- list(
-        make_option("--outFile", default = NULL, help = "output excel file")
+        make_option("--outFile", default = NULL, help = "output file"),
+	make_option("--outputFormat", default = "EXCEL", help = "output Format, EXCEL or TXT")
         )
 parser <- OptionParser(usage = "%prog vcf.file", option_list = optList);
 arguments <- parse_args(parser, positional_arguments = T);
@@ -13,8 +14,8 @@ if (is.null(opt$outFile)) {
     cat("Need output file\n");
     print_help(parser);
     stop();
-} else if (length(arguments$args) <= 1) {
-    cat("Need vcf files\n");
+} else if (length(arguments$args) < 1) {
+    cat("Need input mutation table files\n");
     print_help(parser);
     stop();
 }
@@ -68,7 +69,18 @@ for (file in files) {
 
 	name <- strsplit (file, ".", fixed=T)[[1]]
 	name <- toString(name[c(2,length(name)-1)])
-	if (file.exists(opt$outFile)) {
-		write.xlsx2(tab, opt$outFile, sheetName=name, append=TRUE, showNA=FALSE, row.names=F)
-	} else { write.xlsx2(tab, opt$outFile, sheetName=name, append=FALSE, showNA=FALSE, row.names=F)}
+
+	if(opt$outputFormat=="EXCEL") {
+
+		if (file.exists(opt$outFile)) {
+			write.xlsx2(tab, opt$outFile, sheetName=name, append=TRUE, showNA=FALSE, row.names=F)
+		} else { 
+			write.xlsx2(tab, opt$outFile, sheetName=name, append=FALSE, showNA=FALSE, row.names=F)
+		}
+	} else if (opt$outputFormat=="TXT") {
+		write.table(tab, opt$outFile, sep="\t", row.names=F, quote=F, na="")
+	} else { 
+		stop("Output format not recognized")
+	}
+
 }

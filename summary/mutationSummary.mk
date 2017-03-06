@@ -47,8 +47,22 @@ endif
 # Set max for ExAC_AF column in MUTATION_SUMMARY sheet and tsv
 EXCEL_MAX_EXAC_AF ?= 1
 
+
+ifeq ($(findstring EXCEL,$(MUTATION_SUMMARY_FORMAT)),EXCEL)
 mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
 
 summary/mutation_summary.xlsx : $(ALLTABLES_COMPLETE_SNPS) $(ALLTABLES_COMPLETE_INDELS)
-	$(call LSCRIPT_CHECK_MEM,16G,05:59:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-	--outFile $@ $(wordlist 1,4,$^)")
+	$(call LSCRIPT_CHECK_MEM,6G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	--outFile $@ $(wordlist 1,2,$^)")
+endif
+
+ifeq ($(findstring TXT,$(MUTATION_SUMMARY_FORMAT)),TXT)
+mutation_summary : $(shell rm -f summary/mutation_summary_snps.txt) summary/mutation_summary_snps.txt $(shell rm -f summary/mutation_summary_indels.txt) summary/mutation_summary_indels.txt
+
+summary/mutation_summary_snps.txt : $(ALLTABLES_COMPLETE_SNPS)
+	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	--outFile $@ --outputFormat TXT $<")
+summary/mutation_summary_indels.txt : $(ALLTABLES_COMPLETE_INDELS)
+	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	--outFile $@ --outputFormat TXT $<")
+endif
