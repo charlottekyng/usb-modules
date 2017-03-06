@@ -11,40 +11,41 @@ LOGDIR ?= log/fastq.$(NOW)
 .PHONY : fastq
 
 ifeq ($(MERGE_SPLIT_FASTQ),true)
+ifeq ($(PAIRED_END),true)
+fastq: $(foreach sample,$(SAMPLES),fastq/$(sample).1.fastq.gz) $(foreach sample,$(SAMPLES),fastq/$(sample).2.fastq.gz)
+else
 fastq: $(foreach sample,$(SAMPLES),fastq/$(sample).1.fastq.gz)
+endif
+else
+ifeq ($(PAIRED_END),true)
+fastq: $(foreach split,$(UNSPLIT_SAMPLES),fastq/$(split).1.fastq.gz) $(foreach split,$(UNSPLIT_SAMPLES),fastq/$(split).2.fastq.gz)
 else
 fastq: $(foreach split,$(UNSPLIT_SAMPLES),fastq/$(split).1.fastq.gz)
 endif
+endif
 
 ifdef FASTQ_FILTER
-ifeq ($(PAIRED_END),true)
-fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz unprocessed_fastq/%.2.$(FASTQ_FILTER).fastq.gz
-	$(INIT) ln -f $< fastq/$*.1.fastq.gz && ln -f $(word 2,$(^)) fastq/$*.2.fastq.gz
+fastq/%.fastq.gz : unprocessed_fastq/%.$(FASTQ_FILTER).fastq.gz
+	$(INIT) ln -f $< $@
 else
-fastq/%.1.fastq.gz : unprocessed_fastq/%.1.$(FASTQ_FILTER).fastq.gz
-	$(INIT) ln -f $< fastq/$*.1.fastq.gz
-endif
-else
-ifeq ($(PAIRED_END),true)
-fastq/%.1.fastq.gz fastq/%.2.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
-	$(INIT) ln -f $< fastq/$*.1.fastq.gz && ln -f $(word 2,$(^)) fastq/$*.2.fastq.gz && cp  $< fastq/$*.1.fastq.gz && cp $(word 2,$^) fastq/$*.2.fastq.gz
-else
-fastq/%.1.fastq.gz : unprocessed_fastq/%.1.fastq.gz
-	$(INIT) ln -f $< fastq/$*.1.fastq.gz && cp $< fastq/$*.1.fastq.gz
-endif
+fastq/%.fastq.gz : unprocessed_fastq/%.fastq.gz
+	$(INIT) ln -f $< $@
 endif
 
 unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) -l $(TRIM_LENGTH) | gzip -c > $@ ")
 
 ifeq ($(PAIRED_END),true)
-unprocessed_fastq/%.1.cutadapt.fastq.gz unprocessed_fastq/%.2.cutadapt.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
+unprocessed_fastq/%.1.cutadapt.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
 	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --paired \
 	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
 	$(if $(CLIP_FASTQ_R2),--clip_R2 $(CLIP_FASTQ_R2)) \
-	$^ && rename _val_1.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_1.fq.gz \
-	&& rename _val_2.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$%_val_2.fq.gz")
+	$^ && rename _val_1.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$*.1_val_1.fq.gz \
+	&& rename _val_2.fq.gz .cutadapt.fastq.gz unprocessed_fastq/$*.2_val_2.fq.gz")
+
+unprocessed_fastq/%.2.cutadapt.fastq.gz : unprocessed_fastq/%.1.cutadapt.fastq.gz
+	$(INIT)
 else
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
 	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \

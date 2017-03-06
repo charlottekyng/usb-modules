@@ -29,7 +29,7 @@ star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED
 	--outReadsUnmapped Fastx --outMultimapperOrder Random --outSAMattrIHstart 0")
 
 define align-star-secondpass
-star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
+star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/$1.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
 	$$(call LSCRIPT_PARALLEL_MEM,4,16G,00:59:59,"$$(MKDIR) star star/secondpass/; \
 	$$(LOAD_STAR_MODULE); STAR --runMode alignReads \
 	--runThreadN 4 --genomeDir $$(STAR_GENOME_DIR) --readFilesIn $$< $$(if $$(findstring true,$(PAIRED_END)),$$(word 2,$$^)) \
