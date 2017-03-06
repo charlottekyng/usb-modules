@@ -10,11 +10,11 @@ SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
 SOMATIC_COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),eff dbsnp, \
         eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
 
-ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
+#ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 2; echo $$?),0)
 	SOMATIC_COMMON_ANNS += nft
 endif
-endif
+#endif
 
 ifeq ($(findstring true,$(ANN_FACETS)),true)
 	SOMATIC_COMMON_ANNS += facets

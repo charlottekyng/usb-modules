@@ -88,3 +88,4 @@ $(foreach set,$(SAMPLE_SETS),\
 
 include usb-modules/vcf_tools/vcftools.mk
 include usb-modules/variant_callers/TVC.mk
+include usb-modules/variant_callers/somatic/pon.mk

@@ -25,9 +25,16 @@ LOGDIR ?= log/vcf.$(NOW)
 ############ FILTERS #########
 
 
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 %.nft.vcf : %.vcf mutect2/pon.mutect2.vcf
 	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
 		-R $(REF_FASTA) -V $< -o $@ --maskName 'PoN' --mask $(word 2,$^) && $(RM) $< $<.idx")
+endif
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+%.nft.vcf : %.vcf tvc/pon.tvc.vcf
+	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
+		-R $(REF_FASTA) -V $< -o $@ --maskName 'PoN' --mask $(word 2,$^) && $(RM) $< $<.idx")
+endif
 
 %.target_ft.vcf : %.vcf
 	$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call VARIANT_FILTRATION,7G) \
