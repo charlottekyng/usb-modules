@@ -8,8 +8,7 @@ LOGDIR ?= log/facets.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets
 
-facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).out) facets/cncf/summary.txt
-#facets/geneCN.txt
+facets : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).out) facets/cncf/summary.txt facets/geneCN.txt
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
