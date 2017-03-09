@@ -14,7 +14,8 @@ override BAM_DUP_TYPE := markdup
 $(info BAM_FIX_RG $(BAM_FIX_RG))
 include usb-modules/aligners/align.inc
 
-BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).originalstar.bam) $(foreach sample,$(SAMPLES),bam/$(sample).bam)
+BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
+#$(foreach sample,$(SAMPLES),bam/$(sample).originalstar.bam)
 star : $(BAMS) $(addsuffix .bai,$(BAMS)) star/all.ReadsPerGene.out.tab
 
 star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz)
@@ -30,9 +31,9 @@ star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED
 
 define align-star-secondpass
 star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/$1.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
-	$$(call LSCRIPT_PARALLEL_MEM,4,16G,00:59:59,"$$(MKDIR) star star/secondpass/; \
+	$$(call LSCRIPT_PARALLEL_MEM,8,16G,11:59:59,"$$(MKDIR) star star/secondpass/; \
 	$$(LOAD_STAR_MODULE); STAR --runMode alignReads \
-	--runThreadN 4 --genomeDir $$(STAR_GENOME_DIR) --readFilesIn $$< $$(if $$(findstring true,$(PAIRED_END)),$$(word 2,$$^)) \
+	--runThreadN 8 --genomeDir $$(STAR_GENOME_DIR) --readFilesIn $$< $$(if $$(findstring true,$(PAIRED_END)),$$(word 2,$$^)) \
 	--readFilesCommand gunzip -c \
 	--alignSJoverhangMin 8 --alignSJDBoverhangMin 10 --alignIntronMax 200000 --alignMatesGapMax 200000 \
 	--alignSJstitchMismatchNmax 5 -1 5 5 --limitSjdbInsertNsj 5000000 \
