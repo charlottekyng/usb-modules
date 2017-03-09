@@ -7,6 +7,7 @@ include usb-modules/Makefile.inc
 
 LOGDIR ?= log/vcf.$(NOW)
 
+.SECONDEXPANSION:
 ..DUMMY := $(shell mkdir -p version; echo "$(SNP_EFF) &> version/snp_eff.txt")
 
 
@@ -99,6 +100,40 @@ vcf/$1.%.hrun.vcf : vcf/$1.%.vcf bam/$1.bam bam/$1.bai
 		-L $$< -A HomopolymerRun --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -V $$< -o $$@ && $$(RM) $$< $$<.idx")
 endef
 $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
+
+# Here first select the uncalled variants
+# then genotype them
+# then select the ones supported by at least 1 read
+# then set filter to "interrogation"
+# then merge
+
+define sufam
+#ifeq($3,$2)
+#vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
+#	$$(INIT) ln -f $$< $$@
+#else
+vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
+	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
+		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
+
+vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
+	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
+		$$(call SELECT_VARIANTS,4G) -R $$(REF_FASTA) --discordance $$< \
+		-o $$@.tmp1 --variant $$(word 2,$$^) && \
+		$$(call UNIFIED_GENOTYPER,4G) -nt 8 -R $$(REF_FASTA) \
+		$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) \
+		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $$@.tmp1 -o $$@.tmp2 --output_mode EMIT_ALL_SITES && \
+		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
+		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 0' --filterName interrogation && \
+		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" > $$@.tmp4 && \
+		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
+		--genotypemergeoption UNSORTED -R $$(REF_FASTA)")
+#		$$(RM) $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4")
+#endif
+endef
+$(foreach set,$(SAMPLE_SETS),\
+	$(foreach tumor,$(wordlist 1,$(shell expr $(words $(subst _,$( ),$(set))) - 1),$(subst _,$( ),$(set))),\
+		$(eval $(call sufam,$(tumor),$(lastword $(subst _,$( ),$(set))),$(subst $(tumor)_,,$(set))))))
 
 
 %.dbsnp.vcf : %.vcf %.vcf.idx 

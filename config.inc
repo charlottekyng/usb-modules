@@ -290,6 +290,7 @@ LOAD_STAR_MODULE ?= module load $(STAR_MODULE)
 
 STAR_FUSION_MODULE ?= STAR-Fusion/0.6.0-goolf-1.4.10-Perl-5.16.3
 LOAD_STAR_FUSION_MODULE ?= module load $(STAR_FUSION_MODULE)
+STAR_FUSION ?= STAR-Fusion
 
 HISAT ?= $(HOME)/share/usr/hisat2-2.0.2-beta/hisat2
 HISAT_NUM_CORES ?= 8

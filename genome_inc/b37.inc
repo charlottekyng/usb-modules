@@ -110,6 +110,8 @@ REF_HOUSEKEEPING_GENE_BED = $(ANN_DIR)/share/reference/hg19.HouseKeepingGenes.be
 
 ENSEMBL_TXDB = $(ANN_DIR)/hsapiens_ensembl_biomart.sqlite
 
+STAR_GENOME_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/genome_index/star_b37
+STAR_CTAT_DIR = ~/ref_nobackup/annotation_data/b37/GRCh37_gencode_v19_CTAT_lib
 RIBOSOMAL_INTERVALS ?= $(ANN_DIR)/ribosomalRNA.interval_list
 GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
 

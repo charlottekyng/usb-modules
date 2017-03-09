@@ -1,5 +1,7 @@
 ifndef SOMATIC_VARIANT_CALLER_INC
 
+
+
 ### Filters
 SOMATIC_FILTERS = $(if $(TARGETS_FILE_INTERVALS),target_ft) som_ad_ft
 SOMATIC_FILTERS += $(if $(findstring GRCm38,$(REF)),,hotspot)
@@ -7,8 +9,8 @@ SOMATIC_FILTERS += $(if $(findstring GRCm38,$(REF)),,hotspot)
 SOMATIC_FILTER_SUFFIX = $(subst $( ),.,$(strip $(call SOMATIC_FILTERS,$1)))
 
 ### Annotation
-SOMATIC_COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),eff dbsnp, \
-        eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
+SOMATIC_COMMON_ANNS := sufam $(if $(findstring GRCm38,$(REF)),eff dbsnp,\
+	eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
 
 #ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(shell test $(words $(NORMAL_SAMPLES)) -gt 2; echo $$?),0)
