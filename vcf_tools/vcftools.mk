@@ -119,7 +119,9 @@ vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(su
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
 		$$(call SELECT_VARIANTS,4G) -R $$(REF_FASTA) --discordance $$< \
-		-o $$@.tmp1 --variant $$(word 2,$$^) && \
+		-o $$@.tmp1 --variant $$(word 2,$$^) --sites_only && \
+		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp1 -o $$@.tmp2 \
+		--invalidatePreviousFilters && mv $$@.tmp2 $$@.tmp1 \
 		$$(call UNIFIED_GENOTYPER,4G) -nt 8 -R $$(REF_FASTA) \
 		$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $$@.tmp1 -o $$@.tmp2 --output_mode EMIT_ALL_SITES && \
