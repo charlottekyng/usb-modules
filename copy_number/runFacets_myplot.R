@@ -38,7 +38,7 @@ myPlotFACETS <- function (x, emfit = NULL, clustered = FALSE, plot.type = c("non
     segbdry <- cumsum(c(0, out$num.mark))
     segstart <- segbdry[-length(segbdry)]
     segend <- segbdry[-1]
-    plot(jseg$cnlr[is.finite(jseg$cnlr)], pch = ".", cex = 2,
+    plot(jseg$cnlr[is.finite(jseg$cnlr)], pch = ".", cex = 0.5,
         col = c("grey", "lightblue", "azure4", "slateblue")[chrcol],
         ylab = "log-ratio", xaxt = "n", cex.axis=0.8, las=2)
     abline(h=0, col="lightgrey", lty=2)

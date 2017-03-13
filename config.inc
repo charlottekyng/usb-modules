@@ -377,6 +377,7 @@ CONTEST += -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 COVARIATES = -cov ReadGroupCovariate -cov QualityScoreCovariate -cov DinucCovariate -cov CycleCovariate
 
+FIX_GATK_VCF = $(PERL)  usb-modules/variant_callers/fix_gatk_vcf.pl
 REPORT_STRATIFICATION := Filter
 
 ##################################
@@ -561,9 +562,9 @@ endif
 FACETS_SNP_PILEUP_MINMAPQ ?= 1
 FACETS_SNP_PILEUP_MINBASEQ ?= 13
 
-FACETS_PRE_CVAL ?= 50
+FACETS_PRE_CVAL ?=
 FACETS_CVAL1 ?= 150
-FACETS_CVAL2 ?= 50
+FACETS_CVAL2 ?=
 FACETS_MIN_NHET ?= 15
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
 

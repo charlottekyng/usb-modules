@@ -1,0 +1,60 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Std;
+my %opt;
+getopts('hf:n:t:', \%opt);
+
+my $usage = <<ENDL;
+perl fix_gatk_vcf.pl <STDIN>
+ENDL
+
+sub HELP_MESSAGE {
+   print STDERR $usage;
+   exit(1);
+}
+
+HELP_MESSAGE if $opt{h};
+
+my $now = localtime;
+
+while (my $l = <>) {
+	chomp $l;
+	if ($l =~ /\#\#FORMAT=\<ID=AD/) {
+		print $l."\n";
+		print "\#\#FORMAT=\<ID=FA,Number=R,Type=\"Integer\",Description=\"Variant allele fraction\"\>\n"; 
+	} elsif ($l =~ /\#/) {
+		print $l."\n"; 
+	} else {
+		my @line = split /\t/, $l;
+		my $ad = my $dp = "";
+		my @format = split /:/, $line[8];
+		for (my $i = 0; $i < scalar @format; $i++) {
+			if ($format[$i] eq "AD") {
+				$format[$i] = "AD:FA";
+				$ad = $i;
+			} elsif ($format[$i] eq "DP") {
+				$dp = $i;
+			}
+		}
+		$line[8] = join ':', @format;
+		for (my $i = 9; $i <= 10; $i++) {
+			my @fields = split /:/, $line[$i];
+			my @ads = split /,/, $fields[$ad];
+			my $dps = $fields[$dp];
+			my @fas = ();
+			for (my $j = 1; $j < scalar @ads; $j++) {
+				push @fas, $ads[$j]/$dps;
+			}
+			$fields[$ad] = $fields[$ad].":".join ',',@fas;
+			$line[$i] = join ':', @fields;
+		}
+		print join "\t", @line; print "\n";
+	}
+}
+
+
+
+

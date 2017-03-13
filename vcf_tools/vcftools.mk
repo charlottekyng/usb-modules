@@ -118,16 +118,7 @@ vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(su
 
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
-		$$(call SELECT_VARIANTS,4G) -R $$(REF_FASTA) --discordance $$< \
-		-o $$@.tmp1 --variant $$(word 2,$$^) --sites_only && \
-		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp1 -o $$@.tmp2 \
-		--invalidatePreviousFilters && mv $$@.tmp2 $$@.tmp1 && \
-		$$(call UNIFIED_GENOTYPER,4G) -nt 8 -R $$(REF_FASTA) \
-		$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) \
-		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $$@.tmp1 -o $$@.tmp2 --output_mode EMIT_ALL_SITES && \
-		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
-		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 0' --filterName interrogation && \
-		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" > $$@.tmp4 && \
+		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" | $$(FIX_GATK_VCF) > $$@.tmp4 && \
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA)")
 #		$$(RM) $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4 $$(word 2,$$^) $$@.tmp1.idx $$@.tmp2.idx $$@.tmp3.idx $$@.tmp4.idx $$(word 2,$$^).idx")
