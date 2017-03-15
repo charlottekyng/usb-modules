@@ -20,9 +20,9 @@ optList <- list(
 	make_option("--snp_nbhd", default = 250, type = 'integer', help = "window size"),
 	make_option("--minNDepth", default = 25, type = 'integer', help = "minimum depth in normal to keep the position"),
 	make_option("--maxNDepth", default= 1000, type= 'integer', help = "maximum depth in normal to keep the position"),
-	make_option("--pre_cval", default = 50, type = 'integer', help = "pre-processing critical value"),
-	make_option("--cval1", default = 150, type = 'integer', help = "critical value for estimating diploid log Ratio"),
-	make_option("--cval2", default = 50, type = 'integer', help = "starting critical value for segmentation (increases by 10 until success)"),
+	make_option("--pre_cval", default = NULL, type = 'integer', help = "pre-processing critical value"),
+	make_option("--cval1", default = NULL, type = 'integer', help = "critical value for estimating diploid log Ratio"),
+	make_option("--cval2", default = NULL, type = 'integer', help = "starting critical value for segmentation (increases by 10 until success)"),
 	make_option("--max_cval", default = 5000, type = 'integer', help = "maximum critical value for segmentation (increases by 10 until success)"),
 	make_option("--min_nhet", default = 25, type = 'integer', help = "minimum number of heterozygote snps in a segment used for bivariate t-statistic during clustering of segment"),
 	make_option("--gene_loc_file", default = '~/share/reference/IMPACT410_genes_for_copynumber.txt', type = 'character', help = "file containing gene locations"),
@@ -76,6 +76,10 @@ print(chromLevels)
 if (gbuild %in% c("hg19", "hg18")) { chromLevels=intersect(chromLevels, c(1:22,"X"))
 } else { chromLevels=intersect(chromLevels, c(1:19,"X"))}
 print(chromLevels)
+
+if(is.null(opt$cval1)) { stop("cval1 cannot be NULL")}
+if(is.null(opt$pre_cval)) { opt$pre_cval = opt$cval1-50 }
+if(is.null(opt$cval2)) { opt$cval2 = opt$cval1-50}
 
 if (opt$minGC == 0 & opt$maxGC == 1) {
 	preOut=preProcSample(rcmat, snp.nbhd = opt$snp_nbhd, ndepth = opt$minNDepth, cval = opt$pre_cval, 

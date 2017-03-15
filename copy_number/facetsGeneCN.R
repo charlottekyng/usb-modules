@@ -141,7 +141,7 @@ for (f in facetsFiles) {
 mm <- left_join(genes, join_all(mm, type = 'full', by="hgnc")) %>% arrange(as.integer(chrom), start, end)
 write.table(mm, file=opt$outFile, sep="\t", row.names=F, na="", quote=F)
 
-seg_sample <- seg_chr <- seg_band <- seg_start <- seg_end <- seg_genes <- seg_type <- NA
+seg_sample <- seg_chr <- seg_band <- seg_start <- seg_end <- seg_cnlr <- seg_genes <- seg_type <- NA
 for (i in grep("EM", colnames(mm))) {
 	for(chr in c(1:22,"X")) {
 		tt <- mm[which(mm$chrom==chr),c(1:5,i)]
