@@ -8,7 +8,7 @@ LOGDIR ?= log/facets_poolednorm.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets_poolednorm
 
-facets_poolednorm : $(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),facets/cncf_poolednorm_$(cval1)/$(sample).out))
+facets_poolednorm : $(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),facets/cncf_poolednorm_$(cval1)/$(sample)_poolednorm.out))
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 define snp-pileup-tumor-poolednorm
