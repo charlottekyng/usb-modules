@@ -8,7 +8,7 @@ LOGDIR ?= log/facets.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets
 
-facets : $(foreach cval1,$(FACETS_CVAL1),$(foreach pair,$(SAMPLE_PAIRS),facets/cncfTN_$(cval1)/$(pair).out) facets/cncfTN_$(cval1)/summary.txt facets/cncfTN_$(cval1)/geneCN.txt facets/cncfTN_$(cval1)/geneCN.fill.txt)
+facets : $(foreach cval1,$(FACETS_CVAL1),$(foreach pair,$(SAMPLE_PAIRS),facets/cncfTN_$(cval1)/$(pair).out) facets/cncfTN_$(cval1)/summary.txt facets/cncfTN_$(cval1)/geneCN.filled.txt)
 #	facets/geneCN.txt facets/geneCN.fill.txt facets/geneCN.heatmap.pdf facets/geneCN.fill.heatmap.pdf
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
@@ -40,7 +40,7 @@ endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call snp-pileup-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 endif
 
-define facets-tumor-normal
+define facets-cval1-tumor-normal
 facets/cncfTN_$1/$2_$3.out : facets/snp_pileup/$2_$3.bc.gz
 	$$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS) --minNDepth $$(FACETS_SNP_PILEUP_MIN_DEPTH) \
 	--maxNDepth $$(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $$(FACETS_WINDOW_SIZE) --minGC $$(FACETS_MINGC) --maxGC $$(FACETS_MAXGC) \
@@ -51,18 +51,22 @@ facets/cncfTN_$1/$2_$3.out : facets/snp_pileup/$2_$3.bc.gz
 facets/cncfTN_$1/$2_$3.Rdata : facets/cncfTN_$1/$2_$3.out
 facets/cncfTN_$1/$2_$3.cncf.txt : facets/cncfTN_$1/$2_$3.out
 
+endef
+$(foreach cval1,$(FACETS_CVAL1),$(foreach pair,$(SAMPLE_PAIRS),$(eval $(call facets-cval1-tumor-normal,$(cval1),$(tumor.$(pair)),$(normal.$(pair))))))
+
+define facets-merge
 facets/cncfTN_$1/summary.txt : $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).out)
 	$$(INIT) paste $$^ > $$@;
 
-facets/cncfTN_$1/geneCN.txt : $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).cncf.txt)
+facets/cncfTN_$1/geneCN.filled.txt : $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).cncf.txt)
 	$$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS_GENE_CN) $$(FACETS_GENE_CN_OPTS) --outFile $$@ $$^")
 
-facets/cncfTN_$1/geneCN.fill.txt : facets/cncfTN_$1/geneCN.txt $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).cncf.txt)
-	$$(call LSCRIPT_CHECK_MEM,4G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS_FILL_GENE_CN) --outFile $$@ --geneCNFile $$< \
-		$$(filter %.cncf.txt,$$^)")
+#facets/cncfTN_$1/geneCN.fill.txt : facets/cncfTN_$1/geneCN.txt $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).cncf.txt)
+#	$$(call LSCRIPT_CHECK_MEM,4G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS_FILL_GENE_CN) --outFile $$@ --geneCNFile $$< \
+#		$$(filter %.cncf.txt,$$^)")
 
 endef
-$(foreach cval1,$(FACETS_CVAL1),$(foreach pair,$(SAMPLE_PAIRS),$(eval $(call facets-tumor-normal,$(cval1),$(tumor.$(pair)),$(normal.$(pair))))))
+$(foreach cval1,$(FACETS_CVAL1),$(eval $(call facets-merge,$(cval1))))
 
 facets/cncf/geneCN%heatmap.pdf  : facets/geneCN%txt
 	$(call LSCRIPT_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(FACETS_PLOT_GENE_CN) $(FACETS_PLOT_GENE_CN_OPTS) $< $@")

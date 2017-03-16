@@ -8,7 +8,7 @@ LOGDIR ?= log/facets_poolednorm.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets_poolednorm
 
-facets_poolednorm : $(foreach sample,$(SAMPLES),facets/cncf_poolednorm/$(sample)_poolednorm.cncf.txt)
+facets_poolednorm : $(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),facets/cncf_poolednorm_$(cval1)/$(sample).out))
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 define snp-pileup-tumor-poolednorm
@@ -34,12 +34,16 @@ endef
 $(foreach sample,$(SAMPLES),$(eval $(call snp-pileup-tumor-poolednorm,$(sample))))
 endif
 
-facets/cncf_poolednorm/%.cncf.txt : facets/snp_pileup/%.bc.gz
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_R_MODULE); $(FACETS) --minNDepth $(FACETS_SNP_PILEUP_MIN_DEPTH) \
-	--maxNDepth $(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $(FACETS_WINDOW_SIZE) --minGC $(FACETS_MINGC) --maxGC $(FACETS_MAXGC) --unmatched TRUE \
-	--cval2 $(FACETS_CVAL2) --cval1 $(FACETS_CVAL1) --genome $(REF) --min_nhet $(FACETS_MIN_NHET) --pre_cval $(FACETS_PRE_CVAL)  \
-	--outPrefix $(@D)/$* $<")
+define facets-cval1-sample
+facets/cncf_poolednorm_$1/$2_poolednorm.out : facets/snp_pileup/$2_poolednorm.bc.gz
+	$$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS) --minNDepth $$(FACETS_SNP_PILEUP_MIN_DEPTH) \
+	--maxNDepth $$(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $$(FACETS_WINDOW_SIZE) --minGC $$(FACETS_MINGC) --maxGC $$(FACETS_MAXGC) --unmatched TRUE \
+	--cval1 $1 --genome $$(REF) --min_nhet $$(FACETS_MIN_NHET) \
+	--outPrefix $$* $$<")
+endef
+$(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),$(eval $(call facets-cval1-sample,$(cval1),$(sample)))))
 
+#--cval2 $(FACETS_CVAL2) --pre_cval $(FACETS_PRE_CVAL)
 include usb-modules/copy_number/facets.mk
 include usb-modules/variant_callers/gatk.mk
 include usb-modules/variant_callers/TVC.mk
