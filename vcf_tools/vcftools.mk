@@ -122,7 +122,7 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 		$$(call UNIFIED_GENOTYPER,4G) -R $$(REF_FASTA) -I $$(word 3,$$^) -I $$(word 4,$$^) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES --output_mode EMIT_ALL_SITES -alleles $$@.tmp1 -o $$@.tmp2 && \
 		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
-		--filterExpression 'vc.getGenotype(\"C975\").getAD().1 > 0' --filterName interrogation && \
+		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 0' --filterName interrogation && \
 		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" | $$(FIX_GATK_VCF) > $$@.tmp4 && \
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
