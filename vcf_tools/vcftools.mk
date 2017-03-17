@@ -118,6 +118,11 @@ vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(su
 
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
+		$$(call SELECT_VARIANTS,21G) -R $$(REF_FASTA) --variant $$(word 2,$$^) --discordance $$(word 1,$$^) -o $$@.tmp1 && \
+		$$(call UNIFIED_GENOTYPER,4G) -R $$(REF_FASTA) -I $$(word 3,$$^) -I $$(word 4,$$^) \
+		--genotyping_mode GENOTYPE_GIVEN_ALLELES --output_mode EMIT_ALL_SITES -alleles $$@.tmp1 -o $$@.tmp2 && \
+		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
+		--filterExpression 'vc.getGenotype(\"C975\").getAD().1 > 0' --filterName interrogation && \
 		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" | $$(FIX_GATK_VCF) > $$@.tmp4 && \
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \

@@ -116,33 +116,33 @@ mm <- lapply(facetsFiles, function(f) {
 	df$GL[df$tcn.em > ploidy] <- 1
 	df$GL[df$tcn.em >= ploidy + 4] <- 2
 
-#	load(gsub("cncf.txt", "Rdata", f, fixed=T))
-#	noise <- median(abs(out2$jointseg$cnlr-  unlist(apply(out2$out[,c("cnlr.median", "num.mark")], 1, function(x) {rep(x[1], each=x[2])}))))
+	load(gsub("cncf.txt", "Rdata", f, fixed=T))
+	noise <- median(abs(out2$jointseg$cnlr-  unlist(apply(out2$out[,c("cnlr.median", "num.mark")], 1, function(x) {rep(x[1], each=x[2])}))))
 
-#	lrr <- sort(out2$jointseg$cnlr)
-#	if (noise <= 0.2) { lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))]
-#	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
-#	} else { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]}
+	lrr <- sort(out2$jointseg$cnlr)
+	if (noise <= 0.2) { lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))]
+	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
+	} else { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]}
 
-#	df$GL2 <- 0
-#	df$GL2[df$cnlr.median < median(lrr)-(2.5*sd(lrr))] <- -1
-#	df$GL2[df$cnlr.median < median(lrr)-(7*sd(lrr))] <- -2
-#	df$GL2[df$cnlr.median > median(lrr)+(2*sd(lrr))] <- 1
-#	df$GL2[df$cnlr.median > median(lrr)+(6*sd(lrr))] <- 2
+	df$GL2 <- 0
+	df$GL2[df$cnlr.median < median(lrr)-(2.5*sd(lrr))] <- -1
+	df$GL2[df$cnlr.median < median(lrr)-(7*sd(lrr))] <- -2
+	df$GL2[df$cnlr.median > median(lrr)+(2*sd(lrr))] <- 1
+	df$GL2[df$cnlr.median > median(lrr)+(6*sd(lrr))] <- 2
 
-	df %>% select(hgnc, GL) %>% ungroup
+	df %>% select(hgnc, GL, GL2, tcn.em, lcn.em) %>% ungroup
 })
 names(mm) <- facetsFiles
 for (f in facetsFiles) {
 	n <- sub('\\..*', '', sub('.*/', '', f))
-	colnames(mm[[f]])[2] <- paste(n, "EM", sep="_")
+#	colnames(mm[[f]])[2] <- paste(n, "EM", sep="_")
 }
 
 mm <- left_join(genes, join_all(mm, type = 'full', by="hgnc")) %>% arrange(as.integer(chrom), start, end)
-write.table(mm, file=opt$outFile, sep="\t", row.names=F, na="", quote=F)
+#write.table(mm, file=opt$outFile, sep="\t", row.names=F, na="", quote=F)
 
-seg_sample <- seg_chr <- seg_band <- seg_start <- seg_end <- seg_cnlr <- seg_genes <- seg_type <- NA
-for (i in grep("EM", colnames(mm))) {
+seg_sample <- seg_chr <- seg_band <- seg_start <- seg_end <- seg_cnlr <- seg_genes <- seg_type <- seg_GLtype <- NA
+for (i in grep("GL", colnames(mm))) {
 	for(chr in c(1:22,"X")) {
 		tt <- mm[which(mm$chrom==chr),c(1:5,i)]
 		tt[which(is.na(tt[,6])),6] <- -1000
@@ -176,6 +176,7 @@ for (i in grep("EM", colnames(mm))) {
 				seg_end <- c(seg_end, tt[end[idx],"end"])
 				seg_genes <- c(seg_genes, toString(mm[start[idx]:end[idx],"hgnc"]))
 				seg_type <- c(seg_type, rr$values[idx])
+				seg_GLtype <- c(seg_GLtype, colnames(mm)[i])
 			}
 		}		
 
@@ -183,5 +184,5 @@ for (i in grep("EM", colnames(mm))) {
 }
 seg_type[which(seg_type==2)] <- "amp"
 seg_type[which(seg_type== -2)] <- "del"
-write.table(cbind(seg_sample, seg_chr, seg_band, seg_start, seg_end, seg_genes, seg_type), file=gsub("txt", "ampdel.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
+write.table(cbind(seg_sample, seg_chr, seg_band, seg_start, seg_end, seg_genes, seg_type, seg_GLtype), file=gsub("txt", "ampdel.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
 write.table(mm, file=gsub("txt", "filled.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
