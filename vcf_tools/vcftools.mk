@@ -115,7 +115,7 @@ else
 vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
-
+#ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
 		$$(call SELECT_VARIANTS,21G) -R $$(REF_FASTA) --variant $$(word 2,$$^) --discordance $$(word 1,$$^) -o $$@.tmp1 && \
@@ -127,6 +127,23 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
 		$$(RM) $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4 $$(word 2,$$^) $$@.tmp1.idx $$@.tmp2.idx $$@.tmp3.idx $$@.tmp4.idx $$(word 2,$$^).idx")
+#endif
+#ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+#vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
+#	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
+#		$$(call SELECT_VARIANTS,21G) -R $$(REF_FASTA) --variant $$(word 2,$$^) --discordance $$(word 1,$$^) -o $$@.tmp1 && \
+#		$$(TVC) -s $$@.tmp1 -i $$(word 3,$$^) -r $$(REF_FASTA) -N 4 -m $$(TVC_MOTIF) -o $$@.tmp1.T \
+#		-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \		
+#		$$(TVC) -s $$@.tmp1 -i $$(word 4,$$^) -r $$(REF_FASTA) -N 4 -m $$(TVC_MOTIF) -o $$@.tmp1.N \
+#		-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \		
+#		$$(call COMBINE_VARIANTS,21G) --variant $$@.tmp1.T/TSVC_variants.vcf --variant $$@.tmp1.N/TSVC_variants.vcf -o $$@.tmp2 && \ 
+#		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
+#		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 0' --filterName interrogation && \
+#		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" | $$(FIX_GATK_VCF) > $$@.tmp4 && \
+#		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
+#		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
+#		$$(RM) $$@.tmp1.T $$@.tmp1.N $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4 $$(word 2,$$^) $$@.tmp1.idx $$@.tmp2.idx $$@.tmp3.idx $$@.tmp4.idx $$(word 2,$$^).idx")
+#endif
 endif
 endef
 $(foreach set,$(SAMPLE_SETS),\
