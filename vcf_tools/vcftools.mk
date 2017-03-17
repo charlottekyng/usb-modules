@@ -108,10 +108,10 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 # then merge
 
 define sufam
-#ifeq($3,$2)
-#vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
-#	$$(INIT) ln -f $$< $$@
-#else
+ifeq ($3,$2)
+vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
+	$$(INIT) ln -f $$< $$@
+else
 vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
@@ -120,9 +120,9 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
 		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" | $$(FIX_GATK_VCF) > $$@.tmp4 && \
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
-		--genotypemergeoption UNSORTED -R $$(REF_FASTA)")
-#		$$(RM) $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4 $$(word 2,$$^) $$@.tmp1.idx $$@.tmp2.idx $$@.tmp3.idx $$@.tmp4.idx $$(word 2,$$^).idx")
-#endif
+		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
+		$$(RM) $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4 $$(word 2,$$^) $$@.tmp1.idx $$@.tmp2.idx $$@.tmp3.idx $$@.tmp4.idx $$(word 2,$$^).idx")
+endif
 endef
 $(foreach set,$(SAMPLE_SETS),\
 	$(foreach tumor,$(wordlist 1,$(shell expr $(words $(subst _,$( ),$(set))) - 1),$(subst _,$( ),$(set))),\
