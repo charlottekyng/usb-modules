@@ -135,7 +135,7 @@ mm <- lapply(facetsFiles, function(f) {
 names(mm) <- facetsFiles
 for (f in facetsFiles) {
 	n <- sub('\\..*', '', sub('.*/', '', f))
-#	colnames(mm[[f]])[2] <- paste(n, "EM", sep="_")
+	colnames(mm[[f]])[2:ncol(mm[[f]])] <- paste(n,  colnames(mm[[f]])[2:ncol(mm[[f]])], sep="_")
 }
 
 mm <- left_join(genes, join_all(mm, type = 'full', by="hgnc")) %>% arrange(as.integer(chrom), start, end)
