@@ -185,4 +185,4 @@ for (i in grep("GL", colnames(mm))) {
 seg_type[which(seg_type==2)] <- "amp"
 seg_type[which(seg_type== -2)] <- "del"
 write.table(cbind(seg_sample, seg_chr, seg_band, seg_start, seg_end, seg_genes, seg_type, seg_GLtype), file=gsub("txt", "ampdel.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
-write.table(mm, file=gsub("txt", "filled.txt", opt$outFile), sep="\t", row.names=F, na="", quote=F)
+write.table(mm, file=opt$outFile, sep="\t", row.names=F, na="", quote=F)

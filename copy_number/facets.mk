@@ -59,7 +59,7 @@ facets/cncfTN_$1/summary.txt : $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1
 	$$(INIT) paste $$^ > $$@;
 
 facets/cncfTN_$1/geneCN.filled.txt : $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).cncf.txt)
-	$$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS_GENE_CN) $$(FACETS_GENE_CN_OPTS) --outFile $$@ $$^")
+	$$(call LSCRIPT_CHECK_MEM,8G,01:29:59,"$$(LOAD_R_MODULE); $$(FACETS_GENE_CN) $$(FACETS_GENE_CN_OPTS) --outFile $$@ $$^")
 
 #facets/cncfTN_$1/geneCN.fill.txt : facets/cncfTN_$1/geneCN.txt $$(foreach pair,$$(SAMPLE_PAIRS),facets/cncfTN_$1/$$(pair).cncf.txt)
 #	$$(call LSCRIPT_CHECK_MEM,4G,00:29:59,"$$(LOAD_R_MODULE); $$(FACETS_FILL_GENE_CN) --outFile $$@ --geneCNFile $$< \
