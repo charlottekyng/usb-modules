@@ -130,7 +130,7 @@ mm <- lapply(facetsFiles, function(f) {
 	df$GL2[df$cnlr.median > median(lrr)+(2*sd(lrr))] <- 1
 	df$GL2[df$cnlr.median > median(lrr)+(6*sd(lrr))] <- 2
 
-	df %>% select(hgnc, GL, GL2, tcn.em, lcn.em) %>% ungroup
+	df %>% select(hgnc, GL, GL2, tcn.em, lcn.em, cnlr.median) %>% ungroup
 })
 names(mm) <- facetsFiles
 for (f in facetsFiles) {
