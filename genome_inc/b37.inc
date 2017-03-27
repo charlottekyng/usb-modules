@@ -2,6 +2,15 @@ ifndef B37_INC
 REF = b37
 REF_DIR = $(HOME)/ref_nobackup
 
+GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/b37
+REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37_decoy.fasta
+ANN_DIR ?= $(REF_DIR)/annotation_data/b37
+
+DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.vcf
+DBSNP_TARGETS_INTERVALS ?= $(DBSNP)
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(DBSNP_TARGETS_INTERVALS)
+
+
 ifeq ($(SEQ_PLATFORM),IONTORRENT)
 ifeq ($(PANEL),CHPv2)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
@@ -47,28 +56,37 @@ TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Covered
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis.dbsnp_138.vcf
+GATK_MEM_REQ ?= low
 endif
-ifeq ($(findstring IMPACT410,$(PANEL)),IMPACT410)
+ifeq ($(PANEL),IMPACT410)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
+GATK_MEM_REQ ?= low
 endif
 ifeq ($(PANEL),IMPACT341)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
+GATK_MEM_REQ ?= low
 endif
+ifeq ($(PANEL),NONE)
+GATK_MEM_REQ ?= high
 endif
 
+endif
+
+
 FACETS_TARGETS_INTERVALS ?= $(DBSNP_TARGETS_INTERVALS)
+
+
+
+
+
 
 ifeq ($(findstring bed,$(TARGETS_FILE_INTERVALS)),bed)
 CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
 else
 CHROMOSOMES ?= $(shell seq 1 22) X $(if $(findstring true,$(INCLUDE_CHR_Y)),Y) MT
 endif
-### GENERAL REFERENCES ###
-
-GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/b37
-REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37_decoy.fasta
 
 
 ### ANNOTATION SETS ####
