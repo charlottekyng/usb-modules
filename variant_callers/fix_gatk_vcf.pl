@@ -22,14 +22,17 @@ my $now = localtime;
 
 while (my $l = <>) {
 	chomp $l;
-	if ($l =~ /\#\#FORMAT=\<ID=AD/) {
+	if ($l =~ /\#\#FORMAT=\<ID=AD,/) {
 		print $l."\n";
 		print "\#\#FORMAT=\<ID=FA,Number=R,Type=\"Integer\",Description=\"Variant allele fraction\"\>\n"; 
+	} elsif ($l =~ /\#\#FORMAT=\<ID=AF,/) {
+		$l =~ s/AF,/FA,/;
+		print $l."\n";
 	} elsif ($l =~ /\#/) {
 		print $l."\n"; 
 	} else {
 		my @line = split /\t/, $l;
-		my $ad = my $dp = "";
+		my $ad = my $dp = my $af = "";
 		my @format = split /:/, $line[8];
 		for (my $i = 0; $i < scalar @format; $i++) {
 			if ($format[$i] eq "AD") {
@@ -37,9 +40,13 @@ while (my $l = <>) {
 				$ad = $i;
 			} elsif ($format[$i] eq "DP") {
 				$dp = $i;
+			} elsif ($format[$i] eq "AF") {
+				$format[$i] = "FA";
+				$af = $i;
 			}
 		}
 		$line[8] = join ':', @format;
+		if ($ad ne "") {
 		for (my $i = 9; $i <= 10; $i++) {
 			my @fields = split /:/, $line[$i];
 			my @ads = split /,/, $fields[$ad];
@@ -50,7 +57,7 @@ while (my $l = <>) {
 			}
 			$fields[$ad] = $fields[$ad].":".join ',',@fas;
 			$line[$i] = join ':', @fields;
-		}
+		}}
 		print join "\t", @line; print "\n";
 	}
 }

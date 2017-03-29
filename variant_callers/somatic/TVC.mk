@@ -34,7 +34,7 @@ tvc/vcf/$1_$2/TSVC_variants_preliminary.fpft.vcf : tvc/vcf/$1_$2/TSVC_variants_p
 	else print \$$$$1\"\t\"(\$$$$2-1)\"\t\"(\$$$$2+length(\$$$$5)-1)}' > $$<.region && \
 	$$(BAM_READCOUNT) -f $$(REF_FASTA) -l $$<.region $$(word 2,$$^) > $$<.bamrc && \
 	$$(VARSCAN) fpfilter $$< $$<.bamrc --output-file $$@ --filtered-file $$@.fail \
-	--min-var-freq $$(MIN_AF_SNP) --min-ref-readpos 0 --min-var-readpos 0 --min-ref-dist3 0 --min-var-dist3 0" && \
+	--min-var-freq $$(MIN_AF_SNP) --min-ref-readpos 0 --min-var-readpos 0 --min-ref-dist3 0 --min-var-dist3 0 && \
 	rm $$<.region $$<.bamrc")
 
 tvc/vcf/$1_$2/tumor/TSVC_variants.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf
