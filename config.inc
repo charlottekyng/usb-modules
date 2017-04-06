@@ -474,7 +474,7 @@ SNP_SIFT_JAR ?= $(SNP_EFF_DIR)/SnpSift.jar
 SNP_SIFT = $(JAVA) -Xmx$(SNP_EFF_MEM) -jar $(SNP_SIFT_JAR)
 
 SNP_EFF_CONFIG ?= usb-modules/snpEff.config
-SNP_EFF_FLAGS ?= -canon -no sequence_feature -no-intergenic
+SNP_EFF_FLAGS ?= -canon -no NEXT_PROT -no-intergenic
 SNP_EFF_OPTS = -c $(SNP_EFF_CONFIG) -i vcf -o vcf $(SNP_EFF_FLAGS)
 SNP_SIFT_OPTS = -c $(SNP_EFF_CONFIG)
 
