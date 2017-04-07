@@ -76,7 +76,7 @@ endif
 
 %.eff.vcf : %.vcf %.vcf.idx
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$(LOAD_SNP_EFF_MODULE); $(SNP_EFF) ann \
-		$(SNP_EFF_OPTS) $(SNP_EFF_GENOME) $< > $@ && $(RM) $^"))
+		$(SNP_EFF_OPTS) $(SNP_EFF_GENOME) $< > $@"))
 
 %.nsfp.vcf : %.vcf %.vcf.idx
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) dbnsfp \
@@ -140,7 +140,7 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 		$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$@.tmp1.N/TSVC_variants.vcf -o $$@.tmp1.N/TSVC_variants.selected.vcf --concordance $$@.tmp1.vcf && \
 		$$(call COMBINE_VARIANTS,21G) -R $$(REF_FASTA) --variant $$@.tmp1.T/TSVC_variants.selected.vcf --variant $$@.tmp1.N/TSVC_variants.selected.vcf -o $$@.tmp2 && \
 		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 \
-		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") > 0' --filterName interrogation | $$(FIX_GATK_VCF) > $$@.tmp3 && \
+		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") > 0' --filterName interrogation -o $$@.tmp3 && \
 		$$(call CHECK_VCF,$$@.tmp3,$$@.tmp4,$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\"  > $$@.tmp4) && \
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
