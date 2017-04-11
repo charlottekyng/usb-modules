@@ -122,7 +122,7 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 		$$(call UNIFIED_GENOTYPER,4G) -R $$(REF_FASTA) -I $$(word 3,$$^) -I $$(word 4,$$^) --downsampling_type NONE --dbsnp $(DBSNP_TARGETS_INTERVALS) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES --output_mode EMIT_ALL_SITES -alleles $$@.tmp1 -o $$@.tmp2 && \
 		$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
-		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 0' --filterName interrogation && \
+		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\").1 > 0' --filterName interrogation && \
 		$$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$@.tmp3 \"(FILTER has 'interrogation')\" | $$(FIX_GATK_VCF) > $$@.tmp4 && \
 		$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$@.tmp4 -o $$@ \
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
@@ -139,7 +139,7 @@ vcf/$1_$2.%.sufam.tmp1.T.vcf : vcf/$1_$2.%.sufam.tmp1.vcf bam/$1.bam
 		$$(call LSCRIPT_CHECK_MEM,10G,03:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); \
 			$$(TVC) -s $$(word 1,$$^) -i $$(word 2,$$^) -r $$(REF_FASTA) -N 1 -m $$(TVC_MOTIF) -o $$(@D)/$1_$2.$$*.sufam.tmp1.T \
 			-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
-			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf | $$(FIX_GATK_VCF) > $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.norm.vcf && \
+			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf | $$(FIX_TVC_VCF) > $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.norm.vcf && \
 			$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.norm.vcf -o $$@ --concordance $$(word 1,$$^) && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.T"))
 
 vcf/$1_$2.%.sufam.tmp1.N.vcf : vcf/$1_$2.%.sufam.tmp1.vcf bam/$2.bam
@@ -147,7 +147,7 @@ vcf/$1_$2.%.sufam.tmp1.N.vcf : vcf/$1_$2.%.sufam.tmp1.vcf bam/$2.bam
 		$$(call LSCRIPT_CHECK_MEM,10G,03:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); \
 			$$(TVC) -s $$(word 1,$$^) -i $$(word 2,$$^) -r $$(REF_FASTA) -N 1 -m $$(TVC_MOTIF) -o $$(@D)/$1_$2.$$*.sufam.tmp1.N \
 			-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
-			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf | $$(FIX_GATK_VCF) > $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.norm.vcf && \
+			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf | $$(FIX_TVC_VCF) > $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.norm.vcf && \
 			$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.norm.vcf -o $$@ --concordance $$(word 1,$$^) && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.N"))
 
 vcf/$1_$2.%.sufam.tmp2.vcf : vcf/$1_$2.%.sufam.tmp1.T.vcf vcf/$1_$2.%.sufam.tmp1.N.vcf
@@ -267,7 +267,7 @@ define som-ad-ft-tumor-normal
 vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
 	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
 		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 < $(MIN_TUMOR_AD)' \
-		--filterName tumorVarAlleleDepth \
+  		--filterName tumorVarAlleleDepth \
 		--filterExpression 'if (vc.getGenotype(\"$2\").getDP() > $(MIN_NORMAL_DEPTH)) { \
 			( vc.getGenotype(\"$2\").getAD().1 * 1.0 / vc.getGenotype(\"$2\").getDP()) > ( vc.getGenotype(\"$1\").getAD().1 * 1.0 / vc.getGenotype(\"$1\").getDP()) / $(MIN_TN_AD_RATIO) \
 			} else { ( vc.getGenotype(\"$2\").getAD().1 * 1.0 / vc.getGenotype(\"$2\").getDP()) > ( vc.getGenotype(\"$1\").getAD().1 * 1.0 / vc.getGenotype(\"$1\").getDP()) / $(MIN_TN_AD_RATIO) && \
@@ -295,10 +295,15 @@ vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
 		--filterName tumorVarAlleleDepth \
 		--filterExpression 'if ((vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) > $(MIN_NORMAL_DEPTH)) { \
 			( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) ) \
-				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0)) / $(MIN_TN_AD_RATIO) \
+				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
+				( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"RO\") * 1.0) ) \
+				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"RO\") * 1.0)) / $(MIN_TN_AD_RATIO) \
 			} else {  ( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) ) \
 				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
-				vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") > 1 }' \
+				( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"RO\") * 1.0) ) \
+				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"RO\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
+				vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") > 1 && \
+				vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") > 1 }' \
 		--filterName somaticAlleleDepth \
 		--filterExpression '(vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0) <= $$(MIN_TUMOR_DEPTH) || \
 				    (vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) <= $$(MIN_NORMAL_DEPTH)' \

@@ -24,7 +24,7 @@ files <- arguments$args;
 
 output_fields = c("TUMOR_SAMPLE", "NORMAL_SAMPLE", "ANN[*].GENE", "ANN[*].HGVS_P", "ANN[*].HGVS_C", "ANN[*].EFFECT", 
 	"ANN[*].IMPACT", "ANN[*].BIOTYPE", "ANN[*].FEATURE", "ANN[*].FEATUREID", "TUMOR.FA", "NORMAL.FA", "TUMOR.AF", "NORMAL.AF",
-	"TUMOR.DP", "NORMAL.DP", "TUMOR.AD", "NORMAL.AD", "TUMOR.FAO", "NORMAL.FAO", "TUMOR.FDP", "NORMAL.FDP",
+	"TUMOR.DP", "NORMAL.DP", "TUMOR.AD", "NORMAL.AD", "TUMOR.AO", "NORMAL.AO", "TUMOR.FDP", "NORMAL.FDP", "TUMOR.FAO", "NORMAL.FAO",
 	"cancer_gene_census", "kandoth", "lawrence", "hap_insuf", 
 	"facetsCF", "facetsTCN_EM", "facetsLCN_EM", "facetsLOHCall", "facetsMultiplicity", "ccf", "clonalStatus", "ccfConfUpper", "ccfConfLower",
 	"duplicatedGenesDB", "dbNSFP_MutationTaster_pred", "dbNSFP_Polyphen2_HVAR_pred", "dbNSFP_Interpro_domain", 
@@ -69,6 +69,7 @@ for (file in files) {
 
 	name <- strsplit (file, ".", fixed=T)[[1]]
 	name <- toString(name[c(2,length(name)-1)])
+	colnames(tab) <- gsub("ANN....", "", colnames(tab))
 
 	if(opt$outputFormat=="EXCEL") {
 

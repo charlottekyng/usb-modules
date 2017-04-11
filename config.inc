@@ -380,7 +380,7 @@ CONTEST += -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 COVARIATES = -cov ReadGroupCovariate -cov QualityScoreCovariate -cov DinucCovariate -cov CycleCovariate
 
-FIX_GATK_VCF = $(PERL)  usb-modules/variant_callers/fix_gatk_vcf.pl
+FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_gatk_vcf.pl
 REPORT_STRATIFICATION := Filter
 
 ##################################
@@ -416,6 +416,7 @@ TVC = $(TVC_ROOT_DIR)/bin/variant_caller_pipeline.py
 TVC_SOMATIC_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters.json
 TVC_MOTIF = $(TVC_ROOT_DIR)/share/TVC/sse/ampliseqexome_germline_p1_hiq_motifset.txt
 USE_FPFILTER_FOR_TVC = true
+FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_tvc_vcf.pl
 
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
 #NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
