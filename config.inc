@@ -10,7 +10,7 @@ MODULE_SCRIPTS_DIR ?= usb-modules/scripts
 ############################################################
 
 # default reference:
-# possible values: mm10, hg19, b37, hg19_ionref
+# possible values: mm10, hg19, b37, hg19_ionref, b37_hbv_hcv
 REF ?= b37
 # possible values: ILLUMINA, IONTORRENT
 SEQ_PLATFORM ?= ILLUMINA

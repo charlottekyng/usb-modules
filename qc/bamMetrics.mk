@@ -26,7 +26,8 @@ endif
 hs_metrics : metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
 amplicon_metrics : metrics/all.amplicon_metrics.txt metrics/all.interval_amplicon_metrics.txt
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
-rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt metrics/all.rnaseq_report/index.html
+rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
+#metrics/all.rnaseq_report/index.html
 flagstats : metrics/all.flagstats.txt
 alignment_summary_metrics : metrics/all.alignment_summary_metrics.txt
 #gc : $(foreach sample,$(SAMPLES),metrics/$(sample).gc_bias_metrics.txt)
