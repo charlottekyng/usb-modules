@@ -36,18 +36,22 @@ while (my $l = <>) {
 			} elsif ($format[$i] eq "FDP") { $fdp = $i;
 			}
 		}
-		push @format, "FA";
-		$line[8] = join ':', @format;
-		for (my $i = 9; $i <= 10; $i++) {
-			my @fields = split /:/, $line[$i];
-			my @faos = split /,/, $fields[$fao];
-			my $fdps = $fields[$fdp];
-			my @fas = ();
-			for (my $j = 0; $j < scalar @faos; $j++) {
-				push @fas, $faos[$j]/$fdps;
+		if ($fao ne "" && $fdp ne "") {
+			push @format, "FA";
+			$line[8] = join ':', @format;
+			for (my $i = 9; $i <= (scalar @line) -1; $i++) {
+				my @fields = split /:/, $line[$i];
+				my @faos = split /,/, $fields[$fao];
+				my $fdps = $fields[$fdp];
+				my @fas = ();
+				for (my $j = 0; $j < scalar @faos; $j++) {
+					if ($fdps > 0) {
+						push @fas, $faos[$j]/$fdps;
+					} else { push @fas, "."; }
+				}
+				push @fields, (join ',',@fas);
+				$line[$i] = join ':', @fields;
 			}
-			push @fields, (join ',',@fas);
-			$line[$i] = join ':', @fields;
 		}
 		print join "\t", @line; print "\n";
 	}

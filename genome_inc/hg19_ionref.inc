@@ -23,6 +23,7 @@ DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.common.vcf
 endif
 ifeq ($(PANEL),HCC)
+INCLUDE_LINCRNA_IN_SUMMARY ?= true
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
@@ -31,6 +32,7 @@ DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD9
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 endif
 ifeq ($(PANEL),BREAST)
+INCLUDE_LINCRNA_IN_SUMMARY ?= true
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.genes.txt

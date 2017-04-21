@@ -9,25 +9,11 @@ LOGDIR = log/summary.$(NOW)
 PHONY : mutation_summary
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-ALLTABLES_COMPLETE_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
-ALLTABLES_COMPLETE_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
-ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous_synonymous_hotspot.txt
-ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous_synonymous_hotspot.txt
-ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.synonymous.txt
-ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,mutect).tab.nonsynonymous.txt
-ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,strelka_indels).tab.nonsynonymous.txt
+CALLER_PREFIX ?= mutect strelka_indel
 endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
-ALLTABLES_COMPLETE_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
-ALLTABLES_COMPLETE_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt
-ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous_synonymous_hotspot.txt
-ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous_synonymous_hotspot.txt
-ALLTABLES_SYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.synonymous.txt
-ALLTABLES_NONSYNONYMOUS_SNPS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_snps).tab.nonsynonymous.txt
-ALLTABLES_NONSYNONYMOUS_INDELS = alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,tvc_indels).tab.nonsynonymous.txt
+CALLER_PREFIX ?= tvc_snps tvc_indels varscan_snps varscan_indels
 endif
-
-
 
 # Add optional absolute results to excel
 # the $(wildcard x) syntax is used to check for existence of file
@@ -51,18 +37,31 @@ EXCEL_MAX_EXAC_AF ?= 1
 ifeq ($(findstring EXCEL,$(MUTATION_SUMMARY_FORMAT)),EXCEL)
 mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
 
-summary/mutation_summary.xlsx : $(ALLTABLES_COMPLETE_SNPS) $(ALLTABLES_COMPLETE_INDELS)
+ALLTABLES_NS_SYNON_HS_LNC = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt)
+ALLTABLES_NS_SYNON_HS = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot.txt)
+
+summary/mutation_summary.xlsx : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NS_SYNON_HS),$(ALLTABLES_NS_SYNON_HS_LNC))
 	$(call LSCRIPT_CHECK_MEM,6G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-	--outFile $@ $(wordlist 1,2,$^)")
+	--outFile $@ $^")
 endif
 
 ifeq ($(findstring TXT,$(MUTATION_SUMMARY_FORMAT)),TXT)
-mutation_summary : $(shell rm -f summary/mutation_summary_snps.txt) summary/mutation_summary_snps.txt $(shell rm -f summary/mutation_summary_indels.txt) summary/mutation_summary_indels.txt
+mutation_summary : $(foreach prefix,$(CALLER_PREFIX),$(shell rm -f summary/mutation_summary_$(prefix).txt) summary/mutation_summary_$(prefix).txt)
 
-summary/mutation_summary_snps.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS),$(ALLTABLES_COMPLETE_SNPS))
-	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-	--outFile $@ --outputFormat TXT $<")
-summary/mutation_summary_indels.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS),$(ALLTABLES_COMPLETE_INDELS))
-	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-	--outFile $@ --outputFormat TXT $<")
+define mut_sum_txt
+summary/mutation_summary_$1.txt : $$(if $$(findstring false,$$(INCLUDE_LINCRNA_IN_SUMMARY)),alltables/allTN.$$(call SOMATIC_VCF_SUFFIXES,$1).tab.nonsynonymous_synonymous_hotspot.txt,alltables/allTN.$$(call SOMATIC_VCF_SUFFIXES,$1).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt)
+	$$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$$(LOAD_R_MODULE); $$(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	--outFile $$@ --outputFormat TXT $$<")
+endef
+$(foreach prefix,$(CALLER_PREFIX),$(eval $(call mut_sum_txt,$(prefix))))
 endif
+
+
+
+#
+#summary/mutation_summary_snps.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS),$(ALLTABLES_COMPLETE_SNPS))
+#	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+#	--outFile $@ --outputFormat TXT $<")
+#summary/mutation_summary_indels.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS),$(ALLTABLES_COMPLETE_INDELS))
+#	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+#	--outFile $@ --outputFormat TXT $<")
