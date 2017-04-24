@@ -11,6 +11,8 @@ tvc : tvc_vcfs tvc_tables
 tvc_vcfs : $(foreach type,$(VARIANT_TYPES),$(call VCFS,$(type)) $(addsuffix .idx,$(call VCFS,$(type))))
 tvc_tables : $(foreach type,$(VARIANT_TYPES),$(call TABLES,$(type)))
 
+SUFAM_METHOD=tvc
+
 tvc/dbsnp/%/TSVC_variants.vcf : bam/%.bam
 	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(TVC) -s $(DBSNP_TARGETS_INTERVALS) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
@@ -19,9 +21,10 @@ tvc/dbsnp/%/TSVC_variants.vcf : bam/%.bam
 
 define tvc-vcf
 tvc/vcf/$1/TSVC_variants.vcf : bam/$1.bam bam/$1.bai
-	$$(call LSCRIPT_PARALLEL_MEN,4,8G,00:29:59,"$$(TVC) -i $$< -r $$(REF_FASTA) -o $$(@D) -N 4 \
+	$$(call LSCRIPT_PARALLEL_MEN,4,8G,00:29:59,"$$(LOAD_BCFTOOLS_MODULE); $$(TVC) -i $$< -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) \
-	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED)")
+	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
+	$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$@.gz | grep -v \"##contig\" | $$(FIX_TVC_VCF) > $$@")
 endef
 $(foreach sample,$(SAMPLES), \
 	$(eval $(call tvc-vcf,$(sample))))
@@ -33,10 +36,10 @@ tvc/vcf/%/TSVC_variants.indels.vcf : tvc/vcf/%/TSVC_variants.vcf
 	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_VCFTOOLS_MODULE); $(VCFTOOLS) --vcf $< --keep-only-indels --recode --recode-INFO-all --out $@ && mv $@.recode.vcf $@")
 
 vcf/%.tvc_snps.vcf : tvc/vcf/%/TSVC_variants.snps.vcf
-	$(INIT) ln -f $< $@;
+	$(INIT) $(VCF_SORT) $(REF_DICT) $< > $@
 
 vcf/%.tvc_indels.vcf : tvc/vcf/%/TSVC_variants.indels.vcf
-	$(INIT) ln -f $< $@;
+	$(INIT) $(VCF_SORT) $(REF_DICT) $< > $@
 
 .DELETE_ON_ERROR:
 .SECONDARY:

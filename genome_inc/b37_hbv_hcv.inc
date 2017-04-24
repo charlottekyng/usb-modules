@@ -1,10 +1,10 @@
-ifndef B37_INC
-REF = b37
+ifndef B37_HBV_HCV_INC
+REF = b37_hbv_hcv
 REF_DIR = $(HOME)/ref_nobackup
 
 GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/b37
-REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37_decoy.fasta
-ANN_DIR ?= $(REF_DIR)/annotation_data/b37
+REF_FASTA ?= /scicore/home/terracci/ngkiuy/ref_nobackup/genomes/human_g1k_v37_decoy_HBV_NC_003977.2_HCV.fasta
+ANN_DIR ?= $(REF_DIR)/annotation_data/b37_hbv_hcv
 
 DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.vcf
 DBSNP_TARGETS_INTERVALS ?= $(DBSNP)
@@ -73,10 +73,7 @@ GATK_MEM_REQ ?= high
 endif
 
 endif
-
-
 FACETS_TARGETS_INTERVALS ?= $(DBSNP_TARGETS_INTERVALS)
-
 
 ifeq ($(findstring bed,$(TARGETS_FILE_INTERVALS)),bed)
 CHROMOSOMES := $(shell grep -v '@' $(TARGETS_FILE_INTERVALS) | cut -f1 | sort | uniq)
@@ -87,7 +84,7 @@ endif
 
 ### ANNOTATION SETS ####
 
-ANN_DIR ?= $(REF_DIR)/annotation_data/b37
+ANN_DIR ?= $(REF_DIR)/annotation_data/b37_hbv_hcv
 
 CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 
@@ -114,8 +111,8 @@ CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37.txt
 #REF_HOUSEKEEPING_GENE_BED = $(ANN_DIR)/share/reference/hg19.HouseKeepingGenes.bed
 #ENSEMBL_TXDB = $(ANN_DIR)/hsapiens_ensembl_biomart.sqlite
 
-STAR_GENOME_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/genome_index/star_b37
-STAR_CTAT_DIR = ~/ref_nobackup/annotation_data/b37/GRCh37_gencode_v19_CTAT_lib
+STAR_GENOME_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/genome_index/star_b37_hbv_hcv
+STAR_CTAT_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/annotation_data/b37_hbv_hcv/FusionFilter/
 
 RIBOSOMAL_INTERVALS ?= $(ANN_DIR)/ribosomalRNA.interval_list
 GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
@@ -168,5 +165,5 @@ SNP_EFF_GENOME = GRCh37.75
 
 #HISAT_REF = $(HOME)/share/reference/hisat/grch37_snp_tran/genome_snp_tran
 endif
-B37_INC = true
+B37_HBV_HCV_INC = true
 

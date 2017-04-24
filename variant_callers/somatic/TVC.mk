@@ -21,12 +21,14 @@ tvc_somatic_tables_sets : $(foreach type,$(VARIANT_TYPES_SETS),$(call SOMATIC_TA
 .SECONDARY:
 .PHONY : $(PHONY)
 
+SUFAM_METHOD = tvc
+
 define tvc-somatic-vcf
 tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
 	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -p $$(TVC_SOMATIC_JSON) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<)) \
-	&& mv $$(@D)/TSVC_variants.vcf $$@")
+	&& mv $$(@D)/TSVC_variants.vcf $$@ && $$(RM) $$@.gz")
 
 tvc/vcf/$1_$2/TSVC_variants_preliminary.fpft.vcf : tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf bam/$1.bam bam/$1.bam.bai
 	$$(call LSCRIPT_MEM,4G,00:29:59,"$$(LOAD_JAVA8_MODULE); awk '! /\#/' $$< | \
@@ -41,18 +43,19 @@ tvc/vcf/$1_$2/tumor/TSVC_variants.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/$1_$2/
 	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(LOAD_BCFTOOLS_MODULE) && $$(LOAD_JAVA8_MODULE) && \
 		$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
-		$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$@ | $$(FIX_GATK_VCF) > $$@.tmp && \
+		$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$@.gz | grep -v \"##contig\" | $$(FIX_TVC_VCF) > $$@.tmp && \
 		$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$@.tmp -o $$@ --concordance $$(<<<)")
 
 tvc/vcf/$1_$2/normal/TSVC_variants.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf
 	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(LOAD_BCFTOOLS_MODULE) && $$(LOAD_JAVA8_MODULE) && \
 		$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
-		$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$@ | $$(FIX_GATK_VCF) > $$@.tmp && \
+		$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$@.gz | grep -v \"##contig\" | $$(FIX_TVC_VCF) > $$@.tmp && \
 		$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$@.tmp -o $$@ --concordance $$(<<<)")
 
 tvc/vcf/$1_$2/TSVC_variants.vcf : tvc/vcf/$1_$2/tumor/TSVC_variants.vcf.gz tvc/vcf/$1_$2/normal/TSVC_variants.vcf.gz tvc/vcf/$1_$2/tumor/TSVC_variants.vcf.gz.tbi tvc/vcf/$1_$2/normal/TSVC_variants.vcf.gz.tbi
-	$$(call LSCRIPT_MEM,5G,00:29:29,"$$(LOAD_VCFTOOLS_MODULE); $$(LOAD_TABIX_MODULE); $$(VCFTOOLS_MERGE) -c none $$< $$(word 2,$$^) | perl -p -e \"s/NOCALL/PASS/g;\" > $$@")
+	$$(call LSCRIPT_MEM,5G,00:29:29,"$$(LOAD_VCFTOOLS_MODULE); $$(LOAD_TABIX_MODULE); \
+		$$(VCFTOOLS_MERGE) -c none $$< $$(word 2,$$^) | perl -p -e \"s/NOCALL/PASS/g;\" > $$@")
 endef
 $(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call tvc-somatic-vcf,$(tumor.$(pair)),$(normal.$(pair)))))
