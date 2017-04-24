@@ -34,7 +34,7 @@ strelka/vcf/$1_$2.strelka_snps.vcf : strelka/$1_$2/task.complete
 	$$(INIT) cp -f strelka/$1_$2/results/all.somatic.snvs.vcf $$@
 
 strelka/vcf/$1_$2.strelka_indels.vcf : strelka/$1_$2/task.complete
-	$$(INIT) $$(ANNOTATE_STRELKA) strelka/$1_$2/results/all.somatic.indels.vcf > $$@
+	$$(INIT) $$(FIX_STRELKA_VCF) strelka/$1_$2/results/all.somatic.indels.vcf > $$@
 
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call strelka-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))

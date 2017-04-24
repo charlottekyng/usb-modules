@@ -163,10 +163,10 @@ gatk/vcf/%.variants.indels.filtered.vcf : gatk/vcf/%.variants.indels.vcf gatk/vc
 
 
 vcf/%.gatk_snps.vcf : gatk/vcf/%.variants.snps.filtered.vcf
-	$(INIT) ln -f $< $@
+	$(INIT) $(FIX_GATK_VCF) $< > $@
 
 vcf/%.gatk_indels.vcf : gatk/vcf/%.variants.indels.filtered.vcf
-	$(INIT) ln -f $< $@
+	$(INIT) $(FIX_GATK_VCF) $< > $@
 
 
 reports/%/index.html : reports/%.dp_ft.grp metrics/hs_metrics.txt

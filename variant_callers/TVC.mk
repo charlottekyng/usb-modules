@@ -36,10 +36,10 @@ tvc/vcf/%/TSVC_variants.indels.vcf : tvc/vcf/%/TSVC_variants.vcf
 	$(call LSCRIPT_CHECK_MEM,5G,00:29:59,"$(LOAD_VCFTOOLS_MODULE); $(VCFTOOLS) --vcf $< --keep-only-indels --recode --recode-INFO-all --out $@ && mv $@.recode.vcf $@")
 
 vcf/%.tvc_snps.vcf : tvc/vcf/%/TSVC_variants.snps.vcf
-	$(INIT) $(VCF_SORT) $(REF_DICT) $< > $@
+	$(INIT) $(VCF_SORT) $(REF_DICT) $< | $$(FIX_TVC_VCF) > $@
 
 vcf/%.tvc_indels.vcf : tvc/vcf/%/TSVC_variants.indels.vcf
-	$(INIT) $(VCF_SORT) $(REF_DICT) $< > $@
+	$(INIT) $(VCF_SORT) $(REF_DICT) $< | $$(FIX_TVC_VCF) > $@
 
 .DELETE_ON_ERROR:
 .SECONDARY:

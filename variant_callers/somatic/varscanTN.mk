@@ -9,8 +9,8 @@ include usb-modules/Makefile.inc
 include usb-modules/config.inc
 include usb-modules/variant_callers/somatic/somaticVariantCaller.inc
 
-$(info CHR $(CHROMOSOMES))
-$(info TARGETS_FILE_INTERVALS $(TARGETS_FILE_INTERVALS))
+#$(info CHR $(CHROMOSOMES))
+#$(info TARGETS_FILE_INTERVALS $(TARGETS_FILE_INTERVALS))
 VPATH ?= bam
 
 VARIANT_TYPES = varscan_indels varscan_snps
@@ -55,35 +55,39 @@ varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.fpft.vcf : varscan/chr_vcf/$1_$2.$3.in
 	--min-var-freq $$(MIN_AF_INDEL) --min-ref-readpos 0 --min-var-readpos 0 --min-ref-dist3 0 --min-var-dist3 0 && \
 	rm varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.region varscan/chr_vcf/$1_$2.$3.indel.Somatic.hc.vcf.bamrc")
 
-varscan/chr_vcf/$1_$2.%.fixed.vcf : varscan/chr_vcf/$1_$2.%.vcf
-	$$(INIT) perl $$(FIX_VARSCAN_VCF) -t $1 -n $2 $$< > $$@
-
 endef
 $(foreach chr,$(CHROMOSOMES), \
 	$(foreach pair,$(SAMPLE_PAIRS), \
 	$(eval $(call varscan-somatic-tumor-normal-chr,$(tumor.$(pair)),$(normal.$(pair)),$(chr)))))
 
 define varscan-somatic-tumor-normal-merge
-varscan/vcf/$1_$2.snp.Somatic.hc.fpft.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).snp.Somatic.hc.fpft.vcf)
-	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+varscan/vcf/$1_$2.%.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).%.vcf)
+	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@; cat $$^ | grep -v '^#' >> $$@ 2> $$(LOG)
 
-varscan/vcf/$1_$2.indel.Somatic.hc.fpft.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).indel.Somatic.hc.fpft.vcf)
-	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+#varscan/vcf/$1_$2.snp.Somatic.hc.fpft.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).snp.Somatic.hc.fpft.vcf)
+#	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@ 2> $$(LOG)
 
-varscan/vcf/$1_$2.snp.Somatic.hc.fpfail.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).snp.Somatic.hc.fpfail.vcf)
-	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+#varscan/vcf/$1_$2.indel.Somatic.hc.fpft.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).indel.Somatic.hc.fpft.vcf)
+#	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@ 2> $$(LOG)
 
-varscan/vcf/$1_$2.indel.Somatic.hc.fpfail.fixed.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).indel.Somatic.hc.fpfail.vcf)
-	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@.tmp; $$(VCF_SORT) $$(REF_DICT) $$@.tmp > $$@ 2> $$(LOG) && $$(RM) $$@.tmp
+#varscan/vcf/$1_$2.snp.Somatic.hc.fpfail.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).snp.Somatic.hc.fpfail.vcf)
+#	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@ 2> $$(LOG)
+
+#varscan/vcf/$1_$2.indel.Somatic.hc.fpfail.vcf : $$(foreach chr,$$(CHROMOSOMES),varscan/chr_vcf/$1_$2.$$(chr).indel.Somatic.hc.fpfail.vcf)
+#	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@.tmp; cat $$^ | grep -v '^#' >> $$@ 2> $$(LOG)
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 	$(eval $(call varscan-somatic-tumor-normal-merge,$(tumor.$(pair)),$(normal.$(pair)))))
 
-vcf/%.varscan_indels.vcf : varscan/vcf/%.indel.Somatic.hc.fpft.fixed.vcf
-	$(INIT) ln -f $< $@
+define varscan-somatic-fix
+vcf/$1_$2.varscan_indels.vcf : varscan/vcf/$1_$2.indel.Somatic.hc.fpft.vcf
+	$$(INIT) $$(FIX_VARSCAN_VCF) -t $1 -n $2 $$< | $$(VCF_SORT) $$(REF_DICT) - > $$@
 
-vcf/%.varscan_snps.vcf : varscan/vcf/%.snp.Somatic.hc.fpft.fixed.vcf
-	$(INIT) ln -f $< $@
+vcf/$1_$2.varscan_snps.vcf : varscan/vcf/$1_$2.snp.Somatic.hc.fpft.vcf
+	$$(INIT) $$(FIX_VARSCAN_VCF) -t $1 -n $2 $$< | $$(VCF_SORT) $$(REF_DICT) - > $$@
+endef
+$(foreach pair,$(SAMPLE_PAIRS),\
+	$(eval $(call varscan-somatic-fix,$(tumor.$(pair)),$(normal.$(pair)))))
 
 include usb-modules/vcf_tools/vcftools.mk
 

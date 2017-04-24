@@ -380,7 +380,6 @@ CONTEST += -R $(REF_FASTA) -B:pop$(,)vcf $(CONTEST_REF_VCF) $(CONTEST_OPTS)
 
 COVARIATES = -cov ReadGroupCovariate -cov QualityScoreCovariate -cov DinucCovariate -cov CycleCovariate
 
-FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_gatk_vcf.pl
 REPORT_STRATIFICATION := Filter
 
 ##################################
@@ -393,6 +392,8 @@ SUFAM_METHOD ?= gatk
 
 HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,$$(1))
 UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,$$(1))
+FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_gatk_vcf.pl
+
 MUTECT2 ?= $(call GATK,MuTect2,$$(1))
 
 MUTECT_JAR ?= $(JARDIR)/muTect-1.1.4.jar
@@ -407,17 +408,18 @@ MUTECT ?= $(JAVA) -Xmx11G -jar $(MUTECT_JAR) --analysis_type MuTect
 VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.3.jar
 VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
 VARSCAN_OPTS=--output-vcf 1 --mpileup 1 --min-var-freq $(MIN_AF_SNP)
+FIX_VARSCAN_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_varscan_vcf.pl
 
 CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
 STRELKA_CONFIG = usb-modules/variant_callers/somatic/strelka_config_bwa_default.ini
-ANNOTATE_STRELKA = $(PERL) usb-modules/variant_callers/somatic/annotate_strelka.pl
+FIX_STRELKA_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_strelka_vcf.pl
 
 TVC_ROOT_DIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/tvc-5.0.3-CentOS_6.5_x86_64-binary
 TVC = $(TVC_ROOT_DIR)/bin/variant_caller_pipeline.py
 TVC_SOMATIC_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters.json
 TVC_MOTIF = $(TVC_ROOT_DIR)/share/TVC/sse/ampliseqexome_germline_p1_hiq_motifset.txt
 USE_FPFILTER_FOR_TVC = true
-FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_tvc_vcf.pl
+FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_tvc_vcf.pl
 
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl
 #NORMAL_FILTER ?= $(PERL) $(SCRIPTS_DIR)/normalFilterVCF.pl
