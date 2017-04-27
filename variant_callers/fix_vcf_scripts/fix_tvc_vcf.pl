@@ -1,5 +1,12 @@
 #!/usr/bin/env perl
 
+######### FIX TVC VCF #######
+# TVC outputs "AF", which is VAF calculated from flow-based counts
+# this script calculates "FA", which is VAF calculated from non-flow-based counts
+# The flow-based counts are supposed to be more accurate but there are too many false positives, so do both!
+################
+
+
 use strict;
 use warnings;
 
@@ -29,24 +36,24 @@ while (my $l = <>) {
 		print $l."\n"; 
 	} else {
 		my @line = split /\t/, $l;
-		my $fao = my $fdp = ""; #these are the flow counts
+		my $ao = my $dp = ""; #these are the non-flow counts
 		my @format = split /:/, $line[8];
 		for (my $i = 0; $i < scalar @format; $i++) {
-			if ($format[$i] eq "FAO") { $fao = $i;
-			} elsif ($format[$i] eq "FDP") { $fdp = $i;
+			if ($format[$i] eq "AO") { $ao = $i;
+			} elsif ($format[$i] eq "DP") { $dp = $i;
 			}
 		}
-		if ($fao ne "" && $fdp ne "") {
+		if ($ao ne "" && $dp ne "") {
 			push @format, "FA";
 			$line[8] = join ':', @format;
 			for (my $i = 9; $i <= (scalar @line) -1; $i++) {
 				my @fields = split /:/, $line[$i];
-				my @faos = split /,/, $fields[$fao];
-				my $fdps = $fields[$fdp];
+				my @aos = split /,/, $fields[$ao];
+				my $dps = $fields[$dp];
 				my @fas = ();
-				for (my $j = 0; $j < scalar @faos; $j++) {
-					if ($fdps > 0) {
-						push @fas, $faos[$j]/$fdps;
+				for (my $j = 0; $j < scalar @aos; $j++) {
+					if ($dps > 0) {
+						push @fas, $aos[$j]/$dps;
 					} else { push @fas, "."; }
 				}
 				push @fields, (join ',',@fas);

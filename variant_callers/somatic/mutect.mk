@@ -12,6 +12,8 @@ mutect_vcfs : $(call SOMATIC_VCFS,mutect) $(addsuffix .idx,$(call SOMATIC_VCFS,m
 mutect_tables : $(call SOMATIC_TABLES,mutect)
 ext_output : $(foreach pair,$(SAMPLE_PAIRS),mutect/tables/$(pair).mutect.txt)
 
+MUT_CALLER = mutect
+
 .DELETE_ON_ERROR:
 .SECONDARY:
 .PHONY : $(PHONY)

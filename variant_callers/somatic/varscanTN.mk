@@ -20,10 +20,12 @@ varscan : varscan_vcfs varscan_tables
 varscan_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)))
 varscan_tables : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_TABLES,$(type)))
 
+MUT_CALLER = varscan
+
 define varscan-somatic-tumor-normal-chr
 varscan/chr_vcf/$1_$2.$3.varscan_timestamp : bam/$1.bam bam/$2.bam bam/$1.bam.bai bam/$2.bam.bai
 	$$(call LSCRIPT_MEM,4G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
-	$$(SAMTOOLS) mpileup -r $3 -q $$(MIN_MQ) -f $$(REF_FASTA) $$(word 2,$$^) $$< | \
+	$$(SAMTOOLS) mpileup -r $3 -q $$(MIN_MQ) -d 10000 -f $$(REF_FASTA) $$(word 2,$$^) $$< | \
 	$$(VARSCAN) somatic - varscan/chr_vcf/$1_$2.$3 $$(VARSCAN_OPTS) && \
 	$$(VARSCAN) processSomatic varscan/chr_vcf/$1_$2.$3.snp.vcf --min-tumor-freq $$(MIN_AF_SNP) && \
 	$$(VARSCAN) processSomatic varscan/chr_vcf/$1_$2.$3.indel.vcf --min-tumor-freq $$(MIN_AF_INDEL) && \

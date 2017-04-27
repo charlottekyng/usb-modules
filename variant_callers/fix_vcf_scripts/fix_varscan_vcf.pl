@@ -1,5 +1,12 @@
 #!/usr/bin/env perl
 
+####### FIX VARSCAN VCF #######
+# change FREQ header and from % to numeric
+# change header from NORMAL/TUMOR to the actual sample names
+# change AD implementation to match that of GATK
+# change empty ALT to <NON_REF> to allow GATK processing
+########
+
 use strict;
 use warnings;
 
@@ -26,9 +33,10 @@ my $tumor = $opt{t};
 while (my $l = <>) {
 	chomp $l;
 	if ($l =~ /\#\#/) {
-		$l =~ s/FREQ/FA/; 
-		if ($l =~ /\#\#FORMAT\=\<ID\=AD,/) {
-			$l = "\#\#FORMAT\=\<ID\=AD,Number\=R,Type\=Integer,Description\=\"Allelic depths for the ref and alt alleles in the order listed\"\>";
+		if ($l =~ /\#\#FORMAT\=\<ID\=FREQ,/) {
+			$l = "\#\#FORMAT=\<ID=FA,Number=A,Type=Float,Description=\"Allele fraction of the alternate allele with regard to reference\"\>";
+		} elsif ($l =~ /\#\#FORMAT\=\<ID\=AD,/) {
+			$l = "\#\#FORMAT\=\<ID\=AD,Number\=A,Type\=Float,Description\=\"Allelic depths for the ref and alt alleles in the order listed\"\>";
 		}
 		print $l."\n"; 
 	} elsif ( $l =~ /\#CHROM/) { 
@@ -38,7 +46,9 @@ while (my $l = <>) {
 	} else {
 		$l =~ s/str10/PASS/;
 		my @line = split /\t/, $l;
-		my $freq = my $ad = my $dp4 = "";
+		my $freq = my $ad = my $rd = "";
+		if ($line[4] eq "") { $line[4] = "\<NON_REF\>";}
+
 		my @format = split /:/, $line[8];
 		for (my $i = 0; $i < scalar @format; $i++) {
 			if ($format[$i] eq "FREQ") {
@@ -47,7 +57,7 @@ while (my $l = <>) {
 			} elsif ($format[$i] eq "AD") {
 				$ad = $i;
 			} elsif ($format[$i] eq "RD") {
-				$dp4 = $i;
+				$rd = $i;
 			}
 		}
 		$line[8] = join ':', @format;
@@ -56,8 +66,7 @@ while (my $l = <>) {
 			$fields[$freq] =~ s/%//;
 			$fields[$freq] = $fields[$freq]/100;
 
-			my @dp4 = split /,/, $fields[$dp4];
-			$fields[$ad] = ($dp4[0]+$dp4[1]).",".$fields[$ad];
+			$fields[$ad] = $fields[$rd].",".$fields[$ad];
 
 			$line[$i] = join ':', @fields;
 		}

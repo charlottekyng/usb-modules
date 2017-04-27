@@ -24,7 +24,7 @@ while (my $l = <>) {
 	chomp $l;
 	if ($l =~ /\#\#FORMAT=\<ID=AD,/) {
 		print $l."\n";
-		print "\#\#FORMAT=\<ID=FA,Number=R,Type=\"Integer\",Description=\"Variant allele fraction\"\>\n"; 
+		print "\#\#FORMAT=\<ID=FA,Number=A,Type=Float,Description=\"Allele fraction of the alternate allele with regard to reference\"\>\n"; 
 	} elsif ($l =~ /\#\#FORMAT=\<ID=AF,/) {
 		$l =~ s/AF,/FA,/;
 		print $l."\n";

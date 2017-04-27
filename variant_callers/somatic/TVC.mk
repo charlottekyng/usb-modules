@@ -21,7 +21,7 @@ tvc_somatic_tables_sets : $(foreach type,$(VARIANT_TYPES_SETS),$(call SOMATIC_TA
 .SECONDARY:
 .PHONY : $(PHONY)
 
-SUFAM_METHOD = tvc
+MUT_CALLER = tvc
 
 define tvc-somatic-vcf
 tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai

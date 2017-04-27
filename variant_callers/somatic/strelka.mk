@@ -18,6 +18,8 @@ VARIANT_TYPES := strelka_indels
 strelka_vcfs : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_VCFS,$(type)))
 strelka_tables : $(foreach type,$(VARIANT_TYPES),$(call SOMATIC_TABLES,$(type)))
 
+MUT_CALLER = strelka
+
 define strelka-tumor-normal
 strelka/$1_$2/Makefile : bam/$1.bam bam/$2.bam
 	$$(call LSCRIPT_NAMED,strelka_$1_$2,"rm -rf $$(@D) && $$(LOAD_PERL_MODULE) && $$(CONFIGURE_STRELKA) --tumor=$$< --normal=$$(<<) \
