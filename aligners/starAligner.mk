@@ -50,14 +50,17 @@ endef
 $(foreach sample,$(SAMPLES),\
 	$(eval $(call align-star-secondpass,$(sample))))
 
-bam/%.originalstar.bam : star/secondpass/%.star.bam
+#bam/%.originalstar.bam : star/secondpass/%.star.bam
+#	$(INIT) ln -f $< $@
+
+#star/secondpass/%.star-original.bam : star/secondpass/%.star.bam
+#	$(INIT) cp $< $@
+
+bam/%.bam : star/secondpass/%.star.bam
 	$(INIT) ln -f $< $@
 
-star/secondpass/%.star-original.bam : star/secondpass/%.star.bam
-	$(INIT) cp $< $@
-
-bam/%.bam : star/secondpass/%.star-original.$(BAM_SUFFIX)
-	$(INIT) ln -f $< $@ && rename "-original" "" $<
+#bam/%.bam : star/secondpass/%.star-original.$(BAM_SUFFIX)
+#	$(INIT) ln -f $< $@ && rename "-original" "" $<
 
 star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 	perl -p -e "s/N_unmapped/GENE\t\t\t\nN_unmapped/;" `ls star/secondpass/*.ReadsPerGene.out.tab|head -1` | cut -f 1 > $@; \
