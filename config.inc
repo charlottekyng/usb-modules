@@ -1,8 +1,9 @@
 ifndef CONFIG_INC
 
-JARDIR ?= $(HOME)/usr_nobackup/local/lib/java
-SCRIPTSDIR ?= $(HOME)/usr_nobackup/local/scripts
-BINDIR ?= $(HOME)/usr_nobackup/local/bin
+USR_DIR ?= /scicore/home/terracci/GROUP/usr_nobackup
+JAR_DIR ?= $(USR_DIR)/local/lib/java
+SCRIPTS_DIR ?= $(USR_DIR)/local/scripts
+BIN_DIR ?= $(USR_DIR)/local/bin
 MODULE_SCRIPTS_DIR ?= usb-modules/scripts
 
 ############################################################
@@ -94,7 +95,7 @@ include usb-modules/genome_inc/$(REF).inc
 ##################################
 
 export TMPDIR := /scicore/scratch
-PATH "= $(HOME)/usr_nobackup:$(PATH)
+PATH "= $(USR_DIR):$(PATH)
 export PATH
 R_LIBS = $(HOME)/R/x86_64-pc-linux-gnu-library/3.3
 
@@ -132,7 +133,7 @@ LOAD_R_MODULE ?= module load $(R_MODULE)
 R ?= R
 RSCRIPT ?= Rscript
 
-SWEAVE = $(RSCRIPT) usb-modules/scripts/Sweave.R
+SWEAVE = $(RSCRIPT) $(MODULE_SCRIPTS_DIR)/Sweave.R
 
 JAVA_ARGS = -Djava.io.tmpdir=$(TMPDIR)
 JAVA6_MODULE ?= Java/1.6.0_24
@@ -142,7 +143,6 @@ LOAD_JAVA6_MODULE ?= module load $(JAVA6_MODULE)
 LOAD_JAVA7_MODULE ?= module load $(JAVA7_MODULE)
 LOAD_JAVA8_MODULE ?= module load $(JAVA8_MODULE) 
 JAVA ?= java $(JAVA_ARGS)
-JARDIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/lib/java
 
 PYTHON_MODULE ?= Python/3.5.1-goolf-1.4.10
 LOAD_PYTHON_MODULE ?= module load $(PYTHON_MODULE)
@@ -205,19 +205,20 @@ LOAD_VCFTOOLS_MODULE ?= module load $(VCFTOOLS_MODULE)
 VCFTOOLS ?= vcftools
 VCFTOOLS_MERGE ?= vcf-merge
 
-VCF_SORT ?= $(PERL) $(SCRIPTSDIR)/vcfsorter.pl 
+VCF_SORT ?= $(PERL) $(SCRIPTS_DIR)/vcfsorter.pl 
 
-VCF2MAF ?= $(PERL) $(SCRIPTSDIR)/vcf2maf.pl
-MAF2MAF ?= $(PERL) $(SCRIPTSDIR)/maf2maf.pl
-MAF2VCF ?= $(PERL) $(SCRIPTSDIR)/maf2vcf.pl
-VEP_PATH ?= /opt/common/CentOS_6/vep/v82
-VEP_DATA ?= /opt/common/CentOS_6/vep/v82
+##VCF2MAF ?= $(PERL) $(SCRIPTS_DIR)/vcf2maf.pl
+#MAF2MAF ?= $(PERL) $(SCRIPTS_DIR)/maf2maf.pl
+#MAF2VCF ?= $(PERL) $(SCRIPTS_DIR)/maf2vcf.pl
+#VEP_PATH ?= /opt/common/CentOS_6/vep/v82
+#VEP_DATA ?= /opt/common/CentOS_6/vep/v82
 
 #BAM2FASTX = $(HOME)/usr/bin/bam2fastx
 EXTRACT_TOOL ?= PICARD
 #BAM_TO_FASTQ ?= xxx
 
 FASTQ_TRIMMER = $(PERL) usb-modules/fastq_tools/trimFastq.pl
+
 TRIM_GALORE_MODULE = Trim_Galore/0.4.1-goolf-1.4.10-Perl-5.16.3
 LOAD_TRIM_GALORE_MODULE ?= module load $(TRIM_GALORE_MODULE)
 TRIM_GALORE ?= trim_galore
@@ -234,7 +235,7 @@ LOAD_TABIX_MODULE ?= module load $(TABIX_MODULE)
 BGZIP ?= bgzip
 TABIX ?= tabix -p vcf
 
-BAM_READCOUNT ?= $(BINDIR)/bam-readcount
+BAM_READCOUNT ?= $(BIN_DIR)/bam-readcount
 
 ##################################
 ########## QC/metrics ############
@@ -271,11 +272,14 @@ FASTQ_CHUNKS := 10
 FASTQ_CHUNK_SEQ := $(shell seq 1 $(FASTQ_CHUNKS))
 FASTQUTILS = $(HOME)/share/usr/ngsutils/bin/fastqutils
 
-TMAP = $(HOME)/share/usr/bin/tmap
-TMAP_MODE ?= map3
-TMAP_OPTS =
+#TMAP = $(HOME)/share/usr/bin/tmap
+#TMAP_MODE ?= map3
+#TMAP_OPTS =
 
-TOPHAT ?= $(HOME)/share/usr/bin/tophat2-2.0.13
+TOPHAT_MODULE ?= TopHat/2.1.1-goolf-1.7.20
+LOAD_TOPHAT_MODULE ?= module load $(TOPHAT_MODULE)
+TOPHAT ?= tophat
+TOPHAT2 ?= tophat2
 TOPHAT_NUM_CORES ?= 4
 
 NO_NOVEL_SPLICING ?= false
@@ -290,12 +294,15 @@ endif
 
 STAR_MODULE ?= STAR/2.5.2a-goolf-1.7.20
 LOAD_STAR_MODULE ?= module load $(STAR_MODULE)
+STAR ?= STAR
 
 STAR_FUSION_MODULE ?= STAR-Fusion/0.6.0-goolf-1.4.10-Perl-5.16.3
 LOAD_STAR_FUSION_MODULE ?= module load $(STAR_FUSION_MODULE)
 STAR_FUSION ?= STAR-Fusion
 
-HISAT ?= $(HOME)/share/usr/hisat2-2.0.2-beta/hisat2
+HISAT2_MODULE ?= HISAT2/2.0.4-goolf-1.7.20
+LOAD_HISAT2_MODULE ?= module load $(HISAT2_MODULE)
+HISAT2 ?= hisat2
 HISAT_NUM_CORES ?= 8
 HISAT_OPTS = -q -p $(HISAT_NUM_CORES) -x $(HISAT_REF)
 ifeq ($(SEQ_PLATFORM),true)
@@ -312,7 +319,7 @@ endif
 ##################################
 
 PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
-PICARD_JAR ?= $(JARDIR)/picard-tools-2.4.1/picard.jar
+PICARD_JAR ?= $(JAR_DIR)/picard-tools-2.4.1/picard.jar
 PICARD = $(JAVA) -Xmx$(2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
 
 SORT_SAM = $(call PICARD,SortSam,$$(1))
@@ -344,7 +351,7 @@ COLLECT_GCBIAS_METRICS = $(call PICARD,CollectGcBiasMetrics,$$(1))
 ########## GATK ### ##############
 ##################################
 
-GATK_JAR ?= $(JARDIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
+GATK_JAR ?= $(JAR_DIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
 GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1) -filterNoBases
 
 REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
@@ -395,7 +402,7 @@ FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_gatk_vcf.
 
 MUTECT2 ?= $(call GATK,MuTect2,$$(1))
 
-MUTECT_JAR ?= $(JARDIR)/muTect-1.1.4.jar
+MUTECT_JAR ?= $(JAR_DIR)/muTect-1.1.4.jar
 MUTECT_MAX_ALT_IN_NORMAL ?= 500
 MUTECT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.05
 MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
@@ -404,18 +411,19 @@ MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
 
 MUTECT ?= $(JAVA) -Xmx11G -jar $(MUTECT_JAR) --analysis_type MuTect
 
-VARSCAN_JAR ?= $(JARDIR)/varscan/VarScan.v2.4.3.jar
+VARSCAN_JAR ?= $(JAR_DIR)/varscan/VarScan.v2.4.3.jar
 VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
 VARSCAN_OPTS=--output-vcf 1 --mpileup 1 --min-var-freq $(MIN_AF_SNP)
 FIX_VARSCAN_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_varscan_vcf.pl
 
-CONFIGURE_STRELKA = $(PERL) /scicore/home/terracci/ngkiuy/usr_nobackup/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
+CONFIGURE_STRELKA = $(PERL) $(USR_DIR)/local/strelka_workflow-1.0.15/bin/configureStrelkaWorkflow.pl
 STRELKA_CONFIG = usb-modules/variant_callers/somatic/strelka_config_bwa_default.ini
 FIX_STRELKA_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_strelka_vcf.pl
 
-TVC_ROOT_DIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/tvc-5.0.3-CentOS_6.5_x86_64-binary
+TVC_ROOT_DIR ?= $(USR_DIR)/local/tvc-5.0.3-CentOS_6.5_x86_64-binary
 TVC = $(TVC_ROOT_DIR)/bin/variant_caller_pipeline.py
 TVC_SOMATIC_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters.json
+TVC_SENSITIVE_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters_sensitive.json
 TVC_MOTIF = $(TVC_ROOT_DIR)/share/TVC/sse/ampliseqexome_germline_p1_hiq_motifset.txt
 USE_FPFILTER_FOR_TVC = true
 FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_tvc_vcf.pl
@@ -491,7 +499,7 @@ ANN_FIELDS = $(addprefix ANN[*].,ALLELE EFFECT IMPACT GENE GENEID FEATURE FEATUR
 	HGVS_C HGVS_P CDNA_POS CDNA_LEN CDS_POS CDS_LEN AA_POS AA_LEN DISTANCE ERRORS)
 
 VCF_EFF_ONE_PER_LINE = $(PERL) $(SNP_EFF_DIR)/scripts/vcfEffOnePerLine.pl
-VCF_JOIN_EFF = $(PERL) usb-modules/scripts/joinEff.pl
+VCF_JOIN_EFF = $(PERL) $(MODULE_SCRIPTS_DIR)/joinEff.pl
 
 #ANNOVAR = $(PERL) $(HOME)/share/usr/annovar/table_annovar.pl
 #ANNOVAR_PROTOCOL ?= refGene$(,)cytoBand$(,)genomicSuperDups$(,)esp6500siv2_all$(,)1000g2014oct_all$(,)1000g2014oct_afr$(,)1000g2014oct_eas$(,)1000g2014oct_eur$(,)snp138$(,)ljb26_all
@@ -550,7 +558,7 @@ INCLUDE_LINCRNA_IN_SUMMARY ?= false
 ##################################
 
 FACETS_GATK_VARIANTS ?= false
-FACETS_SNP_PILEUP = $(BINDIR)/snp-pileup
+FACETS_SNP_PILEUP = $(BIN_DIR)/snp-pileup
 FACETS_MINGC ?= 0
 FACETS_MAXGC ?= 1
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
@@ -603,26 +611,31 @@ CBS_MPILEUP_OPTS = -q 1 $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVA
 
 #################################
 ########## MutSigCV #############
-MUTSIGCV_DIR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/MutSigCV_1.4
+
+
+MUTSIGCV_DIR ?= $(USR_DIR)/local/MutSigCV_1.4
 MUTSIGCV ?= $(MUTSIGCV_DIR)/run_MutSigCV.sh
-MCR ?= /scicore/home/terracci/ngkiuy/usr_nobackup/local/MCR_R2013a_glnxa64/v81/
-MUTSIGCV_REF_DIR ?= /scicore/home/terracci/ngkiuy/ref_nobackup/MutSigCV
-MUTSIGCV_COVERAGE_REF ?= $(MUTSIGCV_REF_DIR)/coverage.exome_full192.txt
-MUTSIGCV_COV_REF ?= $(MUTSIGCV_REF_DIR)/gene.covariates.txt
-MUTSIGCV_DICT_REF ?= $(MUTSIGCV_REF_DIR)/mutation_type_dictionary_file.txt
-MUTSIGCV_SEQ_REF_DIR ?= $(MUTSIGCV_REF_DIR)/chr_files_hg19/
+MCR ?= $(USR_DIR)/local/MCR_R2013a_glnxa64/v81/
 
 ##################################
 ########## Gene expression #######
 ##################################
 
-#CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
-#CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
+CUFFLINKS_MODULE ?= Cufflinks/2.2.1-Linux_x86_64
+LOAD_CUFFLINKS_MODULE ?= module load $(CUFFLINKS_MODULE)
+CUFFLINKS ?= cufflinks
+CUFFCMP ?= currcompare
+
+STRINGTIE_MODULE ?= StringTie/1.3.3-goolf-1.7.20
+LOAD_STRINGTIE_MODULE ?= module load $(STRINGTIE_MODULE)
 
 DESEQ_CONDITION ?= condition
 DESEQ_REF_CONDITION ?= ref
 DESEQ_ALT_CONDITION ?= alt
 DESEQ_PHENO_FILE ?= pheno.txt
+
+#CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
+#CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
 
 ##################################
 ########## Fusions ###############

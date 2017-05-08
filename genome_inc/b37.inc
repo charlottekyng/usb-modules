@@ -1,10 +1,12 @@
 ifndef B37_INC
 REF = b37
-REF_DIR = $(HOME)/ref_nobackup
+REF_DIR = /scicore/home/terracci/GROUP/ref_nobackup
 
-GSA_REF_DIR = $(REF_DIR)/gsa_resource_bundle/2.8/b37
-REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37_decoy.fasta
+GSA_REF_DIR ?= $(REF_DIR)/gsa_resource_bundle/2.8/b37
 ANN_DIR ?= $(REF_DIR)/annotation_data/b37
+BED_DIR ?= $(REF_DIR)/target_beds/b37
+
+REF_FASTA ?= $(GSA_REF_DIR)/human_g1k_v37_decoy.fasta
 
 DBSNP ?= $(GSA_REF_DIR)/dbsnp_138.b37.vcf
 DBSNP_TARGETS_INTERVALS ?= $(DBSNP)
@@ -13,59 +15,59 @@ DBSNP_TARGETS_INTERVALS_COMMON ?= $(DBSNP_TARGETS_INTERVALS)
 
 ifeq ($(SEQ_PLATFORM),IONTORRENT)
 ifeq ($(PANEL),CHPv2)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
 endif
 ifeq ($(PANEL),CCP)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeq.CCP.20131001.designed.nochr.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeq.CCP.20131001.hotspots.nochr.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/AmpliSeq.CCP.20131001.designed.nochr.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/AmpliSeq.CCP.20131001.hotspots.nochr.bed
 endif
 ifeq ($(PANEL),EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/AmpliSeqExome.20131001.designed.nochr.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/AmpliSeqExome.20131001.designed.nochr.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/AmpliSeqExome.20131001.designed.nochr.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/AmpliSeqExome.20131001.designed.nochr.bed
 endif
 endif
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(PANEL),AGILENT_CLINICAL_EXOME)
-TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Covered_noHeader_noAnn.bed
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome_TargetGeneSymbols.txt
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S06588914_Agilent_Clinical_Exome.dbsnp_138.common.vcf
+TARGETS_FILE_COVERED_INTERVALS = $(BED_DIR)/S06588914_Agilent_Clinical_Exome_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/S06588914_Agilent_Clinical_Exome_Padded_noHeader_noAnn.bed
+TARGETS_FILE_GENES = $(BED_DIR)/S06588914_Agilent_Clinical_Exome_TargetGeneSymbols.txt
+DBSNP_TARGETS_INTERVALS = $(BED_DIR)/S06588914_Agilent_Clinical_Exome.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(BED_DIR)/S06588914_Agilent_Clinical_Exome.dbsnp_138.common.vcf
 endif
 ifeq ($(PANEL),AGILENT_ALLEXON_V4)
-TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_Covered_noHeader_noAnn.bed
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_Padded_noHeader_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_Padded_noHeader_noAnn.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4_TargetGeneSymbols.txt
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S03723314_Agilent_AllExon_V4.dbsnp_138.common.vcf
+TARGETS_FILE_COVERED_INTERVALS = $(BED_DIR)/S03723314_Agilent_AllExon_V4_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/S03723314_Agilent_AllExon_V4_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/S03723314_Agilent_AllExon_V4_Padded_noHeader_noAnn.bed
+TARGETS_FILE_GENES = $(BED_DIR)/S03723314_Agilent_AllExon_V4_TargetGeneSymbols.txt
+DBSNP_TARGETS_INTERVALS = $(BED_DIR)/S03723314_Agilent_AllExon_V4.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(BED_DIR)/S03723314_Agilent_AllExon_V4.dbsnp_138.common.vcf
 endif
 ifeq ($(PANEL),AGILENT_ALLEXON_V6)
-TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_Covered_noHeader_noAnn.bed
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_Padded_noHeader_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_Padded_noHeader_noAnn.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6_TargetGeneSymbols.txt
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/b37/S07604514_Agilent_AllExon_V6.dbsnp_138.common.vcf
+TARGETS_FILE_COVERED_INTERVALS = $(BED_DIR)/S07604514_Agilent_AllExon_V6_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/S07604514_Agilent_AllExon_V6_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/S07604514_Agilent_AllExon_V6_Padded_noHeader_noAnn.bed
+TARGETS_FILE_GENES = $(BED_DIR)/S07604514_Agilent_AllExon_V6_TargetGeneSymbols.txt
+DBSNP_TARGETS_INTERVALS = $(BED_DIR)/S07604514_Agilent_AllExon_V6.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(BED_DIR)/S07604514_Agilent_AllExon_V6.dbsnp_138.common.vcf
 endif
 ifeq ($(PANEL),NOVARTIS_PC2)
-TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Covered_noHeader_noAnn.bed
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/pc2_novartis_Padded_noHeader_noAnn.bed
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/b37/pc2_novartis.dbsnp_138.vcf
+TARGETS_FILE_COVERED_INTERVALS = $(BED_DIR)/pc2_novartis_Covered_noHeader_noAnn.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/pc2_novartis_Padded_noHeader_noAnn.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/pc2_novartis_Padded_noHeader_noAnn.bed
+DBSNP_TARGETS_INTERVALS = $(BED_DIR)/pc2_novartis.dbsnp_138.vcf
 GATK_MEM_REQ ?= low
 endif
 ifeq ($(PANEL),IMPACT410)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact410_b37.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/impact410_b37.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/impact410_b37.bed
 GATK_MEM_REQ ?= low
 endif
 ifeq ($(PANEL),IMPACT341)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/b37/impact341_b37.bed
+TARGETS_FILE_INTERVALS = $(BED_DIR)/impact341_b37.bed
+TARGETS_FILE_MUTATIONS = $(BED_DIR)/impact341_b37.bed
 GATK_MEM_REQ ?= low
 endif
 ifeq ($(PANEL),NONE)
@@ -87,8 +89,6 @@ endif
 
 ### ANNOTATION SETS ####
 
-ANN_DIR ?= $(REF_DIR)/annotation_data/b37
-
 CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 
 KNOWN_INDELS ?= $(GSA_REF_DIR)/Mills_and_1000G_gold_standard.indels.b37.vcf
@@ -105,8 +105,6 @@ KANDOTH_BED = $(ANN_DIR)/kandoth127smg.bed
 LAWRENCE_BED = $(ANN_DIR)/lawrence_cancer5000s.bed
 DGD_BED = $(ANN_DIR)/dgd_Hsa_all_v71.bed
 CANCER_HOTSPOT_VCF = $(ANN_DIR)/publication_hotspots_inclnoncoding_incl3d.vcf
-#CANCER_HOTSPOT_VCF = $(ANN_DIR)/publication_hotspots_inclnoncoding.vcf
-#CANCER_HOTSPOT_VCF = $(ANN_DIR)/hotspot.vcf
 
 CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37.txt
 
@@ -114,8 +112,8 @@ CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37.txt
 #REF_HOUSEKEEPING_GENE_BED = $(ANN_DIR)/share/reference/hg19.HouseKeepingGenes.bed
 #ENSEMBL_TXDB = $(ANN_DIR)/hsapiens_ensembl_biomart.sqlite
 
-STAR_GENOME_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/genome_index/star_b37
-STAR_CTAT_DIR = ~/ref_nobackup/annotation_data/b37/GRCh37_gencode_v19_CTAT_lib
+STAR_GENOME_DIR = $(REF_DIR)/genome_index/star_b37
+STAR_CTAT_DIR = $(ANN_DIR)/GRCh37_gencode_v19_CTAT_lib
 
 RIBOSOMAL_INTERVALS ?= $(ANN_DIR)/ribosomalRNA.interval_list
 GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
@@ -151,6 +149,12 @@ REF_NAME := 1000GenomesPilot-NCBI37
 REF_DATE := 20100517
 REF_DICT = $(REF_FASTA:.fasta=.dict)
 SNP_EFF_GENOME = GRCh37.75
+
+MUTSIGCV_REF_DIR ?= $(REF_DIR)/MutSigCV
+MUTSIGCV_COVERAGE_REF ?= $(MUTSIGCV_REF_DIR)/coverage.exome_full192.txt
+MUTSIGCV_COV_REF ?= $(MUTSIGCV_REF_DIR)/gene.covariates.txt
+MUTSIGCV_DICT_REF ?= $(MUTSIGCV_REF_DIR)/mutation_type_dictionary_file.txt
+MUTSIGCV_SEQ_REF_DIR ?= $(MUTSIGCV_REF_DIR)/chr_files_hg19/
 
 #EMU_REF_DIR ?= $(REF_DIR)/GATK_bundle/2.3/emu_ref
 #EMU_REF_MUTATIONS ?= $(REF_DIR)/emu_ref/exome_ref/Breast_clean_somatic_mutations_for_signature_analysis.emu.mutations.txt

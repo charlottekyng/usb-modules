@@ -1,6 +1,6 @@
 {
     "meta":{
-        "name"          : "Sensitive somatic mutation calling parameters derived by CKYN from AmpliSeq Panel - PGM - Somatic - Low Stringency",
+        "name"          : "Ultra-sensitive parameters (for SUFAM, retrieving counts etc) derived by CKYN from AmpliSeq Panel - PGM - Somatic - Low Stringency",
         "tooltip"       : "Parameters optimized using Oncomine Comprehensive AmpliSeq Panel with AcroMetrix Oncology Hotspot Control AF at 5% at depth 500, minimizing FP with 48K NA12878 at depth 130",
         "configuration" : "ampliseq_somatic_lowstringency_pgm",
         "ts_version"    : "5.0",
@@ -15,38 +15,38 @@
     },
     "torrent_variant_caller":{
 
-        "data_quality_stringency":6.5,
+        "data_quality_stringency":3,
         "hp_max_length":8,
-        "filter_unusual_predictions":0.2,
-        "filter_insertion_predictions": 0.2,
-        "filter_deletion_predictions": 0.2,
+        "filter_unusual_predictions":0.1,
+        "filter_insertion_predictions": 0.1,
+        "filter_deletion_predictions": 0.1,
         "indel_as_hpindel": 0,
 
-        "snp_min_cov_each_strand":3,
+        "snp_min_cov_each_strand":1,
         "snp_min_coverage":8,
-        "snp_min_variant_score":10,
-        "snp_min_allele_freq":0.02,
+        "snp_min_variant_score":5,
+        "snp_min_allele_freq":0.005,
         "snp_strand_bias":0.95,
         "snp_strand_bias_pval":0.01,
 
-        "mnp_min_cov_each_strand":3,
+        "mnp_min_cov_each_strand":1,
         "mnp_min_coverage":8,
-        "mnp_min_variant_score":10,
-        "mnp_min_allele_freq":0.02,
+        "mnp_min_variant_score":5,
+        "mnp_min_allele_freq":0.005,
         "mnp_strand_bias":0.95,
         "mnp_strand_bias_pval":0.01,
 
-        "indel_min_cov_each_strand":3,
-        "indel_min_coverage":15,
-        "indel_min_variant_score":10,
-        "indel_min_allele_freq":0.02,
+        "indel_min_cov_each_strand":1,
+        "indel_min_coverage":10,
+        "indel_min_variant_score":5,
+        "indel_min_allele_freq":0.005,
         "indel_strand_bias":0.9,
         "indel_strand_bias_pval":1.0,
 
-        "hotspot_min_cov_each_strand":2,
-        "hotspot_min_variant_score":10,
-        "hotspot_min_allele_freq":0.02,
-        "hotspot_min_coverage":8,
+        "hotspot_min_cov_each_strand":0,
+        "hotspot_min_variant_score":5,
+        "hotspot_min_allele_freq":0.005,
+        "hotspot_min_coverage":5,
         "hotspot_strand_bias":0.95,
         "hotspot_strand_bias_pval":0.01,
 
@@ -56,7 +56,7 @@
         "do_mnp_realignment":1,
         "realignment_threshold":0,
 
-        "use_position_bias":1,
+        "use_position_bias":0,
         "position_bias":0.75,
         "position_bias_pval":0.05,
         "position_bias_ref_fraction":0.5,
@@ -68,11 +68,11 @@
     },
     "long_indel_assembler":{
         "kmer_len":19,
-        "min_var_count":4,
+        "min_var_count":2,
         "short_suffix_match":5,
         "min_indel_size":4,
         "max_hp_length":8,
-        "min_var_freq":0.05,
+        "min_var_freq":0.005,
         "relative_strand_bias":0.8,
         "output_mnv":0
     },
@@ -84,8 +84,8 @@
         "min_mapping_qv":4,
         "read_snp_limit":10,
         "read_max_mismatch_fraction":1.0,
-        "gen_min_alt_allele_freq":0.02,
-        "gen_min_indel_alt_allele_freq":0.02,
+        "gen_min_alt_allele_freq":0.005,
+        "gen_min_indel_alt_allele_freq":0.005,
         "gen_min_coverage":6
     }
 }

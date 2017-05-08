@@ -42,5 +42,5 @@ tvc/pon.tvc.vcf : $(foreach sample,$(NORMAL_SAMPLES),tvc/vcf_pon/$(sample)/TSVC_
 
 tvc/vcf_pon/%/TSVC_variants.vcf : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(TVC) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
-	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
+	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) $(TVC_SENSITIVE_JSON) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
