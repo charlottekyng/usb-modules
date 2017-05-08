@@ -1,15 +1,14 @@
 ifndef B37_HBV_HCV_INC
-include usb-modules/genomes/b37.inc
+include usb-modules/genome_inc/b37.inc
 REF = b37_hbv_hcv
 REF_DIR = /scicore/home/terracci/GROUP/ref_nobackup
 
 
-ANN_DIR ?= $(REF_DIR)/annotation_data/b37_hbv_hcv
+ANN_DIR := $(REF_DIR)/annotation_data/b37_hbv_hcv
+REF_FASTA := $(REF_DIR)/genomes/human_g1k_v37_decoy_HBV_NC_003977.2_HCV.fasta
 
-REF_FASTA ?= $(REF_DIR)/genomes/human_g1k_v37_decoy_HBV_NC_003977.2_HCV.fasta
-
-STAR_GENOME_DIR = $(REF_DIR)/genome_index/star_b37_hbv_hcv
-STAR_CTAT_DIR = $(ANN_DIR)/FusionFilter/
+STAR_GENOME_DIR := $(REF_DIR)/genome_index/star_b37_hbv_hcv
+STAR_CTAT_DIR := $(ANN_DIR)/FusionFilter
 
 ### TOOL-SPECIFIC REF ###
 

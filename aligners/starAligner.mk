@@ -62,7 +62,7 @@ bam/%.bam : star/secondpass/%.star.bam
 #bam/%.bam : star/secondpass/%.star-original.$(BAM_SUFFIX)
 #	$(INIT) ln -f $< $@ && rename "-original" "" $<
 
-star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),bam/$(sample).bam)
+star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),star/secondpass/$(sample).ReadsPerGene.out.tab)
 	perl -p -e "s/N_unmapped/GENE\t\t\t\nN_unmapped/;" `ls star/secondpass/*.ReadsPerGene.out.tab|head -1` | cut -f 1 > $@; \
 	for x in $^; do sample=`echo $$x | sed 's/.*\///; s/\..*//'`; perl -p -e "s/N_unmapped/\t$$sample\t\t\nN_unmapped/;" \
 	star/secondpass/$$sample.ReadsPerGene.out.tab | cut -f 2 | paste $@ - > $@.tmp; mv $@.tmp $@; done

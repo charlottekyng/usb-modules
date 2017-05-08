@@ -187,6 +187,10 @@ TARGETS += chimscan
 chimscan :
 	$(call RUN_MAKE_J,modules/sv_callers/chimerascan.mk,$(NUM_CHIMSCAN_JOBS))
 
+TARGETS += star_fusion
+star_fusion :
+	$(call RUN_MAKE,usb-modules/sv_callers/starFusion.mk)
+
 TARGETS += oncofuse
 oncofuse :
 	$(call RUN_MAKE,modules/sv_callers/oncofuse.mk)
