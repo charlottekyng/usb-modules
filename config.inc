@@ -213,6 +213,10 @@ VCF_SORT ?= $(PERL) $(SCRIPTS_DIR)/vcfsorter.pl
 #VEP_PATH ?= /opt/common/CentOS_6/vep/v82
 #VEP_DATA ?= /opt/common/CentOS_6/vep/v82
 
+BCL2FASTQ_MODULE ?= bcl2fastq/2.17.1.14-goolf-1.7.20
+LOAD_BCL2FASTQ_MODULE ?= module load $(BCL2FASTQ_MODULE)
+BCL2FASTQ ?= bcl2fastq
+
 #BAM2FASTX = $(HOME)/usr/bin/bam2fastx
 EXTRACT_TOOL ?= PICARD
 #BAM_TO_FASTQ ?= xxx
