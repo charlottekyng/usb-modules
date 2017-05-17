@@ -108,6 +108,7 @@ CANCER_HOTSPOT_VCF = $(ANN_DIR)/publication_hotspots_inclnoncoding_incl3d.vcf
 
 CENTROMERE_TABLE = $(ANN_DIR)/centromeres_b37.txt
 
+DGV_FILE = $(ANN_DIR)/DGV_GRCh37_hg19_variants_2016-05-15.txt
 #KNOWN_CNVS = $(ANN_DIR)/GRCh37_hg19_variants_2013-07-23.txt
 #REF_HOUSEKEEPING_GENE_BED = $(ANN_DIR)/share/reference/hg19.HouseKeepingGenes.bed
 #ENSEMBL_TXDB = $(ANN_DIR)/hsapiens_ensembl_biomart.sqlite
@@ -122,7 +123,8 @@ GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
 
 ### TOOL-SPECIFIC REF ###
 
-#GISTIC_REF ?= $(HOME)/share/usr/gistic_2_0_21/refgenefiles/hg19.mat
+GISTIC_REF ?= /scicore/home/terracci/GROUP/usr_nobackup/local/gistic_2.0.23/refgenefiles/hg19.UCSC.add_miR.140312.refgene.mat
+
 #CHIMERASCAN_REF ?= $(REF_DIR)/chimerascan_index
 #BOWTIE_REF = $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37
 

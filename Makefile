@@ -177,6 +177,10 @@ TARGETS += gistic
 gistic :
 	$(call RUN_MAKE,modules/copy_number/gistic.mk)
 
+TARGETS += gistic_facets
+gistic_facets :
+	$(call RUN_MAKE,usb-modules/copy_number/gisticFacets.mk)
+
 NUM_DEFUSE_JOBS ?= 5
 TARGETS += defuse
 defuse :
