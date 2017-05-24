@@ -2,16 +2,19 @@
 
 set -o pipefail
 
+RMODULE="module load R/3.3.0-goolf-1.7.20"
 RCMD="Rscript"
 NAME="R"
-TMPDIR="$HOME/share/tmp"
-QUEUE="jrf.q"
+#TMPDIR="$HOME/share/tmp"
+TMPDIR="/scicore/scratch"
+#QUEUE="jrf.q"
 LOGDIR=.
 MEM="1G"
+TIME="00:29:59"
 PARALLEL=1
-QSUB="perl modules/scripts/qsub.pl"
+QSUB="perl usb-modules/scripts/qsub.pl"
 
-while getopts "e:sm:n:l:p:" opt; do
+while getopts "e:s:m:n:l:p:" opt; do
   case $opt in
     l)
     LOGDIR=$OPTARG
@@ -40,6 +43,7 @@ while getopts "e:sm:n:l:p:" opt; do
       exit -1
       ;;
   esac
+	echo $MEM
 done
 
 echo "#---------------------------------";
@@ -50,6 +54,7 @@ fi
 
 umask 002
 mkdir -p $LOGDIR
+echo "Here" >&2
  
 if [[ -n "$R" ]]; then 
     TMP=$(mktemp --tmpdir=${TMPDIR})
@@ -61,7 +66,7 @@ if [[ -n "$R" ]]; then
     chmod +rx ${TMP}
     if [[ -n "$SGE" ]]; then
         mkdir -p $LOGDIR
-        echo "umask 002; ${RCMD} ${TMP}" | $QSUB -- -cwd -V -now n -q $QUEUE -N X$NAME $PE -l virtual_free=$MEM,h_vmem=$MEM -o $LOGDIR/$NAME.log -j y -b n
+        echo "umask 002; ${RMODULE}; ${RCMD} ${TMP}" | $QSUB -- -cwd -V -now n -N X$NAME $PE -l runtime=$TIME,membycore=$MEM -o $LOGDIR/$NAME.log -j y -b n
         RET_CODE=$?
     else
         $RCMD ${TMP} | tee -a $LOGDIR/$NAME.log

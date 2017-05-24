@@ -213,6 +213,10 @@ VCF_SORT ?= $(PERL) $(SCRIPTS_DIR)/vcfsorter.pl
 #VEP_PATH ?= /opt/common/CentOS_6/vep/v82
 #VEP_DATA ?= /opt/common/CentOS_6/vep/v82
 
+BCL2FASTQ_MODULE ?= bcl2fastq/2.17.1.14-goolf-1.7.20
+LOAD_BCL2FASTQ_MODULE ?= module load $(BCL2FASTQ_MODULE)
+BCL2FASTQ ?= bcl2fastq
+
 #BAM2FASTX = $(HOME)/usr/bin/bam2fastx
 EXTRACT_TOOL ?= PICARD
 #BAM_TO_FASTQ ?= xxx
@@ -299,6 +303,10 @@ STAR ?= STAR
 STAR_FUSION_MODULE ?= STAR-Fusion/0.6.0-goolf-1.4.10-Perl-5.16.3
 LOAD_STAR_FUSION_MODULE ?= module load $(STAR_FUSION_MODULE)
 STAR_FUSION ?= STAR-Fusion
+
+STAR_FUSION_MAX_PROMISCUITY ?= 3
+STAR_FUSION_MIN_JUNC_SUPP ?= 2
+STAR_FUSION_MIN_ALT_PCT_JUNC ?= 5
 
 HISAT2_MODULE ?= HISAT2/2.0.4-goolf-1.7.20
 LOAD_HISAT2_MODULE ?= module load $(HISAT2_MODULE)
@@ -616,6 +624,15 @@ CBS_MPILEUP_OPTS = -q 1 $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVA
 MUTSIGCV_DIR ?= $(USR_DIR)/local/MutSigCV_1.4
 MUTSIGCV ?= $(MUTSIGCV_DIR)/run_MutSigCV.sh
 MCR ?= $(USR_DIR)/local/MCR_R2013a_glnxa64/v81/
+
+##################################
+############# GISTIC ############
+GISTIC ?= $(USR_DIR)/local/gistic_2.0.23/gp_gistic2_from_seg
+#GISTIC = $(HOME)/share/usr/gistic_2_0_21/gp_gistic2_from_seg
+GISTIC_THRESHOLD ?= 0.3
+GISTIC_JS ?= 15
+GISTIC_OPTS = -genegistic 0 -smallmem 1 -maxseg 5000 -savegene 1 -saveseg 1 -savedata 0 -v 30 -ta $(GISTIC_THRESHOLD) -td $(GISTIC_THRESHOLD) -js $(GISTIC_JS) -qvt 0.25 -conf 0.99 -broad 1 -brlen 0.5 -rx 0
+
 
 ##################################
 ########## Gene expression #######

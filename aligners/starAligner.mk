@@ -19,7 +19,7 @@ BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 star : $(BAMS) $(addsuffix .bai,$(BAMS)) star/all.ReadsPerGene.out.tab
 
 star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz)
-	$(call LSCRIPT_PARALLEL_MEM,4,10G,00:59:59,"$(MKDIR) star star/firstpass/; \
+	$(call LSCRIPT_PARALLEL_MEM,8,10G,05:59:59,"$(MKDIR) star star/firstpass/; \
 	$(LOAD_STAR_MODULE); STAR --runMode alignReads \
 	--runThreadN 4 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< $(if $(findstring true,$(PAIRED_END)),$(word 2,$^)) \
 	--readFilesCommand gunzip -c \
@@ -46,6 +46,7 @@ star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRE
 	--quantMode GeneCounts && mv star/secondpass/$1.Aligned.sortedByCoord.out.bam star/secondpass/$1.star.bam")
 
 star/secondpass/$1.Chimeric.out.junction : star/secondpass/$1.star.bam
+star/secondpass/$1.ReadsPerGene.out.tab : star/secondpass/$1.star.bam
 endef
 $(foreach sample,$(SAMPLES),\
 	$(eval $(call align-star-secondpass,$(sample))))
@@ -62,7 +63,7 @@ bam/%.bam : star/secondpass/%.star.bam
 #bam/%.bam : star/secondpass/%.star-original.$(BAM_SUFFIX)
 #	$(INIT) ln -f $< $@ && rename "-original" "" $<
 
-star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),bam/$(sample).bam)
+star/all.ReadsPerGene.out.tab : $(foreach sample,$(SAMPLES),star/secondpass/$(sample).ReadsPerGene.out.tab)
 	perl -p -e "s/N_unmapped/GENE\t\t\t\nN_unmapped/;" `ls star/secondpass/*.ReadsPerGene.out.tab|head -1` | cut -f 1 > $@; \
 	for x in $^; do sample=`echo $$x | sed 's/.*\///; s/\..*//'`; perl -p -e "s/N_unmapped/\t$$sample\t\t\nN_unmapped/;" \
 	star/secondpass/$$sample.ReadsPerGene.out.tab | cut -f 2 | paste $@ - > $@.tmp; mv $@.tmp $@; done

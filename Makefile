@@ -177,6 +177,10 @@ TARGETS += gistic
 gistic :
 	$(call RUN_MAKE,modules/copy_number/gistic.mk)
 
+TARGETS += gistic_facets
+gistic_facets :
+	$(call RUN_MAKE,usb-modules/copy_number/gisticFacets.mk)
+
 NUM_DEFUSE_JOBS ?= 5
 TARGETS += defuse
 defuse :
@@ -186,6 +190,10 @@ NUM_CHIMSCAN_JOBS ?= 5
 TARGETS += chimscan
 chimscan :
 	$(call RUN_MAKE_J,modules/sv_callers/chimerascan.mk,$(NUM_CHIMSCAN_JOBS))
+
+TARGETS += star_fusion
+star_fusion :
+	$(call RUN_MAKE,usb-modules/sv_callers/starFusion.mk)
 
 TARGETS += oncofuse
 oncofuse :
