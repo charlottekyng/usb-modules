@@ -25,7 +25,7 @@ MUT_CALLER = tvc
 
 define tvc-somatic-vcf
 tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
-	$$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
+	$$(call LSCRIPT_PARALLEL_MEM,8,10G,11:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
 	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -p $$(TVC_SOMATIC_JSON) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<)) && \
 	$$(BCFTOOLS) norm -m -both $$(@D)/TSVC_variants.vcf.gz | grep -v \"##contig\" > $$(@D)/TSVC_variants.vcf.tmp && \
@@ -42,7 +42,7 @@ tvc/vcf/$1_$2/TSVC_variants_preliminary.fpft.vcf : tvc/vcf/$1_$2/TSVC_variants_p
 	rm $$<.region $$<.bamrc")
 
 tvc/vcf/$1_$2/tumor/TSVC_variants_final.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf.gz tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf.gz.tbi
-	$$(call LSCRIPT_PARALLEL_MEM,8,10G,11:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(LOAD_TABIX_MODULE) && \
+	$$(call LSCRIPT_PARALLEL_MEM,8,10G,127:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(LOAD_TABIX_MODULE) && \
 		$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 8 -p $$(TVC_SENSITIVE_JSON) \
 		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
 		$$(BCFTOOLS) norm -m -both $$(@D)/TSVC_variants.vcf.gz | grep -v \"##contig\" > $$(@D)/TSVC_variants.vcf.tmp && \
@@ -55,7 +55,7 @@ tvc/vcf/$1_$2/tumor/TSVC_variants_final.vcf : bam/$1.bam bam/$1.bam.bai tvc/vcf/
 #		$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$(@D)/TSVC_variants.vcf.tmp3 -o $$@ --concordance $$(<<<)")
 
 tvc/vcf/$1_$2/normal/TSVC_variants_final.vcf : bam/$2.bam bam/$2.bam.bai tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf.gz tvc/vcf/$1_$2/TSVC_variants_preliminary.$$(if $$(findstring true,$$(USE_FPFILTER_FOR_TVC)),fpft.)vcf.gz.tbi
-	$$(call LSCRIPT_PARALLEL_MEM,8,10G,11:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE) ; $$(LOAD_TABIX_MODULE) ; \
+	$$(call LSCRIPT_PARALLEL_MEM,8,10G,127:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE) ; $$(LOAD_TABIX_MODULE) ; \
 		$$(TVC) -s $$(<<<) -i $$(<) -r $$(REF_FASTA) -o $$(@D) -N 8 $$(TVC_SENSITIVE_JSON) \
 		-m $$(TVC_MOTIF) -t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
 		$$(BCFTOOLS) norm -m -both $$(@D)/TSVC_variants.vcf.gz | grep -v \"##contig\" > $$(@D)/TSVC_variants.vcf.tmp && \

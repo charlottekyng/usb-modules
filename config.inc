@@ -424,8 +424,8 @@ TVC_ROOT_DIR ?= $(USR_DIR)/local/tvc-5.0.3-CentOS_6.5_x86_64-binary
 TVC = $(TVC_ROOT_DIR)/bin/variant_caller_pipeline.py
 TVC_SOMATIC_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters.json
 TVC_SENSITIVE_JSON = usb-modules/variant_callers/somatic/TVC_somatic_parameters_sensitive.json
-TVC_MOTIF = $(TVC_ROOT_DIR)/share/TVC/sse/ampliseqexome_germline_p1_hiq_motifset.txt
-USE_FPFILTER_FOR_TVC = true
+TVC_MOTIF ?= $(TVC_ROOT_DIR)/share/TVC/sse/ampliseqexome_germline_p1_hiq_motifset.txt
+USE_FPFILTER_FOR_TVC ?= true
 FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_tvc_vcf.pl
 
 #SOMATIC_FILTER_VCF ?= $(PERL) $(SCRIPTS_DIR)/somaticFilterVCF.pl

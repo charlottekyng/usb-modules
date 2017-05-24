@@ -12,7 +12,7 @@ ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 CALLER_PREFIX ?= mutect strelka_indel
 endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
-CALLER_PREFIX ?= tvc_snps tvc_indels varscan_snps varscan_indels
+CALLER_PREFIX ?= tvc_snps tvc_indels
 endif
 
 # Add optional absolute results to excel
