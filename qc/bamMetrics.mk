@@ -51,7 +51,6 @@ metrics/%.hs_metrics.txt metrics/%.interval_hs_metrics.txt : bam/%.bam bam/%.bam
 	$(call COLLECT_HS_METRICS,9G) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt \
 	PER_TARGET_COVERAGE=metrics/$*.interval_hs_metrics.txt TARGET_INTERVALS=\$$TMPCOVERED BAIT_SET_NAME=hs BAIT_INTERVALS=\$$TMP")
 
-# not sure how this differs from above, see picard doc
 metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,10G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
@@ -59,6 +58,21 @@ metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.b
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
 	$(call COLLECT_TARGETEDPCR_METRICS,9G) INPUT=$< OUTPUT=$@ AMPLICON_INTERVALS=\$$TMP TARGET_INTERVALS=\$$TMP \
 	PER_TARGET_COVERAGE=metrics/$*.interval_amplicon_metrics.txt COVERAGE_CAP=50000")
+
+define amplicon-metrics-pools
+POOLNAME=$$(shell basename $2)
+metrics/$1.amplicon_metrics_$$(POOLNAME).txt : bam/$1.bam bam/$1.bam.bai $2
+	$$(call LSCRIPT_MEM,10G,00:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); \
+	TMP=`mktemp`.intervals; \
+	$$(SAMTOOLS) view -H $$< | grep '^@SQ' > \$$$$TMP && grep -P \"\t\" $2 | \
+	awk 'BEGIN {OFS = \"\t\"} { print \$$$$1$$(,)\$$$$2+1$$(,)\$$$$3$$(,)\"+\"$$(,)NR }' >> \$$$$TMP; \
+	$$(call COLLECT_TARGETEDPCR_METRICS,9G) INPUT=$$< OUTPUT=$$@ AMPLICON_INTERVALS=\$$$$TMP TARGET_INTERVALS=\$$$$TMP \
+	COVERAGE_CAP=50000")
+endef
+$(if $(TARGETS_FILE_INTERVALS_POOLS),\
+	$(foreach pool,$(TARGETS_FILE_INTERVALS_POOLS),\
+		$(foreach sample,$(SAMPLES),\
+			$(eval $(call amplicon-metrics-pools,$(sample),$(pool))))))			
 
 metrics/%.wgs_metrics.txt : bam/%.bam bam/%.bam.bai
 	$(call LSCRIPT_MEM,12G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_WGS_METRICS,11G) \
@@ -134,7 +148,7 @@ metrics/all.interval_hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(samp
 	rm -f $@.tmp
 
 # summarize metrics into one file
-metrics/all.amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics.txt)
+metrics/all.amplicon_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics.txt) $(if $(TARGETS_FILE_INTERVALS_POOLS),$(foreach pool,$(TARGETS_FILE_INTERVALS_POOLS),$(foreach sample,$(SAMPLES),metrics/$(sample).amplicon_metrics_$(shell basename $(pool)).txt)))
 	$(INIT) \
 	{ \
 	sed '/^$$/d; /^#/d; s/CUSTOM_AMPLICON_SET/SAMPLE/; s/\s$$//' $< | head -1; \

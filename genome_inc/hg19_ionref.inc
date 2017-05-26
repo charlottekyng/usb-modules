@@ -1,6 +1,6 @@
 ifndef HG19_IONREF_INC
 REF = hg19_ionref
-REF_DIR = $(HOME)/ref_nobackup
+REF_DIR = /scicore/home/terracci/GROUP/ref_nobackup
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 ifeq ($(PANEL),CHPv2)
@@ -25,6 +25,7 @@ endif
 ifeq ($(PANEL),HCC)
 INCLUDE_LINCRNA_IN_SUMMARY ?= true
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_INTERVALS_POOLS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed_pool1.bed $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed_pool2.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
