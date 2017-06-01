@@ -58,24 +58,26 @@ TARGETS_FILE_COVERED_INTERVALS = $(BED_DIR)/pc2_novartis_Covered_noHeader_noAnn.
 TARGETS_FILE_INTERVALS = $(BED_DIR)/pc2_novartis_Padded_noHeader_noAnn.bed
 TARGETS_FILE_MUTATIONS = $(BED_DIR)/pc2_novartis_Padded_noHeader_noAnn.bed
 DBSNP_TARGETS_INTERVALS = $(BED_DIR)/pc2_novartis.dbsnp_138.vcf
-GATK_MEM_REQ ?= low
+GATK_RESOURCE_REQ ?= low
 endif
 ifeq ($(PANEL),IMPACT410)
 TARGETS_FILE_INTERVALS = $(BED_DIR)/impact410_b37.bed
 TARGETS_FILE_MUTATIONS = $(BED_DIR)/impact410_b37.bed
-GATK_MEM_REQ ?= low
+GATK_RESOURCE_REQ ?= low
 endif
 ifeq ($(PANEL),IMPACT341)
 TARGETS_FILE_INTERVALS = $(BED_DIR)/impact341_b37.bed
 TARGETS_FILE_MUTATIONS = $(BED_DIR)/impact341_b37.bed
-GATK_MEM_REQ ?= low
+GATK_RESOURCE_REQ ?= low
 endif
 ifeq ($(PANEL),NONE)
-GATK_MEM_REQ ?= high
+GATK_RESOURCE_REQ ?= high
+BAM_CHR2_BASE_RECAL = true
 endif
 
 endif
 
+$(info GATK_RESOURCE_REQ is $(GATK_RESOURCE_REQ))
 
 FACETS_TARGETS_INTERVALS ?= $(DBSNP_TARGETS_INTERVALS)
 
