@@ -4,12 +4,12 @@
 # Author: Raymond Lim <raylim@mm.st>
 #
 
-ifneq ("$(wildcard config.inc)", "")
-include config.inc
-endif
-ifneq ("$(wildcard project_config.inc)", "")
-include project_config.inc
-endif
+#ifneq ("$(wildcard config.inc)", "")
+#include config.inc
+#endif
+#ifneq ("$(wildcard project_config.inc)", "")
+#include project_config.inc
+#endif
 
 include usb-modules/config.inc
 
