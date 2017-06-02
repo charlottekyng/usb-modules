@@ -14,7 +14,7 @@ LOGDIR ?= log/process_bam.$(NOW)
 .SECONDARY: 
 
 BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
-
+$(info BAM_REPROCESS is $(BAM_REPROCESS))
 ifeq ($(BAM_REPROCESS),true)
 processed_bams : $(BAMS) $(addsuffix .bai,$(BAMS))
 bam/%.bam : unprocessed_bam/%.$(BAM_SUFFIX)
