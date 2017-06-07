@@ -25,7 +25,8 @@ MUT_CALLER = tvc
 
 define tvc-somatic-vcf
 tvc/vcf/$1_$2/TSVC_variants_preliminary.vcf : bam/$1.bam bam/$1.bam.bai bam/$2.bam bam/$2.bam.bai
-	$$(call LSCRIPT_PARALLEL_MEM,8,10G,11:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
+	$$(call LSCRIPT_PARALLEL_MEM,8,10G,11:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); \
+	$$(TVC) -i $$< -n $$(word 3,$$^) -r $$(REF_FASTA) -o $$(@D) -N 8 \
 	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -p $$(TVC_SOMATIC_JSON) -m $$(TVC_MOTIF) \
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -g $$(basename $$(notdir $$<)) && \
 	$$(BCFTOOLS) norm -m -both $$(@D)/TSVC_variants.vcf.gz | grep -v \"##contig\" > $$(@D)/TSVC_variants.vcf.tmp && \
