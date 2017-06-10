@@ -2,23 +2,21 @@ ifdef SAMPLE_PAIRS
 define som-ad-ft-tumor-normal
 vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
 	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
-		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") < $(MIN_TUMOR_AD)' \
+		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") < $(MIN_TUMOR_AD) && vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") < $(MIN_TUMOR_AD)' \
 		--filterName tumorVarAlleleDepth \
-		--filterExpression 'if ((vc.getGenotype(\"$2\").getAnyAttribute(\"FDP\") * 1.0) > $(MIN_NORMAL_DEPTH)) { \
-			( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"FDP\") * 1.0 ) ) \
-				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FDP\") * 1.0 )) / $(MIN_TN_AD_RATIO) && \
-				( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"DP\") * 1.0 ) ) \
-				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"DP\") * 1.0)) / $(MIN_TN_AD_RATIO) \
-			} else {  ( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"FDP\") * 1.0) ) \
-				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FDP\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
-				( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"DP\") * 1.0) ) \
-				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"DP\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
-				vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") > 1 && \
-				vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") > 1 }' \
-		--filterName somaticAlleleDepth \
-		--filterExpression '(vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0) <= $$(MIN_TUMOR_DEPTH) || \
-			(vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) <= $$(MIN_NORMAL_DEPTH)' \
+		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"DP\") * 1.0 <= $(MIN_TUMOR_DEPTH) || vc.getGenotype(\"$1\").getAnyAttribute(\"FDP\") * 1.0 <= $(MIN_TUMOR_DEPTH) || \
+			vc.getGenotype(\"$2\").getAnyAttribute(\"DP\") * 1.0 <= $(MIN_NORMAL_DEPTH) || vc.getGenotype(\"$2\").getAnyAttribute(\"FDP\") * 1.0 <= $(MIN_NORMAL_DEPTH)' \
 		--filterName depthFilter \
+		--filterExpression 'if (vc.getGenotype(\"$1\").getAnyAttribute(\"FDP\") * 1.0 > $(MIN_TUMOR_DEPTH) && vc.getGenotype(\"$2\").getAnyAttribute(\"FDP\") * 1.0 > $(MIN_NORMAL_DEPTH)) { \
+			 ( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / vc.getGenotype(\"$2\").getAnyAttribute(\"FDP\") * 1.0  ) \
+				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / vc.getGenotype(\"$1\").getAnyAttribute(\"FDP\") * 1.0  ) / $(MIN_TN_AD_RATIO) \
+			} else { vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") > 0 }' \
+		--filterName FsomaticAlleleDepth \
+		--filterExpression 'if (vc.getGenotype(\"$1\").getAnyAttribute(\"DP\") * 1.0 > $(MIN_TUMOR_DEPTH) && vc.getGenotype(\"$2\").getAnyAttribute(\"DP\") * 1.0 > $(MIN_NORMAL_DEPTH)) { \
+			( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / vc.getGenotype(\"$2\").getAnyAttribute(\"DP\") * 1.0  ) \
+				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / vc.getGenotype(\"$1\").getAnyAttribute(\"DP\") * 1.0  ) / $(MIN_TN_AD_RATIO) \
+			} else { vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") > 0 }'	\
+		--filterName somaticAlleleDepth \
 		&& sed -i 's/getGenotype(\"\([^\"]*\)\")/getGenotype(\1)/g' $$@ && $$(RM) $$< $$<.idx")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call som-ad-ft-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
@@ -79,11 +77,11 @@ vcf/$1_$2.%.sufam.tmp1.N.vcf : vcf/$1_$2.%.sufam.tmp1.vcf bam/$2.bam vcf/$1_$2.%
 			mv $$(@D)/$1_$2.$$*.sufam.tmp1.N/isec/0002.vcf $$@ && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.N"))
 #			$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.norm.vcf -o $$@ --concordance $$(word 1,$$^) && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.N"))
 
-vcf/$1_$2.%.sufam.tmp2.vcf : vcf/$1_$2.%.sufam.tmp1.T.vcf vcf/$1_$2.%.sufam.tmp1.N.vcf
+vcf/$1_$2.%.sufam.tmp2.vcf : vcf/$1_$2.%.sufam.tmp1.T.vcf vcf/$1_$2.%.sufam.tmp1.N.vcf vcf/$1_$2.%.sufam.tmp1.vcf
 	$$(call CHECK_VCF,$$(word 1,$$^),$$@,\
 		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); \
 			$$(call COMBINE_VARIANTS,10G) -R $$(REF_FASTA) \
-			--variant $$(word 1,$$^) --variant $$(word 2,$$^) -o $$@"))
+			--variant $$(word 1,$$^) --variant $$(word 2,$$^) -o $$@ && $$(RM) $$< $$<.idx $$(word 2,$$^) $$(word 2,$$^).idx $$(word 3,$$^)*"))
 
 vcf/$1_$2.%.sufam.tmp3.vcf : vcf/$1_$2.%.sufam.tmp2.vcf
 	$$(call CHECK_VCF,$$<,$$@,\

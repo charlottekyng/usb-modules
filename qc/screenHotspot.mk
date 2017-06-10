@@ -45,7 +45,7 @@ hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
-hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
+hotspots/%/hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
 	$(call LSCRIPT_PARALLEL_MEM,4,10G,11:59:59,"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
 	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -p $(TVC_SENSITIVE_JSON) -m $(TVC_MOTIF) \
@@ -57,6 +57,9 @@ hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
 	$(TABIX) -p vcf $(@D)/TSVC_variants.vcf.tmp3.gz && \
 	$(BCFTOOLS) isec -O v -p $(@D)/isec $(@D)/TSVC_variants.vcf.tmp3.gz $(word 2,$^) && \
 	mv $(@D)/isec/0002.vcf $@ && $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
+
+hotspots/%.hotspotscreen.vcf : hotspots/%/hotspotscreen.vcf
+	ln -f $< $@
 endif
 #	$(call LSCRIPT_PARALLEL_MEM,8,5G,00:59:59,"$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
 #	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
