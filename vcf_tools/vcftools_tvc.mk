@@ -86,14 +86,19 @@ vcf/$1_$2.%.sufam.tmp2.vcf : vcf/$1_$2.%.sufam.tmp1.T.vcf vcf/$1_$2.%.sufam.tmp1
 vcf/$1_$2.%.sufam.tmp3.vcf : vcf/$1_$2.%.sufam.tmp2.vcf
 	$$(call CHECK_VCF,$$<,$$@,\
 		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); \
-			$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$<  -o $$@  --filterName interrogation \
-			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") > 0 ||\
+			$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$<  -o $$@  \
+			--filterName interrogation \
+			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") > 0 || \
 			vc.getGenotype(\"$1\").getAnyAttribute(\"SAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"SAR\") > 0' \
+			--filterName interrogation_Absent \
+			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") == 0 && vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") == 0 && \
+			vc.getGenotype(\"$1\").getAnyAttribute(\"SAF\") == 0 && vc.getGenotype(\"$1\").getAnyAttribute(\"SAR\") == 0 ' \
 			&& $$(RM) $$< $$<.idx"))
 
 vcf/$1_$2.%.sufam.tmp4.vcf : vcf/$1_$2.%.sufam.tmp3.vcf
 	$$(call CHECK_VCF,$$<,$$@,\
-		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_SNP_EFF_MODULE); $$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) -f $$< \"(FILTER has 'interrogation')\"  > $$@ && $$(RM) $$< $$<.idx"))
+		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_SNP_EFF_MODULE); $$(SNP_SIFT) filter $$(SNP_SIFT_OPTS) \
+			-f $$< \"(FILTER has 'interrogation' || FILTER has 'interrogation_Absent')\"  > $$@ && $$(RM) $$< $$<.idx"))
 
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$1_$2.%.sufam.tmp4.vcf
 	$$(call CHECK_VCF_CMD,$$(word 2,$$^),cp $$< $$@,\
@@ -102,8 +107,6 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$1_$2.%.sufam.tmp4.vcf
 			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(word 2,$$^).tmp | grep -v \"##contig\" > $$(word 2,$$^).tmp2 && \
 			$$(call LEFT_ALIGN_VCF,6G) -R $$(REF_FASTA) --variant $$(word 2,$$^).tmp2 -o $$@ && \
 			$$(RM) $$(word 2,$$^) $$(word 2,$$^).idx $$(word 2,$$^).tmp*"))
-
-
 endif
 endef
 

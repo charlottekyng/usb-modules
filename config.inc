@@ -96,6 +96,8 @@ MIN_AF_INDEL ?= 0.02
 HRUN ?= false
 HRUN_FILTER ?= 4
 
+USE_SUFAM ?= true
+
 # default to medium for exomes, other values are "low" for targeted panels and "high" for WGS
 GATK_MEM_REQ ?= medium
 
