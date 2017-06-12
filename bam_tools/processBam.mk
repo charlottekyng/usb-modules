@@ -58,35 +58,35 @@ index : $(addsuffix .bai,$(BAMS))
 #	$(call LSCRIPT_MEM,18G,00:59:59,"$(call GATK_MEM,18G) -T PrintReads -R $(REF_FASTA) -I $< -dcov 50 -o $@")
 
 %.downsampled.bam : %.bam
-	$(call LSCRIPT_CHECK_MEM,20G,03:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bh -s $(SAMTOOLS_DOWNSAMPLE_FACTOR) $< > $@")
+	$(call LSCRIPT_CHECK_MEM,20G,05:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bh -s $(SAMTOOLS_DOWNSAMPLE_FACTOR) $< > $@")
 
 # filter
 %.filtered.bam : %.bam
 	$(call LSCRIPT_MEM,6G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
 
 %.fixmate.bam : %.bam
-	$(call LSCRIPT_MEM,9G,01:59:59,"$(LOAD_JAVA8_MODULE); $(call FIX_MATE,8G) I=$< O=$@ && $(RM) $<")
+	$(call LSCRIPT_MEM,9G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call FIX_MATE,8G) I=$< O=$@ && $(RM) $<")
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,19G) \
+	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,19G) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
-	$(call LSCRIPT_MEM,20G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
+	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
 
 %.nsorted.bam : %.bam
-	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
+	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
 
 %.markdup.bam : %.bam
-	$(call LSCRIPT_MEM,20G,03:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
+	$(call LSCRIPT_MEM,20G,05:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
 %.rmdup.bam : %.bam
-	$(call LSCRIPT_MEM,4G,02:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) rmdup $< $@ && $(RM) $<")
+	$(call LSCRIPT_MEM,4G,05:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) rmdup $< $@ && $(RM) $<")
 
 %.splitntrim.bam : %.bam
-	$(call LSCRIPT_MEM,20G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call SPLIT_N_TRIM,19G) -I $< -o $@ \
+	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call SPLIT_N_TRIM,19G) -I $< -o $@ \
 		-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -R $(REF_FASTA) && $(RM) $<")
 
 # clean sam files

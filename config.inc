@@ -390,9 +390,9 @@ PRINT_READS ?= $(call GATK,PrintReads,$$(1))
 APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,$$(1))
 VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,$$(1))
 
-BAM_CHR1_BASE_RECAL ?= false
+BAM_CHR2_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) \
-	$(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES))) \
+	$(if $(findstring true,$(BAM_CHR2_BASE_RECAL)),-L $(word 2,$(CHROMOSOMES))) \
 	$(if $(TARGETS_FILE_INTERVALS),-L $(TARGETS_FILE_INTERVALS))
 
 ifneq ($(KNOWN_INDELS),)
