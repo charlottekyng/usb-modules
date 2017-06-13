@@ -21,19 +21,6 @@ vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
 endef
 $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call som-ad-ft-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
-#		--filterExpression 'if ((vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) > $(MIN_NORMAL_DEPTH)) { \
-#			( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) ) \
-#			> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
-#				( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"RO\") * 1.0) ) \
-#				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"RO\") * 1.0)) / $(MIN_TN_AD_RATIO) \
-#			} else {  ( vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"FRO\") * 1.0) ) \
-#				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"FRO\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
-#				( vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$2\").getAnyAttribute(\"RO\") * 1.0) ) \
-#				> ( vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 / (vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 + vc.getGenotype(\"$1\").getAnyAttribute(\"RO\") * 1.0)) / $(MIN_TN_AD_RATIO) && \
-#				vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"FAO\") > 1 && \
-#				vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") * 1.0 < 1 && vc.getGenotype(\"$2\").getAnyAttribute(\"AO\") > 1 }' \
-
-
 define sufam
 ifeq ($3,$2)
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
@@ -88,11 +75,10 @@ vcf/$1_$2.%.sufam.tmp3.vcf : vcf/$1_$2.%.sufam.tmp2.vcf
 		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); \
 			$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$<  -o $$@  \
 			--filterName interrogation \
-			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") > 0 || \
-			vc.getGenotype(\"$1\").getAnyAttribute(\"SAF\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"SAR\") > 0' \
+			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") > 0' \
 			--filterName interrogation_Absent \
-			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FSAF\") == 0 && vc.getGenotype(\"$1\").getAnyAttribute(\"FSAR\") == 0 && \
-			vc.getGenotype(\"$1\").getAnyAttribute(\"SAF\") == 0 && vc.getGenotype(\"$1\").getAnyAttribute(\"SAR\") == 0 ' \
+			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") == 0 && vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") == 0' \
+			--maskName HOTSPOT --mask $(CANCER_HOTSPOT_VCF) \
 			&& $$(RM) $$< $$<.idx"))
 
 vcf/$1_$2.%.sufam.tmp4.vcf : vcf/$1_$2.%.sufam.tmp3.vcf
