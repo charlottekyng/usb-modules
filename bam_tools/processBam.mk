@@ -69,7 +69,7 @@ index : $(addsuffix .bai,$(BAMS))
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,19G) \
+	$(call LSCRIPT_MEM,20G,23:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,19G) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
@@ -79,7 +79,7 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
 
 %.markdup.bam : %.bam
-	$(call LSCRIPT_MEM,20G,05:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
+	$(call LSCRIPT_MEM,20G,23:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
 %.rmdup.bam : %.bam
@@ -150,12 +150,12 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample recal chromosome bams
 %.recal.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bai)
-	$(call LSCRIPT_PARALLEL_MEM,4,10G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
+	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
 
 define chr-recal
 %.$1.chr_recal.bam : %.bam %.recal_report.grp
-	$$(call LSCRIPT_MEM,11G,02:59:59,"$$(LOAD_JAVA8_MODULE); $$(call PRINT_READS,10G) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
+	$$(call LSCRIPT_MEM,11G,23:59:59,"$$(LOAD_JAVA8_MODULE); $$(call PRINT_READS,10G) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-recal,$(chr))))
 
