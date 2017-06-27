@@ -150,7 +150,7 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample recal chromosome bams
 %.recal.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bai)
-	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
+	$(call LSCRIPT_PARALLEL_MEM,4,10G,23:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
 
 define chr-recal
