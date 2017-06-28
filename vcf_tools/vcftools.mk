@@ -390,14 +390,14 @@ tables/%.opl_tab.txt : vcf/%.vcf
 
 # merge tables
 alltables/all.%.txt : $(foreach sample,$(SAMPLES),tables/$(sample).%.txt)
-	$(call LSCRIPT_MEM,5G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
+	$(call LSCRIPT_MEM,32G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
 ifdef SAMPLE_SETS
 alltables/allSS.%.txt : $(foreach set,$(SAMPLE_SETS),tables/$(set).%.txt)
-	$(call LSCRIPT_MEM,5G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --normalLast $^ > $@")
+	$(call LSCRIPT_MEM,32G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --normalLast $^ > $@")
 endif
 ifdef SAMPLE_PAIRS
 alltables/allTN.%.txt : $(foreach pair,$(SAMPLE_PAIRS),tables/$(pair).%.txt)
-	$(call LSCRIPT_MEM,5G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --tumorNormal $^ > $@")
+	$(call LSCRIPT_MEM,32G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --tumorNormal $^ > $@")
 endif
 
 %.high_moderate.txt : %.txt
