@@ -2,14 +2,15 @@ ifndef VARIANT_CALLER_INC
 
 ### Filters
 FILTERS += $(if $(TARGETS_FILE_INTERVALS),target_ft) dp_ft
-FILTERS += $(if $(findstring GRCm38,$(REF)),,hotspot)
+#FILTERS += $(if $(findstring GRCm38,$(REF)),,hotspot)
+FILTERS += $(if $(or $(findstring GRCm38,$(REF)),$(findstring CANCER,$(ANALYSIS_TYPE))),,hotspot)
 
 FILTER_SUFFIX = $(subst $( ),.,$(strip $(call FILTERS,$1)))
 
 ### Annotation
 
 COMMON_ANNS := $(if $(findstring GRCm38,$(REF)),eff dbsnp, \
-	eff dbsnp cosmic exac_nontcga clinvar gene_ann nsfp)
+	eff dbsnp $(if $(findstring CANCER,$(ANALYSIS_TYPE)),cosmic exac_nontcga gene_ann,) $(if $(findstring PSYCH,$(ANALYSIS_TYPE)),exac_nonpsych,) clinvar nsfp)
 
 SNV_ANNS = $(COMMON_ANNS)
 INDEL_ANNS = $(COMMON_ANNS)

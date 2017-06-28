@@ -207,6 +207,10 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
 		$(SNP_SIFT_OPTS) -info ExAC_AF $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
 
+%.exac_nonpsych.vcf : %.vcf %.vcf.idx
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
+		$(SNP_SIFT_OPTS) -info ExAC_AF $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
+
 %.mut_taste.vcf : %.vcf
 	$(INIT) $(call CHECK_VCF,$<,$@,$(MUTATION_TASTER) $< > $@ 2> $(LOG))
 
@@ -359,7 +363,7 @@ endif
 
 # extract vcf to table
 tables/%.opl_tab.txt : vcf/%.vcf
-	$(call LSCRIPT_CHECK_MEM,2G,00:29:29,"$(LOAD_SNP_EFF_MODULE); \
+	$(call LSCRIPT_CHECK_MEM,8G,00:29:29,"$(LOAD_SNP_EFF_MODULE); \
 	format_fields=\$$(grep '^##FORMAT=<ID=' $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | sed 's/.*ID=//; s/,.*//;' | tr '\n' ' '); \
 	N=\$$(expr \$$(grep '^#CHROM' $< | wc -w) - 10); \
 	fields='$(VCF_FIELDS)'; \
@@ -378,7 +382,7 @@ tables/%.opl_tab.txt : vcf/%.vcf
 	done")
 
 %.tab.txt : %.opl_tab.txt
-	$(call LSCRIPT_MEM,8G,00:59:59,"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
+	$(call LSCRIPT_MEM,64G,05:59:59,"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
 	
 %.pass.txt : %.txt
 	$(INIT) head -1 $< > $@ && awk '$$6 == "PASS" { print }' $< >> $@ || true

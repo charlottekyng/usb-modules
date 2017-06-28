@@ -24,6 +24,9 @@ PAIRED_END ?= true
 # for RNA-seq, possible values NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND
 STRAND_SPECIFICITY ?= NONE
 
+# possible values: CANCER, PSYCH
+ANALYSIS_TYPE ?= CANCER 
+
 ## process FASTQs before alignment
 TRIM_LENGTH ?= 150
 # trim is fixed length trim, cutadapt
