@@ -105,7 +105,7 @@ ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 %.rg.bam : %.bam
 	$(INIT) $(LOAD_SAMTOOLS_MODULE); \
 		samplename=`basename $< .bam` && \
-		$(SAMTOOLS) view -H $< | sed "s/SM:[a-zA-Z0-9 _\-\.]*/SM:$${samplename}/" > $<.header
+		$(SAMTOOLS) view -H $< | sed "s/SM:[a-zA-Z0-9 _-\.]*/SM:$${samplename}/" > $<.header
 	$(call LSCRIPT_MEM,4G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) reheader $<.header $< > $@")
 endif
 
