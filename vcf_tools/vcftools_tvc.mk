@@ -89,7 +89,8 @@ vcf/$1_$2.%.sufam.tmp4.vcf : vcf/$1_$2.%.sufam.tmp3.vcf
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$1_$2.%.sufam.tmp4.vcf
 	$$(call CHECK_VCF_CMD,$$(word 2,$$^),cp $$< $$@,\
 		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(LOAD_BCFTOOLS_MODULE); \
-			$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$(word 2,$$^) -o $$(word 2,$$^).tmp --genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
+			$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$(word 2,$$^) -o $$(word 2,$$^).tmp \
+			--genotypemergeoption UNSORTED -R $$(REF_FASTA) -assumeIdenticalSamples && \
 			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(word 2,$$^).tmp | grep -v \"##contig\" > $$(word 2,$$^).tmp2 && \
 			$$(call LEFT_ALIGN_VCF,6G) -R $$(REF_FASTA) --variant $$(word 2,$$^).tmp2 -o $$@ && \
 			$$(RM) $$(word 2,$$^) $$(word 2,$$^).idx $$(word 2,$$^).tmp*"))
