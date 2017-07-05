@@ -205,11 +205,11 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 
 %.exac_nontcga.vcf : %.vcf %.vcf.idx 
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
-		$(SNP_SIFT_OPTS) -info ExAC_AF $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
+		$(SNP_SIFT_OPTS) -info $(EXAC_INO_FIELDS) $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
 
 %.exac_nonpsych.vcf : %.vcf %.vcf.idx
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
-		$(SNP_SIFT_OPTS) -info ExAC_AF $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
+		$(SNP_SIFT_OPTS) -info $(EXAC_INO_FIELDS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
 
 %.mut_taste.vcf : %.vcf
 	$(INIT) $(call CHECK_VCF,$<,$@,$(MUTATION_TASTER) $< > $@ 2> $(LOG))
