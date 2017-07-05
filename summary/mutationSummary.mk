@@ -41,7 +41,7 @@ ALLTABLES_NS_SYNON_HS_LNC = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(
 ALLTABLES_NS_SYNON_HS = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot.txt)
 
 summary/mutation_summary.xlsx : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NS_SYNON_HS),$(ALLTABLES_NS_SYNON_HS_LNC))
-	$(call LSCRIPT_CHECK_MEM,6G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
+	$(call LSCRIPT_CHECK_MEM,16G,05:59:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
 	--outFile $@ $^")
 endif
 
