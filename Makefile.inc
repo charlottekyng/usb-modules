@@ -100,11 +100,11 @@ ifneq ($(wildcard $(SAMPLE_SET_FILE)),)
 endif
 
 ifneq ($(wildcard $(SAMPLE_SPLIT_FILE)),)
-  A = $(shell cut -f1 $(SAMPLE_SPLIT_FILE))
-  B = $(shell cut -f2 $(SAMPLE_SPLIT_FILE))
+  A = $(shell sed '/^\#/d' $(SAMPLE_SPLIT_FILE) | cut -f1)
+  B = $(shell sed '/^\#/d' $(SAMPLE_SPLIT_FILE) | cut -f2)
   $(foreach i,$(shell seq 1 $(words $(A))),$(eval split.$(word $i,$(A)) += $(word $i,$(B))))
   UNSPLIT_SAMPLES = $(B)
-  SPLIT_SAMPLES = $(shell cut -f1 $(SAMPLE_SPLIT_FILE) | sort | uniq)
+  SPLIT_SAMPLES = $(shell sed '/^\#/d' $(SAMPLE_SPLIT_FILE) | cut -f1 | sort | uniq)
 endif
 
 ALL_SAMPLES = $(SAMPLE_PAIRS) $(SAMPLES)
