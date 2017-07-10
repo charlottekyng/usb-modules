@@ -46,8 +46,8 @@ endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 hotspots/%/hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf.gz hotspots/sites.to.screen.vcf.gz.tbi
-	$(call LSCRIPT_PARALLEL_MEM,4,10G,11:59:59,"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
-	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
+	$(call LSCRIPT_PARALLEL_MEM,8,32G,11:59:59,"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
+	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -p $(TVC_SENSITIVE_JSON) -m $(TVC_MOTIF) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED) && \
 	$(BCFTOOLS) norm -m -both $(@D)/TSVC_variants.vcf.gz | grep -v \"##contig\" > $(@D)/TSVC_variants.vcf.tmp && \
