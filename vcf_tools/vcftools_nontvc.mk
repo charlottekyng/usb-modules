@@ -17,7 +17,7 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call som-ad-ft-tumor-normal,$(tumor.$(pa
 define sufam
 ifeq ($3,$2)
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
-        $$(INIT) ln -f $$< $$@
+	$$(INIT) ln -f $$< $$@
 else
 vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
@@ -52,12 +52,10 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 		--genotypemergeoption UNSORTED -R $$(REF_FASTA) && \
 		$$(RM) $$@.tmp1 $$@.tmp2 $$@.tmp3 $$@.tmp4 $$(word 2,$$^) $$@.tmp1.idx $$@.tmp2.idx $$@.tmp3.idx $$@.tmp4.idx $$(word 2,$$^).idx"))
 endif
-endif
-endef
+endif #ifeq ($3,$2)
+endef #define sufam
 
 $(foreach set,$(SAMPLE_SETS),\
 	$(foreach tumor,$(wordlist 1,$(shell expr $(words $(subst _,$( ),$(set))) - 1),$(subst _,$( ),$(set))),\
 		$(eval $(call sufam,$(tumor),$(lastword $(subst _,$( ),$(set))),$(subst $(tumor)_,,$(set))))))
-
-
-endif
+endif #ifdef SAMPLE_PAIRS
