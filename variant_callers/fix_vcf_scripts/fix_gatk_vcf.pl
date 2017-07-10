@@ -40,20 +40,24 @@ while (my $l = <>) {
 				$ad = $i;
 			} elsif ($format[$i] eq "DP") {
 				$dp = $i;
-			} elsif ($format[$i] eq "AF") {
-				$format[$i] = "FA";
-				$af = $i;
+#			} elsif ($format[$i] eq "AF") {
+#				$format[$i] = "FA";
+#				$af = $i;
 			}
 		}
 		$line[8] = join ':', @format;
 		if ($ad ne "") {
-		for (my $i = 9; $i <= 10; $i++) {
+		for (my $i = 9; $i < scalar @line; $i++) {
 			my @fields = split /:/, $line[$i];
 			my @ads = split /,/, $fields[$ad];
 			my $dps = $fields[$dp];
 			my @fas = ();
 			for (my $j = 1; $j < scalar @ads; $j++) {
-				push @fas, $ads[$j]/$dps;
+				my $val = ".";
+				if ($dps > 0) { 
+					$val = $ads[$j]/$dps;
+				}
+				push @fas, $val;
 			}
 			$fields[$ad] = $fields[$ad].":".join ',',@fas;
 			$line[$i] = join ':', @fields;

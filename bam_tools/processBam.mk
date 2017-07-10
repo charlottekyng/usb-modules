@@ -48,7 +48,7 @@ endif
 index : $(addsuffix .bai,$(BAMS))
 
 %.bam.bai : %.bam
-	$(call LSCRIPT_CHECK_MEM,3G,00:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< && ln -f $@ $*.bai")
+	$(call LSCRIPT_CHECK_MEM,3G,05:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< && ln -f $@ $*.bai")
 
 %.bai : %.bam.bai
 	$(INIT) ln -f $@ $<
@@ -79,7 +79,7 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=queryname")
 
 %.markdup.bam : %.bam
-	$(call LSCRIPT_MEM,20G,23:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,19G) I=$< O=$@ \
+	$(call LSCRIPT_MEM,128G,23:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,128G) I=$< O=$@ \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
 %.rmdup.bam : %.bam
@@ -105,7 +105,7 @@ ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 %.rg.bam : %.bam
 	$(INIT) $(LOAD_SAMTOOLS_MODULE); \
 		samplename=`basename $< .bam` && \
-		$(SAMTOOLS) view -H $< | sed "s/SM:[a-zA-Z0-9 _\-\.]*/SM:$${samplename}/" > $<.header
+		$(SAMTOOLS) view -H $< | sed "s/SM:[a-zA-Z0-9 _-\.]*/SM:$${samplename}/" > $<.header
 	$(call LSCRIPT_MEM,4G,00:29:29,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) reheader $<.header $< > $@")
 endif
 
@@ -118,10 +118,7 @@ endif
 # if SPLIT_CHR is set to true, we will split realn processing by chromosome
 ifeq ($(SPLIT_CHR),true)
 $(info CHR is $(CHROMOSOMES))
-# indel realignment intervals (i.e. where to do MSA)
-# split by samples and chromosomes
-# %=sample
-# $(eval $(call chr-target-aln,chromosome))
+
 define chr-target-realn
 %.$1.chr_split.intervals : %.bam %.bam.bai
 	$$(call LSCRIPT_PARALLEL_MEM,4,4G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call REALIGN_TARGET_CREATOR,3G) \
@@ -129,10 +126,7 @@ define chr-target-realn
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-target-realn,$(chr))))
 
-# indel realignment per chromosome
 # only realign if intervals is non-empty
-# %=sample
-# $(eval $(call chr-aln,chromosome))
 define chr-realn
 %.$(1).chr_realn.bam : %.bam %.$(1).chr_split.intervals %.bam.bai
 	$$(call LSCRIPT_MEM,9G,02:59:59,"$$(LOAD_JAVA8_MODULE); \
@@ -150,14 +144,15 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample recal chromosome bams
 %.recal.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bai)
-	$(call LSCRIPT_PARALLEL_MEM,4,10G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,9G) \
+	$(call LSCRIPT_PARALLEL_MEM,4,32G,23:59:59,"$(LOAD_JAVA8_MODULE); $(call MERGE_SAMS,15G) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
 
 define chr-recal
 %.$1.chr_recal.bam : %.bam %.recal_report.grp
-	$$(call LSCRIPT_MEM,11G,23:59:59,"$$(LOAD_JAVA8_MODULE); $$(call PRINT_READS,10G) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
+	$$(call LSCRIPT_MEM,16G,23:59:59,"$$(LOAD_JAVA8_MODULE); $$(call PRINT_READS,15G) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-recal,$(chr))))
+
 
 else # no splitting by chr
 
