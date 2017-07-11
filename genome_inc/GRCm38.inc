@@ -10,6 +10,7 @@ TARGETS_FILE_COVERED_INTERVALS = $(REF_DIR)/target_beds/GRCm38/S0276129_Covered_
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/GRCm38/S0276129_Padded_noAnn_noHeader_GRCm37liftover.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/GRCm38/S0276129_Padded_noAnn_noHeader_GRCm37liftover.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/GRCm38/S0276129_Targets.txt
+RESOURCE_REQ ?= medium
 endif
 endif
 
