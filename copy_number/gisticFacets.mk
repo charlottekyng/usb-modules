@@ -54,11 +54,18 @@ gistic/segmentationfile.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair)
 		s <- read.delim(segFile, header = T, as.is = T, col.names=c("Chromosome","Seg","numMarkers","nhet","log2_ratio_seg","mafR","segclust","cnlr.median.clust","mafR.clust","Start","End","cf.em","tcn.em","lcn.em","clonal.cluster"))
 		s <- cbind(segName, s)
 		colnames(s)[1] <- "Sample"
-#		s <- read.delim(segFile, header = T, as.is = T, row.names=paste0(1,"_",2,":",3,"-",4), col.names=c("Sample","Chromosome","Seg","Num.Mark","nhet","log2_ratio_seg","mafR","segclust","cnlr.median.clust","mafR.clust","Start","End","cf.em","tcn.em","lcn.em","clonal.cluster"))
-#		s <- read.delim(segFile, header = T, as.is = T, row.names=paste0(1,"_",2,":",3,"-",4), col.names=c("Sample","Chromosome","Start","End","adjusted_log_ratio","nhet","log2_ratio_seg","mafR","segclust","cnlr.median.clust","mafR.clust","cf","tcn","lcn","cf.em","tcn.em","lcn.em"))
 		s[['Chromosome']][s[['Chromosome']] == 23] <- "X"
 		s[['Chromosome']][s[['Chromosome']] == 24] <- "Y"
-		gr <- with(s, GRanges(seqnames = Chromosome, range = IRanges(start = Start, end = End), segmented = as.numeric(log2_ratio_seg)))
+#		gr <- with(s, GRanges(seqnames = Chromosome, range = IRanges(start = Start, end = End), segmented = as.numeric(log2_ratio_seg)))
+
+		out <- read.delim(gsub("cncf.txt", "out", segFile), as.is=T, sep="=", header=F)
+		purity <- as.numeric(out[grep("Purity",out[,1]),2])
+		ploidy <- as.numeric(out[grep("Ploidy",out[,1]),2])
+		if(!is.na(purity) & !is.na(ploidy)) {
+			s$isar_corrected <- s$log2_ratio_seg/(purity-(2*(1-purity)/(purity*ploidy)))
+		} else { s$isar_corrected <- s$log2_ratio_seg }
+		gr <- with(s, GRanges(seqnames = Chromosome, range = IRanges(start = Start, end = End), segmented = as.numeric(isar_corrected)))
+
 		redGr <- reduce(gr)
 		x <- findOverlaps(redGr, gr, select = 'first')
 		redGr$$segmented <- gr[x]$$segmented

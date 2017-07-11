@@ -353,5 +353,8 @@ TARGETS += tvc_somatic
 tvc_somatic :
 	$(call RUN_MAKE,usb-modules/variant_callers/somatic/TVC.mk)
 
+TARGETS += sufam_screen
+sufam_screen :
+	$(call RUN_MAKE,usb-modules/variant_callers/sufam.mk)
 
 .PHONY : $(TARGETS)
