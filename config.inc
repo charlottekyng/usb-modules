@@ -75,7 +75,7 @@ BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= false
 endif
 
-INCLUDE_CHR_Y ?= false
+INCLUDE_CHR_Y ?= true
 
 ### VARIANT FILTERS
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
