@@ -378,21 +378,21 @@ endif
 
 PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
 PICARD_JAR ?= $(JAR_DIR)/picard-tools-2.4.1/picard.jar
-PICARD = $(JAVA) -Xmx$(2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
+PICARD = $(JAVA) -Xmx$$(2) -jar $(PICARD_JAR) $$(1) $(PICARD_OPTS)
 
-SORT_SAM = $(call PICARD,SortSam,$$(1))
-REORDER_SAM = $(call PICARD,ReorderSam,$$(1))
-MARK_DUP = $(call PICARD,MarkDuplicates,$$(1))
-MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,$$(1))
-MERGE_SAMS = $(call PICARD,MergeSamFiles,$$(1))
+#SORT_SAM = $(call PICARD,SortSam,$$(1))
+#REORDER_SAM = $(call PICARD,ReorderSam,$$(1))
+#MARK_DUP = $(call PICARD,MarkDuplicates,$$(1))
+#MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,$$(1))
+#MERGE_SAMS = $(call PICARD,MergeSamFiles,$$(1))
 FIX_MATE = $(call PICARD,FixMateInformation,$$(1))
 SAM_TO_FASTQ = $(call PICARD,SamToFastq,$$(1))
-CLEANBAM = $(call PICARD,CleanSam,$$(1))
-ADD_RG = $(call PICARD,AddOrReplaceReadGroups,$$(1))
-VALIDATE_SAM = $(call PICARD,ValidateSamFile,$$(1))
+#CLEANBAM = $(call PICARD,CleanSam,$$(1))
+#ADD_RG = $(call PICARD,AddOrReplaceReadGroups,$$(1))
+#VALIDATE_SAM = $(call PICARD,ValidateSamFile,$$(1))
 
-INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,$$(1))
-CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,$$(1))
+#INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,$$(1))
+#CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,$$(1))
 
 COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,$$(1))
 #COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,$$(1))
@@ -410,7 +410,7 @@ COLLECT_GCBIAS_METRICS = $(call PICARD,CollectGcBiasMetrics,$$(1))
 ##################################
 
 GATK_JAR ?= $(JAR_DIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
-GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1) -filterNoBases
+GATK ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR) -S LENIENT -T $$(1) -filterNoBases
 
 REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
 INDEL_REALIGN ?= $(call GATK,IndelRealigner,$$(1))

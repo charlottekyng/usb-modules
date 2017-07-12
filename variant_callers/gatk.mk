@@ -26,14 +26,16 @@ ifeq ($(SPLIT_CHR),true)
 ifdef SAMPLE_SET_PAIRS
 define hapcall-vcf-sets-chr
 gatk/chr_vcf/$1.$2.variants.vcf : $$(foreach sample,$$(samples.$1),gatk/chr_vcf/$$(sample).$2.variants.intervals) $$(foreach sample,$$(samples.$1),bam/$$(sample).bam bam/$$(sample).bai)
-	$$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
+	$$(call GATK,HaplotypeCaller,$$(RESOURCE_REQ_MEDIUM_MEM)) $$(HAPLOTYPE_CALLER_OPTS) \
 	$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) $$(foreach intervals,$$(filter %.intervals,$$^),-L $$(intervals) ) -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call hapcall-vcf-sets-chr,$(set),$(chr)))))
 
 define merge-chr-variants-sets
 gatk/vcf/$1.variants.vcf : $$(foreach chr,$$(CHROMOSOMES),gatk/chr_vcf/$1.$$(chr).variants.vcf)
-	$$(call LSCRIPT_CHECK_MEM,9G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,8G) \
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
+	$$(call GATK,CombineVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) \
 	--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
 endef
 $(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call merge-chr-variants-sets,$(set))))
@@ -41,15 +43,17 @@ endif # def SAMPLE_SET_PAIRS
 
 define chr-variants
 gatk/chr_vcf/%.$1.variants.vcf : bam/%.bam bam/%.bai
-	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,7G) $$(HAPLOTYPE_CALLER_OPTS) \
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
+	$$(call GATK,HaplotypeCaller,$$(RESOURCE_REQ_MEDIUM_MEM)) $$(HAPLOTYPE_CALLER_OPTS) \
 	-L $1 -I $$< -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-variants,$(chr))))
 
 define merge-chr-variants
 gatk/vcf/$1.variants.vcf : $$(foreach chr,$$(CHROMOSOMES),gatk/chr_vcf/$1.$$(chr).variants.vcf)
-	$$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,8G) \
-	--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
+		$$(call GATK,CombineVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) \
+		--assumeIdenticalSamples $$(foreach i,$$^, --variant $$i) -R $$(REF_FASTA) -o $$@")
 endef
 $(foreach sample,$(SAMPLES),$(eval $(call merge-chr-variants,$(sample))))
 
@@ -58,7 +62,7 @@ else #### no splitting by chr ####
 ifdef SAMPLE_SETS
 define hapcall-vcf-sets
 gatk/vcf/$1.variants.vcf : $$(foreach sample,$$(samples.$1),gatk/vcf/$$(sample).variants.vcf) $$(foreach sample,$$(samples.$1),bam/$$(sample).bam bam/$$(sample).bai)
-	$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
+	$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call GATK,HaplotypeCaller,8G) $$(HAPLOTYPE_CALLER_OPTS) \
 	$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) $$(foreach vcf,$$(filter %.vcf,$$^),-L $$(vcf) ) -o $$@")
 endef
 $(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call hapcall-vcf-sets,$(set))))
@@ -66,31 +70,33 @@ endif
 
 define hapcall-vcf
 gatk/vcf/$1.variants.vcf : bam/$1.bam bam/$1.bai
-	$$(call LSCRIPT_CHECK_MEM,9G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call HAPLOTYPE_CALLER,8G) $$(HAPLOTYPE_CALLER_OPTS) \
-	-I $$< -o $$@")
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_MEDIUM),"$$(LOAD_JAVA8_MODULE); \
+	$$(call GATK,HaplotypeCaller,$$(RESOURCE_REQ_MEDIUM_MEM)) $$(HAPLOTYPE_CALLER_OPTS) -I $$< -o $$@")
 endef
 $(foreach sample,$(SAMPLES),$(eval $(call hapcall-vcf,$(sample))))
 
 endif # split by chr
 
 gatk/vcf/%.variants.snps.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf.idx
-	$(call LSCRIPT_CHECK_MEM,8G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call GATK,SelectVariants,$(RESOURCE_REQ_MEDIUM_MEM)) \
 	-R $(REF_FASTA) --variant $<  -o $@ -selectType SNP")
 
 gatk/vcf/%.variants.indels.vcf : gatk/vcf/%.variants.vcf gatk/vcf/%.variants.vcf.idx
-	$(call LSCRIPT_CHECK_MEM,8G,00:29:29,"$(LOAD_JAVA8_MODULE); $(call SELECT_VARIANTS,7G) \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_JAVA8_MODULE); $(call GATK,SelectVariants,$(RESOURCE_REQ_MEDIUM_MEM)) \
 	-R $(REF_FASTA) --variant $<  -o $@ -selectType INDEL")
 
 gatk/dbsnp/%.gatk_snps.vcf : bam/%.bam bam/%.bai
-	$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call UNIFIED_GENOTYPER,4G) \
+	$(call LSCRIPT_PARALLEL_MEM,8,$(RESOURCE_REQ_LOWMEM),03:59:59,"$(LOAD_JAVA8_MODULE); $(call GATK,UnifiedGenotyper,$(RESOURCE_REQ_LOWMEM)) \
 		-nt 8 -R $(REF_FASTA) --dbsnp $(DBSNP_TARGETS_INTERVALS) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(DBSNP_TARGETS_INTERVALS) -o $@ --output_mode EMIT_ALL_SITES")
 
 $(REF_FASTA).fai : $(REF_FASTA)
-	$(call LSCRIPT_CHECK_MEM,4G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) faidx $<")
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),05:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) faidx $<")
 
 $(REF_FASTA:.fasta=.dict) : $(REF_FASTA)
-	$(call LSCRIPT_CHECK_MEM,5G,00:29:29),"$(LOAD_JAVA8_MODULE); $(call CREATE_SEQ_DICT,4G) REFERENCE=$< OUTPUT=$@")
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT)),"$(LOAD_JAVA8_MODULE); \
+		$(call PICARD,CreateSequenceDictionary,$(RESOURCE_REQ_LOWMEM)) REFERENCE=$< OUTPUT=$@")
 
 #$(call VARIANT_RECAL,$@,$^)
 define VARIANT_RECAL
