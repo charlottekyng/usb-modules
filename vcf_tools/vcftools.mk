@@ -43,21 +43,22 @@ endif
 
 # process snp eff output with gatk %=sample.indels/snps
 %.annotated.vcf : %.vcf %.gatk_eff.vcf %.gatk_eff.vcf.idx %.vcf.idx 
-	$(call LSCRIPT_PARALLEL_MEM,5,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_JAVA8_MODULE); 
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_JAVA8_MODULE); \ 
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_LOWMEM)) \
-		-R $(REF_FASTA) -nt 5 -A SnpEff --variant $< --snpEffFile $(word 2,$^) -o $@ &> $(LOGDIR)/$@.log")
+		-R $(REF_FASTA) -nt 4 -A SnpEff --variant $< --snpEffFile $(word 2,$^) -o $@ &> $(LOGDIR)/$@.log")
 
 %.dp_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); 
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		 -R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH)' --filterName Depth && $(RM) $< $<.idx")
 
 %.het_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); 
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) -V $< -o $@ --genotypeFilterExpression 'isHet == 1' --genotypeFilterName 'Heterozygous positions'")
+
 %.altad_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); 
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'vc.getGenotype(\"$1\").getAD().1 < 0' --filterName nonZeroAD && $(RM) $< $<.idx")
 
@@ -69,7 +70,7 @@ endif
 #		-R $(REF_FASTA) -V $< -o $@ --maskName 'encode' --mask $(ENCODE_BED) && $(RM) $< $<.idx")
 
 %.hotspot.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); 
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) -V $< -o $@ --maskName HOTSPOT --mask $(CANCER_HOTSPOT_VCF) && $(RM) $< $<.idx")
 
@@ -103,7 +104,7 @@ endif
 define annotate-sample
 vcf/$1.%.ann.vcf : vcf/$1.%.vcf bam/$1.bam bam/$1.bai
 	$$(call LSCRIPT_PARALLEL_MEM,4,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); \
-		$$(call GATK,VariantAnnotator,$(RESOURCE_REQ_LOWMEM)) -nt 4 -R $$(REF_FASTA) \
+		$$(call GATK,VariantAnnotator,$$(RESOURCE_REQ_LOWMEM)) -nt 4 -R $$(REF_FASTA) \
 		$$(foreach ann,$$(VCF_ANNOTATIONS),-A $$(ann) ) --dbsnp $$(DBSNP) \
 		$$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -L $$< -V $$< -o $$@ && $$(RM) $$< $$<.idx")
 endef
@@ -111,7 +112,7 @@ $(foreach sample,$(SAMPLES),$(eval $(call annotate-sample,$(sample))))
 
 define hrun-sample
 vcf/$1.%.hrun.vcf : vcf/$1.%.vcf bam/$1.bam bam/$1.bai
-	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); 
+	$$(call LSCRIPT_CHECK_PARALLEL_MEM,4,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); \
 		$$(call GATK,VariantAnnotator,$(RESOURCE_REQ_LOWMEM)) -nt 4 -R $$(REF_FASTA) \
 		-L $$< -A HomopolymerRun --dbsnp $$(DBSNP) $$(foreach bam,$$(filter %.bam,$$^),-I $$(bam) ) -V $$< -o $$@ && \
 		$$(RM) $$< $$<.idx")
@@ -128,11 +129,11 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 #### these have been split into separate vcftools_*tvc.mk files
 
 %.dbsnp.vcf : %.vcf %.vcf.idx 
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
-		$(SNP_SIFT_OPTS) $(DBSNP) $< > $@ && $(RM) $^"))
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SNP_EFF_MODULE); \
+		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(DBSNP) $< > $@ && $(RM) $^"))
 
 %.cosmic.vcf : %.vcf %.vcf.idx 
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); 
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
 		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(COSMIC) $< > $@ && $(RM) $^"))
 
 %.clinvar.vcf : %.vcf %.vcf.idx 
@@ -205,7 +206,7 @@ endif
 #endef
 #$(foreach set,$(SAMPLE_SET_PAIRS),$(eval $(call somatic-filter-vcf-set,$(set))))
 #endif
-      
+
 # somatic filter for structural variants
 vcf/$1_$2.%.sv_som_ft.vcf : vcf/$1_$2.%.vcf
 	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
@@ -353,7 +354,7 @@ endif
 #	sed -n 2p $<; \
 #	sed 1,2d $^; \
 #	} > $@
-#endif
+endif
 
 
 #%.sdp_ft.vcf : %.vcf
@@ -423,10 +424,8 @@ endif
 
 VCFTOOLS_MK = true
 
-
 ifeq ($(findstring tvc,$(MUT_CALLER)),tvc)
 include usb-modules/vcf_tools/vcftools_tvc.mk
 else
 include usb-modules/vcf_tools/vcftools_nontvc.mk
 endif
-
