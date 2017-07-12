@@ -103,6 +103,13 @@ index : $(addsuffix .bai,$(BAMS))
 %.clean.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); $(call PICARD,CleanSam,$(RESOURCE_REQ_LOWMEM)) I=$< O=$@")
 
+%.endtoend.bam : %.bam
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SAMTOOLS_MODULE); \
+		TMPSTART=`mktemp` && TMPEND=`mktemp` && \
+		cut -f1$(,)2 $(TARGETS_FILE_INTERVALS) | awk 'BEGIN { OFS = \"\t\" } {print \$$1\"\t\"\$$2\"\t\"\$$2+1}' > \$$TMPSTART && \
+		cut -f1$(,)3 $(TARGETS_FILE_INTERVALS) | awk 'BEGIN { OFS = \"\t\" } {print \$$1\"\t\"\$$2-1\"\t\"\$$2}' > \$$TMPEND && \
+		$(SAMTOOLS) view -bh -L \$$TMPSTART $< | $(SAMTOOLS) view -bh -L \$$TMPEND - > $@")
+
 # add rg
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 %.rg.bam : %.bam
