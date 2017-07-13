@@ -42,31 +42,31 @@ dup : metrics/all.dup_metrics.txt
 
 # interval metrics per sample
 metrics/%.hs_metrics.txt metrics/%.interval_hs_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,10G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; TMPCOVERED=`mktemp`.covered_intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMPCOVERED &&  grep -P \"\t\" $(TARGETS_FILE_COVERED_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMPCOVERED; \
-	$(call COLLECT_HS_METRICS,9G) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt \
+	$(call PICARD,CollectHsMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=metrics/$*.hs_metrics.txt \
 	PER_TARGET_COVERAGE=metrics/$*.interval_hs_metrics.txt TARGET_INTERVALS=\$$TMPCOVERED BAIT_SET_NAME=hs BAIT_INTERVALS=\$$TMP")
 
 metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,10G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP && grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(call COLLECT_TARGETEDPCR_METRICS,9G) INPUT=$< OUTPUT=$@ AMPLICON_INTERVALS=\$$TMP TARGET_INTERVALS=\$$TMP \
+	$(call PICARD,CollectTargetedPcrMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=$@ AMPLICON_INTERVALS=\$$TMP TARGET_INTERVALS=\$$TMP \
 	PER_TARGET_COVERAGE=metrics/$*.interval_amplicon_metrics.txt COVERAGE_CAP=50000")
 
 define amplicon-metrics-pools
 POOLNAME=$$(shell basename $2)
 metrics/$1.amplicon_metrics_$$(POOLNAME).txt : bam/$1.bam bam/$1.bam.bai $2
-	$$(call LSCRIPT_MEM,10G,00:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); \
+	$$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$$(SAMTOOLS) view -H $$< | grep '^@SQ' > \$$$$TMP && grep -P \"\t\" $2 | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$$$1$$(,)\$$$$2+1$$(,)\$$$$3$$(,)\"+\"$$(,)NR }' >> \$$$$TMP; \
-	$$(call COLLECT_TARGETEDPCR_METRICS,9G) INPUT=$$< OUTPUT=$$@ AMPLICON_INTERVALS=\$$$$TMP TARGET_INTERVALS=\$$$$TMP \
+	$$(call PICARD,CollectTargetedPcrMetrics,$$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$$< OUTPUT=$$@ AMPLICON_INTERVALS=\$$$$TMP TARGET_INTERVALS=\$$$$TMP \
 	COVERAGE_CAP=50000")
 endef
 $(if $(TARGETS_FILE_INTERVALS_POOLS),\
@@ -75,19 +75,20 @@ $(if $(TARGETS_FILE_INTERVALS_POOLS),\
 			$(eval $(call amplicon-metrics-pools,$(sample),$(pool))))))			
 
 metrics/%.wgs_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_WGS_METRICS,11G) \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call PICARD,CollectWgsMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		INPUT=$< OUTPUT=$@ COUNT_UNPAIRED=true")
 
 metrics/%.rnaseq_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_CHECK_MEM,8G,01:59:59,"$(LOAD_R_MODULE); $(LOAD_JAVA8_MODULE); \
-		$(call COLLECT_RNASEQ_METRICS,8G) \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_R_MODULE); $(LOAD_JAVA8_MODULE); \
+		$(call PICARD,CollectRnaSeqMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		REF_FLAT=$(GENE_REF_FLAT) RIBOSOMAL_INTERVALS=$(RIBOSOMAL_INTERVALS) \
 		STRAND_SPECIFICITY=$(STRAND_SPECIFICITY) \
 		INPUT=$< OUTPUT=$@ CHART_OUTPUT=$@.pdf VERBOSITY=ERROR")
 
 metrics/%.alignment_summary_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_ALIGNMENT_METRICS,11G) \
-		INPUT=$< OUTPUT=$@")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call PICARD,CollectAlignmentSummaryMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=$@")
 
 # does not work, there's a conflict of java versions
 #metrics/%.gc_bias_metrics.txt metrics/%.gc_bias_metrics_summary.txt : bam/%.bam bam/%.bam.bai
@@ -97,31 +98,32 @@ metrics/%.alignment_summary_metrics.txt : bam/%.bam bam/%.bam.bai
 #		SUMMARY_OUTPUT=metrics/$*.gc_bias_metrics_summary.txt")
 
 metrics/%.artifact_metrics.bait_bias_summary_metrics : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,05:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(call COLLECT_SEQ_ARTIFACT_METRICS,11G) INPUT=$< OUTPUT=$@ \
+	$(call PICARD,CollectSequencingArtifactMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=$@ \
 	DB_SNP=$(DBSNP) INTERVALS=\$$TMP")
 
 metrics/%.wgs.artifact_metrics.bait_bias_summary_metrics : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_SEQ_ARTIFACT_METRICS,11G) \
-		INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call PICARD,CollectSequencingArtifactMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) \	
+	INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
 
 metrics/%.oxog_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,05:59:59,"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(LOAD_JAVA8_MODULE); \
 	TMP=`mktemp`.intervals; \
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP &&  grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
-	$(call COLLECT_OXOG_METRICS,11G) INPUT=$< OUTPUT=$@ \
+	$(call PICARD,CollectOxoGMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=$@ \
 	DB_SNP=$(DBSNP) INTERVALS=\$$TMP")
 
 metrics/%.wgs.oxog_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,12G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call COLLECT_OXOG_METRICS,11G) \
-		INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call PICARD,CollectOxoGMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=$@ DB_SNP=$(DBSNP)")
 
 metrics/%.flagstats.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,2G,05:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) flagstat $< > $@")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) flagstat $< > $@")
 
 # summarize metrics into one file
 metrics/all.hs_metrics.txt : $(foreach sample,$(SAMPLES),metrics/$(sample).hs_metrics.txt)

@@ -65,11 +65,12 @@ index : $(addsuffix .bai,$(BAMS))
 
 # filter
 %.filtered.bam : %.bam
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
-#$(call LSCRIPT_MEM,6G,00:59:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); \
+		$(SAMTOOLS) view -bF $(BAM_FILTER_FLAGS) $< > $@ && $(RM) $<")
 
 %.fixmate.bam : %.bam
-	$(call LSCRIPT_MEM,9G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call FIX_MATE,8G) I=$< O=$@ && $(RM) $<")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call PICARD,FixMateInformation,$(RESOURCE_REQ_MEDIUM_MEM)) I=$< O=$@ && $(RM) $<")
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
@@ -80,7 +81,6 @@ index : $(addsuffix .bai,$(BAMS))
 %.sorted.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call PICARD,SortSam,$(RESOURCE_REQ_HIGHMEM)) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
-#	$(call LSCRIPT_MEM,20G,05:59:59,"$(LOAD_JAVA8_MODULE); $(call SORT_SAM,19G) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
 
 %.nsorted.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
@@ -90,7 +90,6 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VVHIGHMEM),$(RESOURCE_REQ_LONG),"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); \
 		$(call PICARD,MarkDuplicates,$(RESOURCE_REQ_VVHIGHMEM)) I=$< O=$@ TMP_DIR=$(TMPDIR) \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
-#$(call LSCRIPT_MEM,128G,23:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,128G) I=$< O=$@ METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
 %.rmdup.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) rmdup $< $@ && $(RM) $<")

@@ -33,11 +33,12 @@ fastq/%.fastq.gz : unprocessed_fastq/%.fastq.gz
 endif
 
 unprocessed_fastq/%.trim.fastq.gz : unprocessed_fastq/%.fastq.gz
-	$(call LSCRIPT_MEM,2G,00:29:59,"$(LOAD_PERL_MODULE); zcat $< | $(FASTQ_TRIMMER) -l $(TRIM_LENGTH) | gzip -c > $@ ")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_PERL_MODULE); \
+		zcat $< | $(FASTQ_TRIMMER) -l $(TRIM_LENGTH) | gzip -c > $@ ")
 
 ifeq ($(PAIRED_END),true)
 unprocessed_fastq/%.1.cutadapt.fastq.gz : unprocessed_fastq/%.1.fastq.gz unprocessed_fastq/%.2.fastq.gz
-	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_LONG),"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq --paired \
 	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
 	$(if $(CLIP_FASTQ_R2),--clip_R2 $(CLIP_FASTQ_R2)) \
@@ -48,28 +49,30 @@ unprocessed_fastq/%.2.cutadapt.fastq.gz : unprocessed_fastq/%.1.cutadapt.fastq.g
 	$(INIT)
 else
 unprocessed_fastq/%.cutadapt.fastq.gz : unprocessed_fastq/%.fastq.gz
-	$(call LSCRIPT_MEM,2G,12:29:59,"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_LONG),"$(LOAD_TRIM_GALORE_MODULE); $(LOAD_FASTQC_MODULE); \
 	$(TRIM_GALORE) -q 20 --output unprocessed_fastq \
 	$(if $(CLIP_FASTQ_R1),--clip_R1 $(CLIP_FASTQ_R1)) \
 	$^ && mv unprocessed_fastq/$*_trimmed.fq.gz $@")
 endif
 
 unprocessed_fastq/%.readtrim.1.fastq.gz unprocessed_fastq/%.readtrim.2.fastq.gz : %.bam %.read_len
-	$(call LSCRIPT_MEM,10G,02:59:59,"$(LOAD_JAVA8_MODULE); NUM_READS=`awk '{ sum += $$1 } END { print sum }' $(word 2,$^)`; \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	NUM_READS=`awk '{ sum += $$1 } END { print sum }' $(word 2,$^)`; \
 	MAX_LENGTH=`sort -k 2 $(word 2,$^) | awk -v nreads="$$NUM_READS" '$$1 / nreads > 0.4 { print $$2 }' | head -1`; \
 	if [ "$$MAX_LENGTH" = "" ]; then MAX_LENGTH=`cut -d' ' -f 2 $(word 2,$^) | head -1`; fi; \
 	TEMP=`mktemp`; mkfifo \$${TEMP}_1; mkfifo \$${TEMP}_2; \
 	gzip < \$${TEMP}_1 > fastq/$*.readtrim.1.fastq.gz & \
 	gzip < \$${TEMP}_2 > fastq/$*.readtrim.2.fastq.gz & \
-	$(call SAM_TO_FASTQ,9G) I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2 \
+	$(call PICARD,SamToFastq,$(RESOURCE_REQ_MEDIUM_MEM)) \
+	I=$< FASTQ=\$${TEMP}_1 SECOND_END_FASTQ=\$${TEMP}_2 \
 	READ1_MAX_BASES_TO_WRITE=\$$MAX_LENGTH READ2_MAX_BASES_TO_WRITE=\$$MAX_LENGTH")
 
 
 define merged-fastq
 unprocessed_fastq/$1.%.fastq.gz : $$(foreach split,$2,unprocessed_fastq/$$(split).%.fastq.gz)
-	$$(call LSCRIPT_MEM,10G,02:59:59,"zcat $$(^) | gzip > $$@ 2> $$(LOG)")
+	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"zcat $$(^) | gzip > $$@ 2> $$(LOG)")
 unprocessed_fastq/$1.%.fastq.gz : $$(foreach split,$2,unprocessed_fastq/$$(split).%.fastq)
-	$$(call LSCRIPT_MEM,10G,02:59:59,"cat $$(^) | gzip > $$@ 2> $$(LOG)")
+	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"cat $$(^) | gzip > $$@ 2> $$(LOG)")
 endef
 $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call merged-fastq,$(sample),$(split.$(sample)))))
 
