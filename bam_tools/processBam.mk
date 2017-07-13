@@ -1,4 +1,5 @@
 # various bam processing steps
+
 # can be used to reprocess bam files, merge them, or merge and reprocess bam files
 # possible post-processing steps are defined in modules/aligners/align.inc
 ##### MAKE INCLUDES #####
@@ -87,8 +88,8 @@ index : $(addsuffix .bai,$(BAMS))
 		$(call PICARD,SortSam,$(RESOURCE_REQ_HIGHMEM)) I=$< O=$@ SO=queryname")
 
 %.markdup.bam : %.bam
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VHIGHMEM),$(RESOURCE_REQ_LONG),"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); \
-		$(call PICARD,MarkDuplicates,$(RESOURCE_REQ_VHIGHMEM)) I=$< O=$@ \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VVHIGHMEM),$(RESOURCE_REQ_LONG),"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); \
+		$(call PICARD,MarkDuplicates,$(RESOURCE_REQ_VVHIGHMEM)) I=$< O=$@ TMP_DIR=$(TMPDIR) \
 		METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 #$(call LSCRIPT_MEM,128G,23:59:59,"$(MKDIR) metrics; $(LOAD_JAVA8_MODULE); $(call MARK_DUP,128G) I=$< O=$@ METRICS_FILE=metrics/$(call strip-suffix,$(@F)).dup_metrics.txt && $(RM) $<")
 
@@ -149,13 +150,13 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample realn chromosome bams
 %.realn.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bai)
-	$(call LSCRIPT_PARALLEL_MEM,2,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 	$(call PICARD,MergeSamFiles,$(RESOURCE_REQ_HIGHMEM)) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.realn.bam=.bam)")
 
 # merge sample recal chromosome bams
 %.recal.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_recal.bai)
-	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_VHIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VHIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
 	$(call PICARD,MergeSamFiles,$(RESOURCE_REQ_VHIGHMEM)) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.recal.bam=.bam)")
 
