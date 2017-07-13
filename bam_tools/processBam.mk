@@ -177,15 +177,18 @@ else # no splitting by chr
 
 # recalibration
 %.recal.bam : %.bam %.recal_report.grp
-	$(call LSCRIPT_MEM,11G,02:59:29,"$(LOAD_JAVA8_MODULE); $(call PRINT_READS,10G) -R $(REF_FASTA) -I $< -BQSR $(word 2,$^) -o $@ && $(RM) $<")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call GATK,PrintReads,$(RESOURCE_REQ_MEDIUM_MEM)) -R $(REF_FASTA) -I $< -BQSR $(word 2,$^) -o $@ && $(RM) $<")
 
 %.realn.bam : %.bam %.intervals %.bam.bai
-	if [[ -s $(word 2,$^) ]]; then $(call LSCRIPT_MEM,9G,02:59:59,"$(LOAD_JAVA8_MODULE); $(call INDEL_REALIGN,8G) \
+	if [[ -s $(word 2,$^) ]]; then $(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call GATK,IndelRealigner,$(RESOURCE_REQ_MEDIUM_MEM)) \
 	-I $< -R $(REF_FASTA) -targetIntervals $(<<) -o $@ $(BAM_REALN_OPTS) && $(RM) $<") ; \
 	else mv $< $@ ; fi
 
 %.intervals : %.bam %.bam.bai
-	$(call LSCRIPT_PARALLEL_MEM,4,3G,00:29:59,"$(LOAD_JAVA8_MODULE); $(call REALIGN_TARGET_CREATOR,2G) \
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call GATK,RealignerTargetCreator,$(RESOURCE_REQ_LOWMEM)) \
 	-I $< -nt 4 -R $(REF_FASTA) -o $@ $(BAM_REALN_TARGET_OPTS)")
 endif
 
