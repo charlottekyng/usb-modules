@@ -62,7 +62,6 @@ index : $(addsuffix .bai,$(BAMS))
 
 %.downsampled.bam : %.bam
 	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bh -s $(SAMTOOLS_DOWNSAMPLE_FACTOR) $< > $@")
-#$(call LSCRIPT_CHECK_MEM,20G,05:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -bh -s $(SAMTOOLS_DOWNSAMPLE_FACTOR) $< > $@")
 
 # filter
 %.filtered.bam : %.bam
@@ -74,9 +73,9 @@ index : $(addsuffix .bai,$(BAMS))
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,$(RESOURCE_REQ_MEDIUM_MEM)) \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
+		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
-#$(call LSCRIPT_MEM,20G,23:59:59,"$(LOAD_JAVA8_MODULE); $(call BASE_RECALIBRATOR,19G) -R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
