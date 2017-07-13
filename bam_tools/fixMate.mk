@@ -1,6 +1,7 @@
 # This module fixes the mate information of a bam file to prepare it for proper extraction
 # input: $(SAMPLES)
 # Author: Fong Chun Chan <fongchunchan@gmail.com>
+# CN: 2170713 absolutely does not work
 
 include usb-modules/Makefile.inc
 include usb-modules/config.inc

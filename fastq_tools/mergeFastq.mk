@@ -1,5 +1,5 @@
 # add in new fastq to existing bams
-include modules/Makefile.inc
+include usb-modules/Makefile.inc
 
 LOGDIR ?= log/merge_fastq.$(NOW)
 
@@ -15,23 +15,25 @@ endif
 ALIGNER ?= bwamem
 
 merge_fastq : $(foreach sample,$(MERGE_SAMPLES),$(if $(wildcard bam/$(sample).bam),merged_bam/$(sample).bam,bam/$(sample).bam))
-	$(call LSCRIPT_MEM,7G,8G,"for bam in $(filter merged_bam/%.bam,$^); do \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); \
+		for bam in $(filter merged_bam/%.bam,$^); do \
 		ln -f \$${bam} bam/\$$(basename \$${bam}) && \
 		$(SAMTOOLS) index \$${bam}; \
 		done")
 
-include modules/aligners/$(ALIGNER)Aligner.mk
+include usb-modules/aligners/$(ALIGNER)Aligner.mk
 
 merged_bam/%.1.bam merged_bam/%.2.bam : $(ALIGNER)/bam/%.$(ALIGNER).$(BAM_SUFFIX)
 	$(INIT)  ln -f $(<M) merged_bam/$*.1.bam && \
 	ln -f bam/$*.bam merged_bam/$*.2.bam
 
 merged_bam/%.header.sam : merged_bam/%.1.bam merged_bam/%.2.bam
-	$(INIT) { $(SAMTOOLS) view -H $(<M) | grep -v '^@RG'; \
+	$(INIT) { $(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) view -H $(<M) | grep -v '^@RG'; \
 	for bam in $(^); do \
 	$(SAMTOOLS) view -H $$bam | grep '^@RG'; \
 	done | sort | uniq; } > $@
 
 merged_bam/%.bam : merged_bam/%.header.sam merged_bam/%.1.bam merged_bam/%.2.bam
-	$(call LSCRIPT_MEM,12G,15G,"$(SAMTOOLS) merge -f -h $< $(@) $(filter %.bam,$(^))")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); \
+	$(SAMTOOLS) merge -f -h $< $(@) $(filter %.bam,$(^))")
 

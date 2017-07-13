@@ -28,7 +28,7 @@ geneCN : varscan/segment/geneCN.txt
 
 define varscan-copynum-tumor-normal
 varscan/copynum/$1_$2.copynumber :  bam/$1.bam bam/$2.bam
-	$$(call LSCRIPT_CHECK_MEM,16G,01:59:59,"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA7_MODULE); \
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_SAMTOOLS_MODULE); $$(LOAD_JAVA7_MODULE); \
 	$$(SAMTOOLS) mpileup $$(CBS_MPILEUP_OPTS) -f $$(REF_FASTA) $$(word 2,$$^) $$< | awk 'NF == 9 { print }' |  \
 	$$(VARSCAN) copynumber - $$(basename $$@) --mpileup 1")
 endef
@@ -36,7 +36,7 @@ $(foreach pair,$(SAMPLE_PAIRS),\
 		$(eval $(call varscan-copynum-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
 
 varscan/copycall/%.copycall : varscan/copynum/%.copynumber
-	$(call LSCRIPT_CHECK_MEM,9G,01:59:59,"n=`awk '{ total += \$$7 } END { print total / NR }' $<`; \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"n=`awk '{ total += \$$7 } END { print total / NR }' $<`; \
 	if [ \$$(bc <<< \"\$$n > 0\") -eq 1 ]; then \
 		recenter_opt=\"--recenter-up \$$n\"; \
 	else \
@@ -46,16 +46,19 @@ varscan/copycall/%.copycall : varscan/copynum/%.copynumber
 	$(VARSCAN) copyCaller $< --output-file $@ \$$recenter_opt")
 
 varscan/segment/%.segment.Rdata : varscan/copycall/%.copycall
-	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(CBS_SEGMENTCNV) --alpha $(CBS_SEG_ALPHA) --smoothRegion $(CBS_SEG_SMOOTH) \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); \
+	$(CBS_SEGMENTCNV) --alpha $(CBS_SEG_ALPHA) --smoothRegion $(CBS_SEG_SMOOTH) \
 	--undoSD $(CBS_SEG_SD) $(if $(CENTROMERE_TABLE),--centromereFile=$(CENTROMERE_TABLE)) --prefix=$(@D)/$* $<")
 
 varscan/segment/geneCN.txt : $(foreach pair,$(SAMPLE_PAIRS),varscan/segment/$(pair).collapsed_seg.txt)
-	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(VARSCAN_GENE_CN) $(VARSCAN_GENE_CN_OPTS) --outFile $@ $^")	
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); \
+	$(VARSCAN_GENE_CN) $(VARSCAN_GENE_CN_OPTS) --outFile $@ $^")	
 
 define varscan-segment-sd-alpha-smooth
 varscan/segment_sd$1_alpha$2_smooth$3/%.segment.Rdata : varscan/copycall/%.copycall
-	$$(call LSCRIPT_CHECK_NAMED_MEM,$$*_seg_$1_$2_$3,4G,00:29:29,"$$(LOAD_R_MODULE); $$(CBS_SEGMENTCNV) --undoSD $1 \
-	--alpha $2 --smoothRegion $3 $$(if $$(CENTROMERE_TABLE),--centromereFile=$$(CENTROMERE_TABLE)) --prefix=$$(@D)/$$* $$<")
+	$$(call LSCRIPT_CHECK_NAMED_MEM,$$*_seg_$1_$2_$3,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$$(LOAD_R_MODULE); \
+	$$(CBS_SEGMENTCNV) --undoSD $1 --alpha $2 --smoothRegion $3 \
+	$$(if $$(CENTROMERE_TABLE),--centromereFile=$$(CENTROMERE_TABLE)) --prefix=$$(@D)/$$* $$<")
 endef
 $(foreach sd,$(SEG_SDS),\
 	$(foreach alpha,$(SEG_ALPHAS),\

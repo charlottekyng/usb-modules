@@ -1,5 +1,3 @@
-
-
 # Run strelka on tumour-normal matched pairs
 
 include usb-modules/Makefile.inc
@@ -27,7 +25,7 @@ strelka/$1_$2/Makefile : bam/$1.bam bam/$2.bam
 
 #$$(INIT) qmake -inherit -q jrf.q -- -j 20 -C $$< > $$(LOG) && touch $$@
 strelka/$1_$2/task.complete : strelka/$1_$2/Makefile
-	$$(call LSCRIPT_NAMED_PARALLEL_MEM,$1_$2.strelka,8,4G,02:29:29,"make -j 8 -C $$(<D)")
+	$$(call LSCRIPT_NAMED_PARALLEL_MEM,$1_$2.strelka,8,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_SHORT),"make -j 8 -C $$(<D)")
 
 vcf/$1_$2.%.vcf : strelka/vcf/$1_$2.%.vcf
 	$$(INIT) perl -ne 'if (/^#CHROM/) { s/NORMAL/$2/; s/TUMOR/$1/; } print;' $$< > $$@ && $$(RM) $$<

@@ -20,13 +20,14 @@ mutect2_tables_hotspotgt : $(call SOMATIC_TABLES_HOTSPOTGT,mutect2-hotspotgt)
 
 define mutect2-tumor-normal-chr
 mutect2/chr_vcf/$1_$2.$3.mutect2%vcf : bam/$1%bam bam/$2%bam mutect2/chr_vcf_pon/pon.$3.mutect2.vcf
-	$$(MKDIR) mutect2/chr_vcf; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(call MUTECT2,11G) \
-		--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
-		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 \
-		--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
-		--max_alt_allele_in_normal_fraction $(MUTECT_MAX_ALT_IN_NORMAL_FRACTION) \
-		--annotation TandemRepeatAnnotator --annotation OxoGReadCounts --normal_panel $$(word 3,$$^) \
-		--out mutect2/chr_vcf/$1_$2.$3.mutect2.vcf")
+	$$(MKDIR) mutect2/chr_vcf; $$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_LONG),"$$(LOAD_JAVA8_MODULE); \
+	$$(call GATK,MuTect2,$$(RESOURCE_REQ_HIGHMEM)) \
+	--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
+	--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 \
+	--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
+	--max_alt_allele_in_normal_fraction $(MUTECT_MAX_ALT_IN_NORMAL_FRACTION) \
+	--annotation TandemRepeatAnnotator --annotation OxoGReadCounts --normal_panel $$(word 3,$$^) \
+	--out mutect2/chr_vcf/$1_$2.$3.mutect2.vcf")
 endef
 $(foreach chr,$(CHROMOSOMES), \
 	$(foreach pair,$(SAMPLE_PAIRS), \
@@ -39,28 +40,6 @@ vcf/$1_$2.mutect2.vcf : $$(foreach chr,$$(CHROMOSOMES),mutect2/chr_vcf/$1_$2.$$(
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
 		$(eval $(call mutect2-tumor-normal,$(tumor.$(pair)),$(normal.$(pair)))))
-
-define mutect2-tumor-normal-hotspotgt-chr
-mutect2/chr_vcf_hotspotgt/$1_$2.$3.mutect2%vcf : bam/$1%bam bam/$2%bam #mutect2/chr_vcf_pon/pon.$3.mutect2.vcf
-	$$(MKDIR) mutect2/chr_vcf_hotspotgt; $$(call LSCRIPT_CHECK_MEM,12G,09:59:59,"$$(LOAD_JAVA8_MODULE); $$(call MUTECT2,11G) \
-		--reference_sequence $$(REF_FASTA) --input_file:tumor $$< --input_file:normal $$(word 2,$$^) \
-		--dbsnp $$(DBSNP) --cosmic $$(COSMIC) --intervals $3 \
-		--max_alt_alleles_in_normal_count $(MUTECT_MAX_ALT_IN_NORMAL) \
-		--max_alt_allele_in_normal_fraction $(MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION) \
-		--annotation TandemRepeatAnnotator --annotation OxoGReadCounts --alleles $$(CANCER_HOTSPOT_VCF) --genotyping_mode GENOTYPE_GIVEN_ALLELES \
-		--out mutect2/chr_vcf_hotspotgt/$1_$2.$3.mutect2.vcf")
-endef
-$(foreach chr,$(CHROMOSOMES), \
-	$(foreach pair,$(SAMPLE_PAIRS), \
-		$(eval $(call mutect2-tumor-normal-hotspotgt-chr,$(tumor.$(pair)),$(normal.$(pair)),$(chr)))))
-
-# merge variants
-define mutect2-tumor-normal-hotspotgt
-vcf/$1_$2.mutect2-hotspotgt.vcf : $$(foreach chr,$$(CHROMOSOMES),mutect2/chr_vcf_hotspotgt/$1_$2.$$(chr).mutect2.vcf)
-	$$(INIT) $$(LOAD_PERL_MODULE); grep '^#' $$< > $$@; cat $$^ | grep -v '^#' | $$(VCF_SORT) $$(REF_DICT) - >> $$@ 2> $$(LOG)
-endef
-$(foreach pair,$(SAMPLE_PAIRS),\
-	$(eval $(call mutect2-tumor-normal-hotspotgt,$(tumor.$(pair)),$(normal.$(pair)))))
 
 include usb-modules/vcf_tools/vcftools.mk
 include usb-modules/variant_callers/somatic/pon.mk

@@ -14,17 +14,9 @@ SHELL = usb-modules/scripts/Rshell
 MEM := 2G
 PE := 1
 
-#export LD_LIBRARY_PATH = /scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/v83/runtime/glnxa64:/scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/v83/bin/glnxa64:/scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/v83/sys/os/glnxa64
-#export XAPPLRESDIR = /home/limr/usr/MATLAB/v714/X11/app-defaults
-#MCR_DIR = /scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a
-#MCR_DIR = $(HOME)/share/usr/MATLAB
-#DGV_FILE = $(HOME)/share/reference/GRCh37_hg19_variants_2013-07-23.txt
-#PLOT_GISTIC_HEATMAP = $(RSCRIPT) modules/copy_number/plotGisticHeatmap.R
-
 CNV_SIZES = 100000 300000
 
 all : gistic_inputs $(foreach size,$(CNV_SIZES),gistic/gistic_cnv$(size).timestamp)
-# gistic_heatmaps
 gistic_inputs : gistic/markersfile.txt gistic/segmentationfile.txt $(foreach size,$(CNV_SIZES),gistic/cnv.$(size).txt)
 gistic_heatmaps : $(foreach size,$(CNV_SIZES),gistic/gistic_cnv$(size)/gistic_cnv_heatmap.pdf)
 
@@ -38,7 +30,7 @@ gistic/markersfile.txt : gistic/segmentationfile.txt
 	write.table(markers, col.names = F, file = "$@", sep = "\t", quote = F, na = "")
 	
 gistic/segmentationfile.txt : PE := 8
-gistic/segmentationfile.txt : MEM := 1G
+gistic/segmentationfile.txt : MEM := $(RESOURCE_REQ_LOWMEM)
 gistic/segmentationfile.txt : $(foreach pair,$(SAMPLE_PAIRS),facets/cncf/$(pair).cncf.txt)
 	suppressPackageStartupMessages(library("rtracklayer"));
 	suppressPackageStartupMessages(library("foreach"));
@@ -95,7 +87,6 @@ gistic/cnv.%.txt : gistic/markersfile.txt
 	dgv <- dgv[, c("variantaccession", "chr", "start", "end")]
 	dgv$$size = dgv$$end-dgv$$start+1
 	dgv <- dgv[which(dgv$$size <= $*), ]
-#	dgv <- dgv[which(dgv$$chr %in% 1:22), ]
 	markers <- read.delim("$<", as.is=T, header=F)
 	dgvGR <- GRanges(seqnames = dgv$$chr, ranges = IRanges(start = dgv$$start, end = dgv$$end))
 	markersGR <- GRanges(seqnames = markers[,2], ranges = IRanges(start = markers[,3], end = markers[,3]))
@@ -110,10 +101,7 @@ gistic/cnv.%.txt : gistic/markersfile.txt
 gistic/gistic_cnv%.timestamp : MEM := 12G
 gistic/gistic_cnv%.timestamp : gistic/segmentationfile.txt gistic/markersfile.txt gistic/cnv.%.txt
 	Sys.setenv(LD_LIBRARY_PATH = "/scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/v83/runtime/glnxa64:/scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/v83/bin/glnxa64:/scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/v83/sys/os/glnxa64")
-#	Sys.setenv(LD_LIBRARY_PATH = "/home/limr/usr/MATLAB/v714/runtime/glnxa64:/home/limr/usr/MATLAB/v714/bin/glnxa64:/home/limr/usr/MATLAB/v714/sys/os/glnxa64:/home/limr/usr/MATLAB/v714/sys/java/jre/glnxa64/jre/lib/amd64/native_threads:/home/limr/usr/MATLAB/v714/sys/java/jre/glnxa64/jre/lib/amd64/server:/home/limr/usr/MATLAB/v714/sys/java/jre/glnxa64/jre/lib/amd64")
-#	Sys.setenv(XAPPLRESDIR = "/home/limr/usr/MATLAB/v714/X11/app-defaults")
 	Sys.setenv(MCR_DIR = "/scicore/home/terracci/GROUP/usr_nobackup/local/MCR_R2014a/")
-#	Sys.setenv(MCR_DIR = "$(HOME)/share/usr/MATLAB")
 	dir.create('$(@D)/gistic_cnv$*', showWarnings = F, recursive = T)
 	system("umask 002; $(GISTIC) -b $(@D)/gistic_cnv$* -seg $< -mk $(<<) -refgene $(GISTIC_REF) -cnv $(<<<) $(GISTIC_OPTS) 2>&1 && touch $@")
 

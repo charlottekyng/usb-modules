@@ -415,13 +415,13 @@ FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_gatk_vcf.
 MUTECT2 ?= $(call GATK,MuTect2,$$(1))
 
 MUTECT_JAR ?= $(JAR_DIR)/muTect-1.1.4.jar
+MUTECT ?= $(JAVA) -Xmx$$(1) -jar $(MUTECT_JAR) --analysis_type MuTect
+
 MUTECT_MAX_ALT_IN_NORMAL ?= 500
 MUTECT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.05
 MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
 
 #MUT_FREQ_REPORT = modules/variant_callers/somatic/mutectReport.Rmd
-
-MUTECT ?= $(JAVA) -Xmx11G -jar $(MUTECT_JAR) --analysis_type MuTect
 
 VARSCAN_JAR ?= $(JAR_DIR)/varscan/VarScan.v2.4.3.jar
 VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
