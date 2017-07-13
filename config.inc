@@ -142,7 +142,6 @@ RESOURCE_REQ_VVHIGHMEM ?= 128G
 $(info HERE)
 endif
 
-$(info RESOURCE_REQ_HIGHMEM is $(RESOURCE_REQ_HIGHMEM))
 ##################################
 ####### Environmental var ########
 ##################################
@@ -376,63 +375,26 @@ endif
 
 
 ##################################
-########## Picard ################
+########## Picard/GATK ###########
 ##################################
 
 PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
 PICARD_JAR ?= $(JAR_DIR)/picard-tools-2.4.1/picard.jar
 PICARD = $(JAVA) -Xmx$$(2) -jar $(PICARD_JAR) $$(1) $(PICARD_OPTS)
 
-#SORT_SAM = $(call PICARD,SortSam,$$(1))
-#REORDER_SAM = $(call PICARD,ReorderSam,$$(1))
-#MARK_DUP = $(call PICARD,MarkDuplicates,$$(1))
-#MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,$$(1))
-#MERGE_SAMS = $(call PICARD,MergeSamFiles,$$(1))
-FIX_MATE = $(call PICARD,FixMateInformation,$$(1))
-SAM_TO_FASTQ = $(call PICARD,SamToFastq,$$(1))
-#CLEANBAM = $(call PICARD,CleanSam,$$(1))
-#ADD_RG = $(call PICARD,AddOrReplaceReadGroups,$$(1))
-#VALIDATE_SAM = $(call PICARD,ValidateSamFile,$$(1))
-
-#INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,$$(1))
-#CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,$$(1))
-
-COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,$$(1))
-#COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,$$(1))
-COLLECT_TARGETEDPCR_METRICS = $(call PICARD,CollectTargetedPcrMetrics,$$(1))
-COLLECT_ALIGNMENT_METRICS = $(call PICARD,CollectAlignmentSummaryMetrics,$$(1))
-#COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,$$(1))
-COLLECT_OXOG_METRICS = $(call PICARD,CollectOxoGMetrics,$$(1))
-COLLECT_RNASEQ_METRICS = $(call PICARD,CollectRnaSeqMetrics,$$(1))
-COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD,CollectSequencingArtifactMetrics,$$(1))
-COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,$$(1))
-COLLECT_GCBIAS_METRICS = $(call PICARD,CollectGcBiasMetrics,$$(1))
-
-##################################
-########## GATK ### ##############
-##################################
-
 GATK_JAR ?= $(JAR_DIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
 GATK ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR) -S LENIENT -T $$(1) -filterNoBases
 
-REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
-INDEL_REALIGN ?= $(call GATK,IndelRealigner,$$(1))
-SPLIT_N_TRIM ?= $(call GATK, SplitNCigarReads,$$(1))
-ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,$$(1))
-BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,$$(1))
-
-LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,$$(1))
 VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,$$(1))
-VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,$$(1))
 COMBINE_VARIANTS ?= $(call GATK,CombineVariants,$$(1))
 SELECT_VARIANTS ?= $(call GATK,SelectVariants,$$(1))
 
 CONTEST ?= $(call GATK,ContEst,$$(1))
-ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,$$(1))
 PRINT_READS ?= $(call GATK,PrintReads,$$(1))
 APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,$$(1))
 VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,$$(1))
 
+GENOTYPE_WITH_CHR2 = ?= false
 BAM_CHR2_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) \
 	$(if $(findstring true,$(BAM_CHR2_BASE_RECAL)),-L $(word 2,$(CHROMOSOMES))) \
@@ -457,8 +419,6 @@ REPORT_STRATIFICATION := Filter
 VALIDATION ?= false
 ANNOTATE_VARIANTS ?= true
 
-HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,$$(1))
-UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,$$(1))
 FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_gatk_vcf.pl
 
 MUTECT2 ?= $(call GATK,MuTect2,$$(1))
