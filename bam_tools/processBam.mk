@@ -168,7 +168,7 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 define chr-recal
 %.$1.chr_recal.bam : %.bam %.recal_report.grp
 	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_LONG),"$$(LOAD_JAVA8_MODULE); \
-		$$(call PRINT_READS,$$(RESOURCE_REQ_MEDIUM_MEM)) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
+		$$(call GATK,PrintReads,$$(RESOURCE_REQ_MEDIUM_MEM)) -L $1 -R $$(REF_FASTA) -I $$< -BQSR $$(<<) -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-recal,$(chr))))
 
