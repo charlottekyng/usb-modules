@@ -295,6 +295,10 @@ TARGETS += fix_rg
 fix_rg :
 	$(call RUN_MAKE,usb-modules/bam_tools/fixRG.mk)
 
+TARGETS += endtoend_bam
+endtoend_bam :
+	$(call RUN_MAKE,usb-modules/bam_tools/endtoendBam.mk)
+
 TARGETS += gatk_validation
 gatk_validation :
 	$(call RUN_MAKE,modules/variant_callers/somatic/gatkValidation.mk)

@@ -1,7 +1,8 @@
 ifdef SAMPLE_PAIRS
 define som-ad-ft-tumor-normal
 vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
-	$$(call LSCRIPT_CHECK_MEM,8G,00:59:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
+		$$(call GATK,VariantFiltration,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) -V $$< -o $$@ \
 		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") < $(MIN_TUMOR_AD) && vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") < $(MIN_TUMOR_AD)' \
 		--filterName tumorVarAlleleDepth \
 		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"DP\") * 1.0 <= $(MIN_TUMOR_DEPTH) || vc.getGenotype(\"$1\").getAnyAttribute(\"FDP\") * 1.0 <= $(MIN_TUMOR_DEPTH) || \
@@ -27,53 +28,58 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
 	$$(INIT) ln -f $$< $$@
 else
 vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
-	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
+	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); \
+		$$(call GATK,CombineVariants,$$(RESOURCE_REQ_HIGHMEM)) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
 
 
 vcf/$1_$2.%.sufam.tmp1.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp
 	$$(call CHECK_VCF,$$(word 2,$$^),$$@,\
-		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); \
-		$$(call SELECT_VARIANTS,10G) -R $$(REF_FASTA) --variant $$(word 2,$$^) --discordance $$(word 1,$$^) -o $$@ && $$(RM) $$(word 2,$$^) $$(word 2,$$^).idx"))
+		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); \
+		$$(call GATK,SelectVariants,$$(RESOURCE_REQ_HIGHMEM)) -R $$(REF_FASTA) --variant $$(word 2,$$^) \
+			--discordance $$(word 1,$$^) -o $$@ && $$(RM) $$(word 2,$$^) $$(word 2,$$^).idx"))
 
 vcf/$1_$2.%.sufam.tmp1.T.vcf : vcf/$1_$2.%.sufam.tmp1.vcf bam/$1.bam vcf/$1_$2.%.sufam.tmp1.vcf.gz vcf/$1_$2.%.sufam.tmp1.vcf.gz.tbi
 	$$(call CHECK_VCF,$$(word 1,$$^),$$@,\
-		$$(call LSCRIPT_CHECK_MEM,10G,03:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(LOAD_TABIX_MODULE); \
+		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(LOAD_TABIX_MODULE); \
 			$$(TVC) -s $$(word 1,$$^) -i $$(word 2,$$^) -r $$(REF_FASTA) -N 1 -m $$(TVC_MOTIF) -o $$(@D)/$1_$2.$$*.sufam.tmp1.T \
 			-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
-			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.gz | grep -v \"##contig\" > $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp && \
-			$$(call LEFT_ALIGN_VCF,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp -o $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp2 && \
+			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.gz | \
+			grep -v \"##contig\" > $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp && \
+			$$(call GATK,LeftAlignAndTrimVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) \
+			--variant $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp -o $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp2 && \
 			$$(FIX_TVC_VCF) $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp2 > $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp3 && \
 			$$(BGZIP) -c $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp3 > $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp3.gz && \
 			$$(TABIX) -p vcf $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp3.gz && \
 			$$(BCFTOOLS) isec -O v -p $$(@D)/$1_$2.$$*.sufam.tmp1.T/isec $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.vcf.tmp3.gz $$(<<<) && \
 			mv $$(@D)/$1_$2.$$*.sufam.tmp1.T/isec/0002.vcf $$@ && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.T"))
-#			$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.T/TSVC_variants.norm.vcf -o $$@ --concordance $$(word 1,$$^) && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.T"))
 
 vcf/$1_$2.%.sufam.tmp1.N.vcf : vcf/$1_$2.%.sufam.tmp1.vcf bam/$2.bam vcf/$1_$2.%.sufam.tmp1.vcf.gz vcf/$1_$2.%.sufam.tmp1.vcf.gz.tbi
 	$$(call CHECK_VCF,$$(word 1,$$^),$$@,\
-		$$(call LSCRIPT_CHECK_MEM,10G,03:59:59,"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(LOAD_TABIX_MODULE);\
+		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_BCFTOOLS_MODULE); $$(LOAD_JAVA8_MODULE); $$(LOAD_TABIX_MODULE);\
 			$$(TVC) -s $$(word 1,$$^) -i $$(word 2,$$^) -r $$(REF_FASTA) -N 1 -m $$(TVC_MOTIF) -o $$(@D)/$1_$2.$$*.sufam.tmp1.N \
 			-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) && \
-			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.gz | grep -v \"##contig\" > $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp && \
-			$$(call LEFT_ALIGN_VCF,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp -o $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp2 && \
+			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.gz | \
+			grep -v \"##contig\" > $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp && \
+			$$(call GATK,LeftAlignAndTrimVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) \
+			--variant $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp -o $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp2 && \
 			$$(FIX_TVC_VCF) $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp2 > $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp3 && \
 			$$(BGZIP) -c $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp3 > $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp3.gz && \
 			$$(TABIX) -p vcf $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp3.gz && \
 			$$(BCFTOOLS) isec -O v -p $$(@D)/$1_$2.$$*.sufam.tmp1.N/isec $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.vcf.tmp3.gz $$(<<<) && \
 			mv $$(@D)/$1_$2.$$*.sufam.tmp1.N/isec/0002.vcf $$@ && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.N"))
-#			$$(call SELECT_VARIANTS,6G) -R $$(REF_FASTA) --variant $$(@D)/$1_$2.$$*.sufam.tmp1.N/TSVC_variants.norm.vcf -o $$@ --concordance $$(word 1,$$^) && $$(RMR) $$(@D)/$1_$2.$$*.sufam.tmp1.N"))
 
 vcf/$1_$2.%.sufam.tmp2.vcf : vcf/$1_$2.%.sufam.tmp1.T.vcf vcf/$1_$2.%.sufam.tmp1.N.vcf vcf/$1_$2.%.sufam.tmp1.vcf
 	$$(call CHECK_VCF,$$(word 1,$$^),$$@,\
-		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); \
-			$$(call COMBINE_VARIANTS,10G) -R $$(REF_FASTA) \
-			--variant $$(word 1,$$^) --variant $$(word 2,$$^) -o $$@ && $$(RM) $$< $$<.idx $$(word 2,$$^) $$(word 2,$$^).idx $$(word 3,$$^)*"))
+		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); \
+			$$(call GATK,CombineVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) \
+			--variant $$(word 1,$$^) --variant $$(word 2,$$^) -o $$@ && \
+			$$(RM) $$< $$<.idx $$(word 2,$$^) $$(word 2,$$^).idx $$(word 3,$$^)*"))
 
 vcf/$1_$2.%.sufam.tmp3.vcf : vcf/$1_$2.%.sufam.tmp2.vcf
 	$$(call CHECK_VCF,$$<,$$@,\
-		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); \
-			$$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$<  -o $$@  \
+		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); \
+			$$(call GATK,VariantFiltration,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) -V $$<  -o $$@  \
 			--filterName interrogation \
 			--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") > 0 || vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") > 0' \
 			--filterName interrogation_Absent \
@@ -88,11 +94,11 @@ vcf/$1_$2.%.sufam.tmp4.vcf : vcf/$1_$2.%.sufam.tmp3.vcf
 
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$1_$2.%.sufam.tmp4.vcf
 	$$(call CHECK_VCF_CMD,$$(word 2,$$^),cp $$< $$@,\
-		$$(call LSCRIPT_CHECK_MEM,12G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(LOAD_BCFTOOLS_MODULE); \
-			$$(call COMBINE_VARIANTS,21G) --variant $$< --variant $$(word 2,$$^) -o $$(word 2,$$^).tmp \
+		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); $$(LOAD_BCFTOOLS_MODULE); \
+			$$(call COMBINE_VARIANTS,$$(RESOURCE_REQ_HIGHMEM)) --variant $$< --variant $$(word 2,$$^) -o $$(word 2,$$^).tmp \
 			--genotypemergeoption UNSORTED -R $$(REF_FASTA) -assumeIdenticalSamples && \
 			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(word 2,$$^).tmp | grep -v \"##contig\" > $$(word 2,$$^).tmp2 && \
-			$$(call LEFT_ALIGN_VCF,6G) -R $$(REF_FASTA) --variant $$(word 2,$$^).tmp2 -o $$@ && \
+			$$(call GATK,LeftAlignAndTrimVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) --variant $$(word 2,$$^).tmp2 -o $$@ && \
 			$$(RM) $$(word 2,$$^) $$(word 2,$$^).idx $$(word 2,$$^).tmp*"))
 endif
 endef
