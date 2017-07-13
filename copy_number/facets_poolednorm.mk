@@ -25,7 +25,7 @@ ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 define snp-pileup-tumor-poolednorm
 facets/snp_pileup/$1_poolednorm.bc.gz : tvc/dbsnp/$1/TSVC_variants.vcf tvc/dbsnp/poolednorm/TSVC_variants.vcf
 	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_SNP_EFF_MODULE); $$(LOAD_JAVA8_MODULE); \
-	$$(call COMBINE_VARIANTS,$$(RESOURCE_REQ_HIGHMEM)) \
+	$$(call GATK,CombineVariants,$$(RESOURCE_REQ_HIGHMEM)) \
 	$$(foreach vcf,$$^,--variant $$(vcf) ) --genotypemergeoption UNSORTED -R $$(REF_FASTA) | \
 	$$(SNP_SIFT) extractFields - CHROM POS REF ALT GEN[0].FRO GEN[0].FAO GEN[0].FXX GEN[0].FXX GEN[1].FRO GEN[1].FAO GEN[1].FXX GEN[1].FXX | \
 	perl -p -e \"s/$$(,)[\w]+//g;\" | sed 's/^chr//g;' | sed 's/\t\t/\t0\t/g; s/\t$$$$/\t0/g; s/\t\t/\t0\t/g; s/\t\t/\t0\t/g;' | \

@@ -74,8 +74,8 @@ index : $(addsuffix .bai,$(BAMS))
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
-		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) \
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
+		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) -nt 4 \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
@@ -95,8 +95,9 @@ index : $(addsuffix .bai,$(BAMS))
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) rmdup $< $@ && $(RM) $<")
 
 %.splitntrim.bam : %.bam
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_JAVA8_MODULE); $(call GATK,SplitNCigarReads,$(RESOURCE_REQ_HIGHMEM)) -I $< -o $@ \
-		-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -R $(REF_FASTA) && $(RM) $<")
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_JAVA8_MODULE); \
+	$(call GATK,SplitNCigarReads,$(RESOURCE_REQ_HIGHMEM)) -I $< -o $@ -nt 4\
+	-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -R $(REF_FASTA) && $(RM) $<")
 
 # clean sam files
 %.clean.bam : %.bam
@@ -149,7 +150,7 @@ define chr-realn
 	if [[ -s $$(word 2,$$^) ]]; then $$(call GATK,IndelRealigner,$$(RESOURCE_REQ_MEDIUM_MEM)) \
 	-I $$(<) -R $$(REF_FASTA) -L $1 -targetIntervals $$(word 2,$$^) \
 	-o $$(@) $$(BAM_REALN_OPTS); \
-	else $$(call PRINT_READS,8G) -R $$(REF_FASTA) -I $$< -L $1 -o $$@ ; fi")
+	else $$(call GATK,PrintReads,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) -I $$< -L $1 -o $$@ ; fi")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
