@@ -385,14 +385,10 @@ PICARD = $(JAVA) -Xmx$$(2) -jar $(PICARD_JAR) $$(1) $(PICARD_OPTS)
 GATK_JAR ?= $(JAR_DIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
 GATK ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR) -S LENIENT -T $$(1) -filterNoBases
 
-VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,$$(1))
 COMBINE_VARIANTS ?= $(call GATK,CombineVariants,$$(1))
 SELECT_VARIANTS ?= $(call GATK,SelectVariants,$$(1))
 
-CONTEST ?= $(call GATK,ContEst,$$(1))
 PRINT_READS ?= $(call GATK,PrintReads,$$(1))
-APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,$$(1))
-VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,$$(1))
 
 GENOTYPE_WITH_CHR2 = ?= false
 BAM_CHR2_BASE_RECAL ?= false

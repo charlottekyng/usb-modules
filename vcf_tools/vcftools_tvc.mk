@@ -95,7 +95,7 @@ vcf/$1_$2.%.sufam.tmp4.vcf : vcf/$1_$2.%.sufam.tmp3.vcf
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$1_$2.%.sufam.tmp4.vcf
 	$$(call CHECK_VCF_CMD,$$(word 2,$$^),cp $$< $$@,\
 		$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_JAVA8_MODULE); $$(LOAD_BCFTOOLS_MODULE); \
-			$$(call COMBINE_VARIANTS,$$(RESOURCE_REQ_HIGHMEM)) --variant $$< --variant $$(word 2,$$^) -o $$(word 2,$$^).tmp \
+			$$(call GATK,CombineVariants,$$(RESOURCE_REQ_HIGHMEM)) --variant $$< --variant $$(word 2,$$^) -o $$(word 2,$$^).tmp \
 			--genotypemergeoption UNSORTED -R $$(REF_FASTA) -assumeIdenticalSamples && \
 			$$(BCFTOOLS) norm -f $$(REF_FASTA) -m-both $$(word 2,$$^).tmp | grep -v \"##contig\" > $$(word 2,$$^).tmp2 && \
 			$$(call GATK,LeftAlignAndTrimVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) --variant $$(word 2,$$^).tmp2 -o $$@ && \
