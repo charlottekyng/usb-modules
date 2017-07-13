@@ -271,6 +271,25 @@ tables/%.opl_tab.txt : vcf/%.vcf
 	sed -i \"1s/GEN\[\$$i\]/\$$S/g;\" $@; \
 	done")
 
+hotspots/%.opl_tab.txt : hotspots/%.vcf
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
+	format_fields=\$$(grep '^##FORMAT=<ID=' $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | sed 's/.*ID=//; s/,.*//;' | tr '\n' ' '); \
+	N=\$$(expr \$$(grep '^#CHROM' $< | wc -w) - 10); \
+	fields='$(VCF_FIELDS)'; \
+	for f in \$$format_fields; do \
+		for i in \$$(seq 0 \$$N); do \
+			fields+=' 'GEN[\$$i].\$$f; \
+		done; \
+	done; \
+	fields+=' '\$$(grep '^##INFO=<ID=' $< | grep -v '=REF,' | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | \
+		sed 's/.*ID=//; s/,.*//; s/\bANN\b/$(ANN_FIELDS)/; ' | tr '\n' ' '); \
+	$(LOAD_PERL_MODULE); $(VCF_EFF_ONE_PER_LINE) < $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | \
+		$(SNP_SIFT) extractFields - \$$fields > $@; \
+	for i in \`seq 0 \$$N\`; do \
+	S=\$$(grep '^#CHROM' $< | cut -f \$$((\$$i + 10))); \
+	sed -i \"1s/GEN\[\$$i\]/\$$S/g;\" $@; \
+	done")
+
 %.tab.txt : %.opl_tab.txt
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
 	

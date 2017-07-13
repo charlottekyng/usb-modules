@@ -412,8 +412,6 @@ ANNOTATE_VARIANTS ?= true
 
 FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_gatk_vcf.pl
 
-MUTECT2 ?= $(call GATK,MuTect2,$$(1))
-
 MUTECT_JAR ?= $(JAR_DIR)/muTect-1.1.4.jar
 MUTECT ?= $(JAVA) -Xmx$$(1) -jar $(MUTECT_JAR) --analysis_type MuTect
 

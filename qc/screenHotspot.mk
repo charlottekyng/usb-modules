@@ -13,7 +13,7 @@ VPATH ?= bam
 .SECONDARY: 
 .PHONY : all
 
-all : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf)
+all : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf) $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
