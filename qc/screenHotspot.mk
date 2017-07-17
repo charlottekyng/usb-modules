@@ -13,7 +13,10 @@ VPATH ?= bam
 .SECONDARY: 
 .PHONY : all
 
-all : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.vcf) $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt)
+all : hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.vcf) $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt)
+
+hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
@@ -24,6 +27,7 @@ hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+MUT_CALLER = tvc
 hotspots/%/hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf.gz hotspots/sites.to.screen.vcf.gz.tbi
 	$(call LSCRIPT_PARALLEL_MEM,8,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
 	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
