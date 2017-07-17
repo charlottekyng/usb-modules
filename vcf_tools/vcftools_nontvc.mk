@@ -1,3 +1,14 @@
+%.altad_ft.vcf : %.vcf
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
+		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'vc.getGenotype(\"$1\").getAD().1 == 0' --filterName zeroAD && $(RM) $< $<.idx")
+
+%.dp_ft.vcf : %.vcf
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
+		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH)' --filterName Depth && $(RM) $< $<.idx")
+
+
 ifdef SAMPLE_PAIRS
 define som-ad-ft-tumor-normal
 vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
