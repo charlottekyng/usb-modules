@@ -15,10 +15,10 @@ LOGDIR ?= log/vcf.$(NOW)
 	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_IGVTOOLS_MODULE); $(IGVTOOLS) index $< && sleep 10")
 
 %.vcf.gz : %.vcf
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_TABIX_MODULE); $(BGZIP) -c -f $< >$@")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_TABIX_MODULE) && $(BGZIP) -c -f $< >$@ && sleep 10")
 
 %.vcf.gz.tbi : %.vcf.gz
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_TABIX_MODULE); $(TABIX) $<")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_TABIX_MODULE); $(TABIX) $< && sleep 10")
 
 ############ FILTERS #########
 
@@ -47,20 +47,20 @@ endif
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_LOWMEM)) \
 		-R $(REF_FASTA) -nt 4 -A SnpEff --variant $< --snpEffFile $(word 2,$^) -o $@ &> $(LOGDIR)/$@.log")
 
-%.dp_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
-		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
-		 -R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH)' --filterName Depth && $(RM) $< $<.idx")
+#%.dp_ft.vcf : %.vcf
+#	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+#		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
+#		 -R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH)' --filterName Depth && $(RM) $< $<.idx")
 
 %.het_ft.vcf : %.vcf
 	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) -V $< -o $@ --genotypeFilterExpression 'isHet == 1' --genotypeFilterName 'Heterozygous positions'")
 
-%.altad_ft.vcf : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
-		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
-		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'vc.getGenotype(\"$1\").getAD().1 < 0' --filterName nonZeroAD && $(RM) $< $<.idx")
+#%.altad_ft.vcf : %.vcf
+#	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+#		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
+#		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'vc.getGenotype(\"$1\").getAD().1 < 0' --filterName nonZeroAD && $(RM) $< $<.idx")
 
 #%.mapq_ft.vcf : %.vcf.gz %.vcf.gz.tbi $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 #	$(call 
@@ -141,12 +141,12 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(CLINVAR) $< > $@ && $(RM) $^"))
 
 %.exac_nontcga.vcf : %.vcf %.vcf.idx 
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
-		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INO_FIELDS) $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
+		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INFO_FIELDS) $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
 
 %.exac_nonpsych.vcf : %.vcf %.vcf.idx
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
-		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INO_FIELDS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
+		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INFO_FIELDS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
 
 #%.mut_taste.vcf : %.vcf
 #	$(INIT) $(call CHECK_VCF,$<,$@,$(MUTATION_TASTER) $< > $@ 2> $(LOG))
