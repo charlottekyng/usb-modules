@@ -23,6 +23,7 @@ sufamscreen/%.sufamscreen.vcf : bam/%.bam sufamscreen/sites.to.screen.vcf
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+MUT_CALLER = tvc
 sufamscreen/%/sufamscreen.vcf : bam/%.bam sufamscreen/sites.to.screen.vcf.gz sufamscreen/sites.to.screen.vcf.gz.tbi
 	$(call LSCRIPT_PARALLEL_MEM,8,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
 	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
