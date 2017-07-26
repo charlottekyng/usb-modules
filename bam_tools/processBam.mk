@@ -74,16 +74,16 @@ index : $(addsuffix .bai,$(BAMS))
 
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
-	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
-		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) -nt 4 \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
+		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.sorted.bam : %.bam
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
 		$(call PICARD,SortSam,$(RESOURCE_REQ_HIGHMEM)) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
 
 %.nsorted.bam : %.bam
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
 		$(call PICARD,SortSam,$(RESOURCE_REQ_HIGHMEM)) I=$< O=$@ SO=queryname")
 
 %.markdup.bam : %.bam
@@ -156,7 +156,7 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-realn,$(chr))))
 
 # merge sample realn chromosome bams
 %.realn.bam : $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bam) $(foreach chr,$(CHROMOSOMES),%.$(chr).chr_realn.bai)
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
 	$(call PICARD,MergeSamFiles,$(RESOURCE_REQ_HIGHMEM)) \
 	$(foreach i,$(filter %.bam,$^), I=$(i)) SORT_ORDER=coordinate O=$@ USE_THREADING=true && $(RM) $^ $(@:.realn.bam=.bam)")
 
