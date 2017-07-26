@@ -24,18 +24,16 @@ endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 MUT_CALLER = tvc
-sufamscreen/%/sufamscreen.vcf : bam/%.bam sufamscreen/sites.to.screen.vcf.gz sufamscreen/sites.to.screen.vcf.gz.tbi
-	$(call LSCRIPT_PARALLEL_MEM,8,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
-	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
+sufamscreen/%/TSVC_variants.vcf.gz : bam/%.bam sufamscreen/sites.to.screen.vcf
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
+	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -p $(TVC_SENSITIVE_JSON) -m $(TVC_MOTIF) \
-	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED) && \
-	$(BCFTOOLS) norm -m -both $(@D)/TSVC_variants.vcf.gz | grep -v \"##contig\" > $(@D)/TSVC_variants.vcf.tmp && \
-	$(call GATK,LeftAlignAndTrimVariants,$(RESOURCE_REQ_MEDIUM_MEM)) -R $(REF_FASTA) --variant $(@D)/TSVC_variants.vcf.tmp -o $(@D)/TSVC_variants.vcf.tmp2 && \
-	$(FIX_TVC_VCF) $(@D)/TSVC_variants.vcf.tmp2 > $(@D)/TSVC_variants.vcf.tmp3 && \
-	$(BGZIP) -c $(@D)/TSVC_variants.vcf.tmp3 > $(@D)/TSVC_variants.vcf.tmp3.gz && \
-	$(TABIX) -p vcf $(@D)/TSVC_variants.vcf.tmp3.gz && \
-	$(BCFTOOLS) isec -O v -p $(@D)/isec $(@D)/TSVC_variants.vcf.tmp3.gz $(word 2,$^) && \
-	mv $(@D)/isec/0002.vcf $@ && $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
+	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
+
+sufamscreen/%/sufamscreen.vcf : sufamscreen/%/TSVC_variants.norm.left_align.vcf.gz sufamscreen/sites.to.screen.vcf.gz
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BCFTOOLS_MODULE); \
+	$(BCFTOOLS) isec -O v -p $(dir $@)/isec $(word 1,$^) $(word 2,$^) && mv $(dir $@)/isec/0002.vcf $@ \
+	&& $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
 
 sufamscreen/%.sufamscreen.vcf : sufamscreen/%/sufamscreen.vcf
 	ln -f $< $@

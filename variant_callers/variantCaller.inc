@@ -22,7 +22,7 @@ ANN_SUFFIX = $(subst $( ),.,$(strip pass $(call ANNS,$1)))
 
 SUFFIX = $(subst $( ),.,$(strip $1 $(FILTER_SUFFIX) $(ANN_SUFFIX)))
 
-EFF_TYPES := high_moderate low_modifier synonymous nonsynonymous
+EFF_TYPES := synonymous nonsynonymous nonsynonymous_synonymous_hotspot nonsynonymous_synonymous_hotspot_lincRNA
 VCF_SUFFIXES = $(foreach type,$1,$(call SUFFIX,$(type)))
 
 TABLE_EXTENSIONS = tab $(foreach eff,$(EFF_TYPES),tab.$(eff))

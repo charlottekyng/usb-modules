@@ -57,6 +57,14 @@ endif
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) -V $< -o $@ --genotypeFilterExpression 'isHet == 1' --genotypeFilterName 'Heterozygous positions'")
 
+%.biallelic_ft.vcf : %.vcf.gz
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BCFTOOLS_MODULE); \
+	$(BCFTOOLS) view -M2 $< | grep -v \"##contig\" > $@")
+
+%.multiallelic_ft.vcf : %.vcf.gz
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BCFTOOLS_MODULE); \
+	$(BCFTOOLS) view -m3 $< | grep -v \"##contig\" > $@")
+
 #%.altad_ft.vcf : %.vcf
 #	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 #		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
@@ -77,6 +85,20 @@ endif
 %.pass.vcf : %.vcf
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
 		$(SNP_SIFT) filter $(SNP_SIFT_OPTS) -f $< \"( na FILTER ) | (FILTER = 'PASS') | (FILTER has 'HOTSPOT')\" > $@"))
+
+
+##### PROESSING #######
+
+%.norm.vcf : %.vcf.gz %.vcf.gz.tbi
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BCFTOOLS_MODULE); \
+	$(BCFTOOLS) norm -m -both $< | grep -v \"##contig\" > $@")
+
+%.left_align.vcf : %.vcf
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call GATK,LeftAlignAndTrimVariants,$(RESOURCE_REQ_LOWMEM)) -R $(REF_FASTA) -V $< -o $@"))
+
+%.post_bcftools.vcf : %.vcf
+	$(INIT) grep -v "##contig" $< | $(VCF_SORT) $(REF_DICT) - > $@
 
 ############ ANNOTATION #########
 
@@ -378,9 +400,9 @@ endif
 endif
 
 
-#%.sdp_ft.vcf : %.vcf
-#	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,4G,00:59:59,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) filter \
-#		$(SNP_SIFT_OPTS) -f $< '(exists GEN[*].DP) & (GEN[*].DP > 20)' > $@"))
+%.sdp_ft.vcf : %.vcf
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
+		$(SNP_SIFT) filter $(SNP_SIFT_OPTS) -f $< '(exists GEN[*].DP) & (GEN[*].DP > 20)' > $@"))
 
 # Copy number regulated genes annotated per subtype
 # FYI Endometrioid_MSI-L has no copy number regulated genes
