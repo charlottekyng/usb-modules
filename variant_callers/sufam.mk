@@ -43,7 +43,7 @@ endif
 
 ifndef $(TARGETS_FILE_INTERVALS)
 sufamscreen/sites.to.screen.vcf : $(TARGETS_FILE_INTERVALS) $(SUFAM_SCREEN_VCF)
-	$(INIT) grep "^\#" $(CANCER_HOTSPOT_VCF) > $@ && \
+	$(INIT) grep "^\#" $(SUFAM_SCREEN_VCF) > $@ && \
 	$(LOAD_BEDTOOLS_MODULE); $(BEDTOOLS) intersect -b $(TARGETS_FILE_INTERVALS) -a $(SUFAM_SCREEN_VCF) -header >>$@
 else
 sufamscreen/sites.to.screen.vcf : $(SUFAM_SCREEN_VCF)
