@@ -34,7 +34,7 @@ hotspots/%/TSVC_variants.vcf.gz : bam/%.bam hotspots/sites.to.screen.vcf
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -p $(TVC_SENSITIVE_JSON) -m $(TVC_MOTIF) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
 
-hotspots/%/hotspotscreen.vcf : hotspots/%/TSVC_variants.norm.left_align.vcf.gz hotspots/sites.to.screen.vcf.gz
+hotspots/%/hotspotscreen.vcf : hotspots/%/TSVC_variants.norm.left_align.vcf.gz hotspots/sites.to.screen.vcf.gz hotspots/%/TSVC_variants.norm.left_align.vcf.gz.tbi hotspots/sites.to.screen.vcf.gz.tbi
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BCFTOOLS_MODULE); \
 	$(BCFTOOLS) isec -O v -p $(dir $@)/isec $(word 1,$^) $(word 2,$^) && mv $(dir $@)/isec/0002.vcf $@ \
 	&& $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
