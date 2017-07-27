@@ -23,19 +23,19 @@ bam_metrics : rna_metrics flagstats alignment_summary_metrics
 #oxog_wgs flagstats alignment_summary_metrics dup
 endif
 
-hs_metrics : metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
-amplicon_metrics : metrics/all.amplicon_metrics.txt metrics/all.interval_amplicon_metrics.txt
+hs_metrics : $(shell rm -f metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt) metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
+amplicon_metrics : $(shell rm -f metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt) metrics/all.amplicon_metrics.txt metrics/all.interval_amplicon_metrics.txt
 wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
-rna_metrics : metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
+rna_metrics : $(shell rm -f metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt) metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
 #metrics/all.rnaseq_report/index.html
-flagstats : metrics/all.flagstats.txt
-alignment_summary_metrics : metrics/all.alignment_summary_metrics.txt
+flagstats : $(shell rm -f metrics/all.flagstats.txt) metrics/all.flagstats.txt
+alignment_summary_metrics : $(shell rm -f metrics/all.alignment_summary_metrics.txt) metrics/all.alignment_summary_metrics.txt
 #gc : $(foreach sample,$(SAMPLES),metrics/$(sample).gc_bias_metrics.txt)
 artifacts : $(foreach sample,$(SAMPLES),metrics/$(sample).artifact_metrics.bait_bias_summary_metrics)
 artifacts_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.artifact_metrics.bait_bias_summary_metrics)
 oxog : metrics/all.oxog_metrics.txt
 oxog_wgs : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs.oxog_metrics.txt)
-dup : metrics/all.dup_metrics.txt
+dup : $(shell rm -f metrics/all.dup_metrics.txt) metrics/all.dup_metrics.txt
 
 #interval_report : metrics/interval_report/index.html
 #non_ref_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).interval_nonref_freq.txt)
