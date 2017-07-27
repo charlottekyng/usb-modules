@@ -3,7 +3,7 @@
 	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) -V $< -o $@ \
-		--filterExpression 'FAO == 0 && AO == 0 && AF > 0' \
+		--filterExpression '(FAO == 0 && AO == 0) || AF == 0' \
 		--filterName zeroAD && $(RM) $< $<.idx")
 #		--filterExpression 'vc.getGenotype(\"\$$1\").getAnyAttribute(\"FAO\") == 0 && vc.getGenotype(\"\$$1\").getAnyAttribute(\"AO\") == 0' \
 #		--filterName zeroAD && $(RM) $< $<.idx")
