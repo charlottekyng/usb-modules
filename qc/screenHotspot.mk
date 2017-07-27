@@ -13,9 +13,11 @@ VPATH ?= bam
 .SECONDARY: 
 .PHONY : all
 
-all : hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.vcf) $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt)
+all : $(shell rm -rf hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt) hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt 
 
-hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt)
+#$(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.vcf) $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.pass.eff.tab.txt)
+
+hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.hotspot.eff.tab.txt : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
