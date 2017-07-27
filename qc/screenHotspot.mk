@@ -42,7 +42,7 @@ hotspots/%/hotspotscreen.vcf : hotspots/%/TSVC_variants.norm.left_align.vcf.gz h
 	&& $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
 
 hotspots/%.hotspotscreen.vcf : hotspots/%/hotspotscreen.vcf
-	ln -f $< $@
+	perl -p -e "s/NOCALL/\./g" < $< > $@
 endif
 
 ifndef $(TARGETS_FILE_INTERVALS)
