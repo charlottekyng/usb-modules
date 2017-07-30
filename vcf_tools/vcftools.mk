@@ -313,7 +313,7 @@ hotspots/%.opl_tab.txt : hotspots/%.vcf
 	done")
 
 %.tab.txt : %.opl_tab.txt
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VHIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
 	
 %.pass.txt : %.txt
 	$(INIT) head -1 $< > $@ && awk '$$6 == "PASS" { print }' $< >> $@ || true
