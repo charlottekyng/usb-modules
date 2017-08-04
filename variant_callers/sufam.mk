@@ -12,7 +12,12 @@ VPATH ?= bam
 .SECONDARY: 
 .PHONY : all
 
-all : $(foreach sample,$(SAMPLES),sufamscreen/$(sample).sufamscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf)
+all : $(shell rm -rf sufamscreen/all.sufamscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt) sufamscreen/all.sufamscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt
+
+#all : $(foreach sample,$(SAMPLES),sufamscreen/$(sample).sufamscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf)
+
+sufamscreen/all.sufamscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt : $(foreach sample,$(SAMPLES),sufamscreen/$(sample).sufamscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 sufamscreen/%.sufamscreen.vcf : bam/%.bam sufamscreen/sites.to.screen.vcf
@@ -36,7 +41,7 @@ sufamscreen/%/sufamscreen.vcf : sufamscreen/%/TSVC_variants.norm.left_align.vcf.
 	&& $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
 
 sufamscreen/%.sufamscreen.vcf : sufamscreen/%/sufamscreen.vcf
-	ln -f $< $@
+	perl -p -e "s/NOCALL/\./g" < $< > $@
 endif
 
 ifndef $(TARGETS_FILE_INTERVALS)
