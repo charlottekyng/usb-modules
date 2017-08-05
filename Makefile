@@ -4,12 +4,12 @@
 # Author: Raymond Lim <raylim@mm.st>
 #
 
-ifneq ("$(wildcard config.inc)", "")
-include config.inc
-endif
-ifneq ("$(wildcard project_config.inc)", "")
-include project_config.inc
-endif
+#ifneq ("$(wildcard config.inc)", "")
+#include config.inc
+#endif
+#ifneq ("$(wildcard project_config.inc)", "")
+#include project_config.inc
+#endif
 
 include usb-modules/config.inc
 
@@ -295,6 +295,10 @@ TARGETS += fix_rg
 fix_rg :
 	$(call RUN_MAKE,usb-modules/bam_tools/fixRG.mk)
 
+TARGETS += endtoend_bam
+endtoend_bam :
+	$(call RUN_MAKE,usb-modules/bam_tools/endtoendBam.mk)
+
 TARGETS += gatk_validation
 gatk_validation :
 	$(call RUN_MAKE,modules/variant_callers/somatic/gatkValidation.mk)
@@ -353,5 +357,8 @@ TARGETS += tvc_somatic
 tvc_somatic :
 	$(call RUN_MAKE,usb-modules/variant_callers/somatic/TVC.mk)
 
+TARGETS += sufam_screen
+sufam_screen :
+	$(call RUN_MAKE,usb-modules/variant_callers/sufam.mk)
 
 .PHONY : $(TARGETS)

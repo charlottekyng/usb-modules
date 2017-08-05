@@ -13,44 +13,37 @@ VPATH ?= bam
 .SECONDARY: 
 .PHONY : all
 
-#all : $(foreach pair,$(SAMPLE_PAIRS),hotspots/$(pair).snps.screened.target_ft.dp_ft.hotspot.pass.eff.vcf)
-all : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf)
+all : $(shell rm -rf hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt) hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt
+#$(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.vcf) $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
+#$(shell rm -rf hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
 
-#mutect : mutect_vcfs mutect_tables ext_output
-#mutect_vcfs : $(call SOMATIC_VCFS,mutect) $(addsuffix .idx,$(call SOMATIC_VCFS,mutect))
-#mutect_tables : $(call SOMATIC_TABLES,mutect)
-
-#define hotspot-samplepairs
-#hotspots/$1_$2.hotspotscreen.vcf : hotspots/$1.hotspotscreen.vcf hotspots/$2.hotspotscreen.vcf
-#	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
-#		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
-#endef
-#$(foreach pair,$(SAMPLE_PAIRS),\
-#	$(eval $(call hotspot-samplepairs,$(tumor.$(pair)),$(normal.$(pair)))))
-
-#define hotspot-samplepairs-screen
-#hotspots/$1_$2.snps.screened.vcf : hotspots/$1_$2.hotspotscreen.vcf
-#	$$(call LSCRIPT_MEM,8G,00:29:59,"$$(LOAD_JAVA8_MODULE); $$(call VARIANT_FILTRATION,7G) -R $$(REF_FASTA) -V $$< -o $$@ \
-#		--filterExpression 'vc.getGenotype(\"$1\").getAD().1 > 1 || vc.getGenotype(\"$1\").getAD().2 > 1 || vc.getGenotype(\"$1\").getAD().3 > 1' \
-#		--filterName presentInTumor")
-#endef
-#$(foreach pair,$(SAMPLE_PAIRS),\
-#	$(eval $(call hotspot-samplepairs-screen,$(tumor.$(pair)),$(normal.$(pair)))))
+hotspots/all.hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt : $(foreach sample,$(SAMPLES),hotspots/$(sample).hotspotscreen.target_ft.dp_ft.altad_ft.pass.eff.tab.txt)
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
-	$(call LSCRIPT_PARALLEL_MEM,8,5G,03:59:59,"$(LOAD_JAVA8_MODULE); $(call UNIFIED_GENOTYPER,4G) \
+	$(call LSCRIPT_PARALLEL_MEM,8,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call GATK,UnifiedGenotyper,$(RESOURCE_REQ_LOWMEM)) \
 		-nt 8 -R $(REF_FASTA) --dbsnp $(DBSNP) $(foreach bam,$(filter %.bam,$<),-I $(bam) ) --downsampling_type NONE \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES -alleles $(word 2,$^) -o $@ --output_mode EMIT_ALL_SITES")
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
-hotspots/%.hotspotscreen.vcf : bam/%.bam hotspots/sites.to.screen.vcf
-	$(call LSCRIPT_PARALLEL_MEM,8,5G,00:59:59,"$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 8 \
-	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
+MUT_CALLER = tvc
+hotspots/%/TSVC_variants.vcf.gz : bam/%.bam hotspots/sites.to.screen.vcf
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_BCFTOOLS_MODULE); $(LOAD_JAVA8_MODULE); $(LOAD_TABIX_MODULE); \
+	$(TVC) -s $(word 2,$^) -i $< -r $(REF_FASTA) -o $(@D) -N 4 \
+	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -p $(TVC_SENSITIVE_JSON) -m $(TVC_MOTIF) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
-endif
 
+hotspots/%/hotspotscreen.vcf : hotspots/%/TSVC_variants.norm.left_align.vcf.gz hotspots/sites.to.screen.vcf.gz hotspots/%/TSVC_variants.norm.left_align.vcf.gz.tbi hotspots/sites.to.screen.vcf.gz.tbi
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BCFTOOLS_MODULE); \
+	$(BCFTOOLS) isec -O v -p $(dir $@)/isec $(word 1,$^) $(word 2,$^) && mv $(dir $@)/isec/0002.vcf $@ \
+	&& $(RMR) $(@D)/isec && $(RM) $(@D)/*tmp*")
+
+hotspots/%.hotspotscreen.vcf : hotspots/%/hotspotscreen.vcf
+	perl -p -e "s/NOCALL/\./g" < $< > $@
+endif
 
 ifndef $(TARGETS_FILE_INTERVALS)
 hotspots/sites.to.screen.vcf : $(TARGETS_FILE_INTERVALS) $(CANCER_HOTSPOT_VCF)

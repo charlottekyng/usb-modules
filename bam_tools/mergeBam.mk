@@ -17,7 +17,8 @@ merged_bam/$1.header.sam : $$(foreach split,$$(split.$1),bam/$$(split).bam)
 	uniq $$@.tmp > $$@ && $$(RM) $$@.tmp
 
 merged_bam/$1.bam : merged_bam/$1.header.sam $$(foreach split,$$(split.$1),bam/$$(split).bam)
-	$$(call LSCRIPT_MEM,12G,02:29:29,"$$(LOAD_SAMTOOLS_MODULE); $$(SAMTOOLS) merge -f -h $$< $$(@) $$(filter %.bam,$$^)")
+	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_SAMTOOLS_MODULE); \
+	$$(SAMTOOLS) merge -f -h $$< $$(@) $$(filter %.bam,$$^)")
 endef
 $(foreach sample,$(SPLIT_SAMPLES),$(eval $(call merged-bam,$(sample))))
 

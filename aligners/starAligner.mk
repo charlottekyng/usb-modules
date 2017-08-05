@@ -19,7 +19,7 @@ BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
 star : $(BAMS) $(addsuffix .bai,$(BAMS)) star/all.ReadsPerGene.out.tab
 
 star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/%.2.fastq.gz)
-	$(call LSCRIPT_PARALLEL_MEM,8,10G,05:59:59,"$(MKDIR) star star/firstpass/; \
+	$(call LSCRIPT_PARALLEL_MEM,8,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(MKDIR) star star/firstpass/; \
 	$(LOAD_STAR_MODULE); STAR --runMode alignReads \
 	--runThreadN 4 --genomeDir $(STAR_GENOME_DIR) --readFilesIn $< $(if $(findstring true,$(PAIRED_END)),$(word 2,$^)) \
 	--readFilesCommand gunzip -c \
@@ -31,7 +31,7 @@ star/firstpass/%.SJ.out.tab : fastq/%.1.fastq.gz $(if $(findstring true,$(PAIRED
 
 define align-star-secondpass
 star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRED_END)),fastq/$1.2.fastq.gz) $(foreach sample,$(SAMPLES),star/firstpass/$(sample).SJ.out.tab)
-	$$(call LSCRIPT_PARALLEL_MEM,8,16G,11:59:59,"$$(MKDIR) star star/secondpass/; \
+	$$(call LSCRIPT_PARALLEL_MEM,8,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_LONG),"$$(MKDIR) star star/secondpass/; \
 	$$(LOAD_STAR_MODULE); STAR --runMode alignReads \
 	--runThreadN 8 --genomeDir $$(STAR_GENOME_DIR) --readFilesIn $$< $$(if $$(findstring true,$(PAIRED_END)),$$(word 2,$$^)) \
 	--readFilesCommand gunzip -c \

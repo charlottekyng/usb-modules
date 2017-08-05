@@ -41,8 +41,8 @@ ALLTABLES_NS_SYNON_HS_LNC = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(
 ALLTABLES_NS_SYNON_HS = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot.txt)
 
 summary/mutation_summary.xlsx : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NS_SYNON_HS),$(ALLTABLES_NS_SYNON_HS_LNC))
-	$(call LSCRIPT_CHECK_MEM,6G,00:29:59,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-	--outFile $@ $^")
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_R_MODULE); \
+	$(RSCRIPT) usb-modules/summary/mutation_summary_excel.R --outFile $@ $^")
 endif
 
 ifeq ($(findstring TXT,$(MUTATION_SUMMARY_FORMAT)),TXT)
@@ -50,18 +50,8 @@ mutation_summary : $(foreach prefix,$(CALLER_PREFIX),$(shell rm -f summary/mutat
 
 define mut_sum_txt
 summary/mutation_summary_$1.txt : $$(if $$(findstring false,$$(INCLUDE_LINCRNA_IN_SUMMARY)),alltables/allTN.$$(call SOMATIC_VCF_SUFFIXES,$1).tab.nonsynonymous_synonymous_hotspot.txt,alltables/allTN.$$(call SOMATIC_VCF_SUFFIXES,$1).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt)
-	$$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$$(LOAD_R_MODULE); $$(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-	--outFile $$@ --outputFormat TXT $$<")
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_R_MODULE); \
+	$$(RSCRIPT) usb-modules/summary/mutation_summary_excel.R --outFile $$@ --outputFormat TXT $$<")
 endef
 $(foreach prefix,$(CALLER_PREFIX),$(eval $(call mut_sum_txt,$(prefix))))
 endif
-
-
-
-#
-#summary/mutation_summary_snps.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_SNPS),$(ALLTABLES_COMPLETE_SNPS))
-#	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-#	--outFile $@ --outputFormat TXT $<")
-#summary/mutation_summary_indels.txt : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NONSYNONYMOUS_SYNONYMOUS_HOTSPOT_INDELS),$(ALLTABLES_COMPLETE_INDELS))
-#	$(call LSCRIPT_CHECK_MEM,4G,00:29:29,"$(LOAD_R_MODULE); $(RSCRIPT) usb-modules/summary/mutation_summary_excel.R \
-#	--outFile $@ --outputFormat TXT $<")

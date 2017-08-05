@@ -1,8 +1,8 @@
 {
     "meta":{
-        "name"          : "Ultra-sensitive parameters (for SUFAM, retrieving counts etc) derived by CKYN from AmpliSeq Panel - PGM - Somatic - Low Stringency",
-        "tooltip"       : "Parameters optimized using Oncomine Comprehensive AmpliSeq Panel with AcroMetrix Oncology Hotspot Control AF at 5% at depth 500, minimizing FP with 48K NA12878 at depth 130",
-        "configuration" : "ampliseq_somatic_lowstringency_pgm",
+        "name"          : "Ultra-sensitive parameters (for SUFAM, retrieving counts etc) derived by CKYN from AmpliSeq Panel - PGM - Somatic - Low Stringency - HOTSPOTS ONLY",
+        "tooltip"       : "CN-Parameters optimized using Oncomine Comprehensive AmpliSeq Panel with AcroMetrix Oncology Hotspot Control AF at 5% at depth 500, minimizing FP with 48K NA12878 at depth 130",
+        "configuration" : "ampliseq_somatic_ultralowstringency_pgm_hsonly",
         "ts_version"    : "5.0",
         "compatibility" : {
           "chip"        : ["520","530","pgm"],
@@ -14,6 +14,7 @@
         "tmapargs"      : "tmap mapall ... -J 25 --end-repair 15 --do-repeat-clip --context stage1 map4"
     },
     "torrent_variant_caller":{
+	"process_input_positions_only":1,
 
         "data_quality_stringency":3,
         "hp_max_length":8,
@@ -77,6 +78,7 @@
         "output_mnv":0
     },
     "freebayes":{
+	"use_input_allele_only":1,
         "allow_indels":1,
         "allow_snps":1,
         "allow_mnps":1,

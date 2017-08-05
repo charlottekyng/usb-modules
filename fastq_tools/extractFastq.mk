@@ -1,6 +1,9 @@
-# This module extract fastq files from a bam file.  It will use either the Picard (SamToFastq.jar) or bam2fastq programs to extract the fastq.  You can specify which program to use with the EXTRACT_TOOL variable
+# This module extract fastq files from a bam file.  
+# It will use either the Picard (SamToFastq.jar) or bam2fastq programs to extract the fastq.  
+# You can specify which program to use with the EXTRACT_TOOL variable
 # input: $(SAMPLES)
 # Author: Fong Chun Chan <fongchunchan@gmail.com>
+# CN: 20170713 this is probably not working
 
 include usb-modules/Makefile.inc
 include usb-modules/config.inc
@@ -15,7 +18,8 @@ extract_fastq : $(foreach sample,$(SAMPLES),fastq/$(sample).1.fastq.gz)
 
 ifeq (${EXTRACT_TOOL},PICARD)
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : bam/%.bam
-	$(call LSCRIPT_MEM,10G,00:59:59,"$(LOAD_JAVA8_MODULE); $(call SAM_TO_FASTQ,9G) \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call PICARD,SamToFastq,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		I=$< FASTQ=>(gzip -c > fastq/$*.1.fastq.gz) SECOND_END_FASTQ=>(gzip -c > fastq/$*.2.fastq.gz)")
 else
 fastq/%.1.fastq.gz fastq/%.2.fastq.gz : bam/%.bam

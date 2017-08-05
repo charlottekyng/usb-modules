@@ -9,5 +9,6 @@ LOGDIR ?= log/mutsigcv.$(NOW)
 
 mutsigcv : mutsigcv/mutsigcv.sig_genes.txt
 mutsigcv/mutsigcv.sig_genes.txt : mutsigcv/mutsigcv_input.maf
-	$(call LSCRIPT_CHECK_MEM,20G,02:59:59,"$(MUTSIGCV) $(MCR) $^ $(MUTSIGCV_COVERAGE_REF) $(MUTSIGCV_COV_REF) mutsigcv $(MUTSIGCV_DICT_REF) $(MUTSIGCV_SEQ_REF_DIR) && \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(MUTSIGCV) $(MCR) $^ \
+	$(MUTSIGCV_COVERAGE_REF) $(MUTSIGCV_COV_REF) mutsigcv $(MUTSIGCV_DICT_REF) $(MUTSIGCV_SEQ_REF_DIR) && \
 	mv mutsigcv.* mutsigcv")

@@ -24,6 +24,9 @@ PAIRED_END ?= true
 # for RNA-seq, possible values NONE, FIRST_READ_TRANSCRIPTION_STRAND, SECOND_READ_TRANSCRIPTION_STRAND
 STRAND_SPECIFICITY ?= NONE
 
+# possible values: CANCER, PSYCH
+ANALYSIS_TYPE ?= CANCER 
+
 ## process FASTQs before alignment
 TRIM_LENGTH ?= 150
 # trim is fixed length trim, cutadapt
@@ -72,13 +75,23 @@ BAM_NO_RECAL ?= false
 BAM_NO_REALN ?= false
 endif
 
-INCLUDE_CHR_Y ?= false
+INCLUDE_CHR_Y ?= true
 
 ### VARIANT FILTERS
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 MIN_NORMAL_DEPTH ?= 5
 MIN_TUMOR_DEPTH ?= 10
 MIN_TUMOR_AD ?= 3
 MIN_TN_AD_RATIO ?= 5.0
+endif
+
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+MIN_NORMAL_DEPTH ?= 10
+MIN_TUMOR_DEPTH ?= 10
+MIN_TUMOR_AD ?= 8
+MIN_TN_AD_RATIO ?= 10.0
+endif
+
 MIN_MQ ?= 10
 MIN_AF_SNP ?= 0.01
 MIN_AF_INDEL ?= 0.02
@@ -86,10 +99,49 @@ MIN_AF_INDEL ?= 0.02
 HRUN ?= false
 HRUN_FILTER ?= 4
 
-# default to medium for exomes, other values are "low" for targeted panels and "high" for WGS
-GATK_MEM_REQ ?= medium
+USE_SUFAM ?= true
 
+# default to medium for exomes, other values are "low" for targeted panels and "high" for WGS
 include usb-modules/genome_inc/$(REF).inc
+RESOURCE_REQ ?= medium
+ifeq ($(findstring low,$(RESOURCE_REQ)),low)
+RESOURCE_REQ_VSHORT ?= 00:29:59
+RESOURCE_REQ_SHORT ?= 00:29:59
+RESOURCE_REQ_MEDIUM ?= 05:59:59
+RESOURCE_REQ_LONG ?= 05:59:59
+RESOURCE_REQ_VLONG ?= 05:59:59
+RESOURCE_REQ_LOWMEM ?= 4G
+RESOURCE_REQ_MEDIUM_MEM ?= 8G
+RESOURCE_REQ_HIGHMEM ?= 16G
+RESOURCE_REQ_VHIGHMEM ?= 16G
+RESOURCE_REQ_VVHIGHMEM ?= 32G
+endif
+ifeq ($(findstring medium,$(RESOURCE_REQ)),medium)
+RESOURCE_REQ_VSHORT ?= 00:29:59
+RESOURCE_REQ_SHORT ?= 05:29:59
+RESOURCE_REQ_MEDIUM ?= 05:59:59
+RESOURCE_REQ_LONG ?= 23:59:59
+RESOURCE_REQ_VLONG ?= 23:59:59
+RESOURCE_REQ_LOWMEM ?= 4G
+RESOURCE_REQ_MEDIUM_MEM ?= 8G
+RESOURCE_REQ_HIGHMEM ?= 16G
+RESOURCE_REQ_VHIGHMEM ?= 32G
+RESOURCE_REQ_VVHIGHMEM ?= 64G
+endif
+ifeq ($(findstring high,$(RESOURCE_REQ)),high)
+RESOURCE_REQ_VSHORT ?= 00:29:59
+RESOURCE_REQ_SHORT ?= 05:59:59
+RESOURCE_REQ_MEDIUM ?= 23:59:59
+RESOURCE_REQ_LONG ?= 23:59:59
+RESOURCE_REQ_VLONG ?= 167:59:59
+RESOURCE_REQ_LOWMEM ?= 8G
+RESOURCE_REQ_MEDIUM_MEM ?= 16G
+RESOURCE_REQ_HIGHMEM ?= 32G
+RESOURCE_REQ_VHIGHMEM ?= 64G
+RESOURCE_REQ_VVHIGHMEM ?= 128G
+$(info HERE)
+endif
+
 ##################################
 ####### Environmental var ########
 ##################################
@@ -323,66 +375,22 @@ endif
 
 
 ##################################
-########## Picard ################
+########## Picard/GATK ###########
 ##################################
 
 PICARD_OPTS = VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=4000000 TMP_DIR=$(TMPDIR) REFERENCE_SEQUENCE=$(REF_FASTA) CREATE_INDEX=true
 PICARD_JAR ?= $(JAR_DIR)/picard-tools-2.4.1/picard.jar
-PICARD = $(JAVA) -Xmx$(2) -jar $(PICARD_JAR) $(1) $(PICARD_OPTS)
-
-SORT_SAM = $(call PICARD,SortSam,$$(1))
-REORDER_SAM = $(call PICARD,ReorderSam,$$(1))
-MARK_DUP = $(call PICARD,MarkDuplicates,$$(1))
-MARK_DUP_CIGAR = $(call PICARD,MarkDuplicatesWithMateCigar,$$(1))
-MERGE_SAMS = $(call PICARD,MergeSamFiles,$$(1))
-FIX_MATE = $(call PICARD,FixMateInformation,$$(1))
-SAM_TO_FASTQ = $(call PICARD,SamToFastq,$$(1))
-CLEANBAM = $(call PICARD,CleanSam,$$(1))
-ADD_RG = $(call PICARD,AddOrReplaceReadGroups,$$(1))
-VALIDATE_SAM = $(call PICARD,ValidateSamFile,$$(1))
-
-INTERVAL_LIST_TOOL = $(call PICARD,IntervalListTools,$$(1))
-CREATE_SEQ_DICT = $(call PICARD,CreateSequenceDictionary,$$(1))
-
-COLLECT_HS_METRICS = $(call PICARD,CollectHsMetrics,$$(1))
-#COLLECT_MULT_METRICS = $(call PICARD,CollectMultipleMetrics,$$(1))
-COLLECT_TARGETEDPCR_METRICS = $(call PICARD,CollectTargetedPcrMetrics,$$(1))
-COLLECT_ALIGNMENT_METRICS = $(call PICARD,CollectAlignmentSummaryMetrics,$$(1))
-#COLLECT_ILMN_LANE_METRICS = $(call PICARD,CollectIlluminaLaneMetrics,$$(1))
-COLLECT_OXOG_METRICS = $(call PICARD,CollectOxoGMetrics,$$(1))
-COLLECT_RNASEQ_METRICS = $(call PICARD,CollectRnaSeqMetrics,$$(1))
-COLLECT_SEQ_ARTIFACT_METRICS = $(call PICARD,CollectSequencingArtifactMetrics,$$(1))
-COLLECT_WGS_METRICS = $(call PICARD,CollectWgsMetrics,$$(1))
-COLLECT_GCBIAS_METRICS = $(call PICARD,CollectGcBiasMetrics,$$(1))
-
-##################################
-########## GATK ### ##############
-##################################
+PICARD = $(JAVA) -Xmx$$(2) -jar $(PICARD_JAR) $$(1) $(PICARD_OPTS)
 
 GATK_JAR ?= $(JAR_DIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
-GATK ?= $(JAVA) -Xmx$(2) -jar $(GATK_JAR) -S LENIENT -T $(1) -filterNoBases
+GATK_JAR_37 ?= $(JAR_DIR)/GenomeAnalysisTK-3.7/GenomeAnalysisTK-3.7.jar
+GATK ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR) -S LENIENT -T $$(1) -filterNoBases
+GATK37 ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR_37) -S LENIENT -T $$(1) -filterNoBases
 
-REALIGN_TARGET_CREATOR ?= $(call GATK,RealignerTargetCreator,$$(1))
-INDEL_REALIGN ?= $(call GATK,IndelRealigner,$$(1))
-SPLIT_N_TRIM ?= $(call GATK, SplitNCigarReads,$$(1))
-ANALYZE_COVARIATES ?= $(call GATK,AnalyzeCovariates,$$(1))
-BASE_RECALIBRATOR ?= $(call GATK,BaseRecalibrator,$$(1))
-
-LEFT_ALIGN_VCF ?= $(call GATK,LeftAlignAndTrimVariants,$$(1))
-VARIANT_FILTRATION ?= $(call GATK,VariantFiltration,$$(1))
-VARIANT_ANNOTATOR ?= $(call GATK,VariantAnnotator,$$(1))
-COMBINE_VARIANTS ?= $(call GATK,CombineVariants,$$(1))
-SELECT_VARIANTS ?= $(call GATK,SelectVariants,$$(1))
-
-CONTEST ?= $(call GATK,ContEst,$$(1))
-ASSIGN_SOMATIC_STATUS ?= $(call GATK,AssignSomaticStatus,$$(1))
-PRINT_READS ?= $(call GATK,PrintReads,$$(1))
-APPLY_RECALIBRATION ?= $(call GATK,ApplyRecalibration,$$(1))
-VARIANT_RECALIBRATOR ?= $(call GATK,VariantRecalibrator,$$(1))
-
-BAM_CHR1_BASE_RECAL ?= false
+GENOTYPE_WITH_CHR2 = ?= false
+BAM_CHR2_BASE_RECAL ?= false
 BAM_BASE_RECAL_OPTS = -knownSites $(DBSNP) \
-	$(if $(findstring true,$(BAM_CHR1_BASE_RECAL)),-L $(word 1,$(CHROMOSOMES))) \
+	$(if $(findstring true,$(BAM_CHR2_BASE_RECAL)),-L $(word 2,$(CHROMOSOMES))) \
 	$(if $(TARGETS_FILE_INTERVALS),-L $(TARGETS_FILE_INTERVALS))
 
 ifneq ($(KNOWN_INDELS),)
@@ -404,20 +412,16 @@ REPORT_STRATIFICATION := Filter
 VALIDATION ?= false
 ANNOTATE_VARIANTS ?= true
 
-HAPLOTYPE_CALLER ?= $(call GATK,HaplotypeCaller,$$(1))
-UNIFIED_GENOTYPER ?= $(call GATK,UnifiedGenotyper,$$(1))
 FIX_GATK_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_gatk_vcf.pl
 
-MUTECT2 ?= $(call GATK,MuTect2,$$(1))
-
 MUTECT_JAR ?= $(JAR_DIR)/muTect-1.1.4.jar
+MUTECT ?= $(JAVA) -Xmx$$(1) -jar $(MUTECT_JAR) --analysis_type MuTect
+
 MUTECT_MAX_ALT_IN_NORMAL ?= 500
 MUTECT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.05
 MUTECT_GT_MAX_ALT_IN_NORMAL_FRACTION ?= 0.5
 
 #MUT_FREQ_REPORT = modules/variant_callers/somatic/mutectReport.Rmd
-
-MUTECT ?= $(JAVA) -Xmx11G -jar $(MUTECT_JAR) --analysis_type MuTect
 
 VARSCAN_JAR ?= $(JAR_DIR)/varscan/VarScan.v2.4.3.jar
 VARSCAN = $(JAVA) -Xmx6G -jar $(VARSCAN_JAR)
@@ -442,9 +446,10 @@ FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_tvc_vcf.pl
 GATK_HARD_FILTER_SNPS ?= true
 GATK_POOL_SNP_RECAL ?= false
 
-VARIANT_CALL_THRESHOLD = 50
+VARIANT_CALL_THRESHOLD = 30
 VARIANT_EMIT_THRESHOLD = 10
-HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -stand_emit_conf $(VARIANT_EMIT_THRESHOLD) -R $(REF_FASTA)
+HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -R $(REF_FASTA)
+#HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -stand_emit_conf $(VARIANT_EMIT_THRESHOLD) -R $(REF_FASTA)
 
 VARIANT_RECAL_TRUTH_SENSITIVITY_LEVEL = 99.0
 VARIANT_RECAL_ANNOTATIONS = QD MQRankSum FS MQ ReadPosRankSum
@@ -497,7 +502,8 @@ SNP_EFF_FLAGS ?= -canon -no NEXT_PROT -no-intergenic
 SNP_EFF_OPTS = -c $(SNP_EFF_CONFIG) -i vcf -o vcf $(SNP_EFF_FLAGS)
 SNP_SIFT_OPTS = -c $(SNP_EFF_CONFIG)
 
-VCF_FIELDS = CHROM POS ID REF ALT FILTER
+EXAC_INFO_FIELDS ?= AC_AFR,AC_AMR,AC_Adj,AC_EAS,AC_FIN,AC_Hemi,AC_Het,AC_Hom,AC_NFE,AC_OTH,AC_SAS,AN_AFR,AN_AMR,AN_Adj,AN_EAS,AN_FIN,AN_NFE,AN_OTH,AN_SAS,Hemi_AFR,Hemi_AMR,Hemi_EAS,Hemi_FIN,Hemi_NFE,Hemi_OTH,Hemi_SAS,Het_AFR,Het_AMR,Het_EAS,Het_FIN,Het_NFE,Het_OTH,Het_SAS,Hom_AFR,Hom_AMR,Hom_EAS,Hom_FIN,Hom_NFE,Hom_OTH,Hom_SAS,AC_MALE,AC_FEMALE,AN_MALE,AN_FEMALE
+VCF_FIELDS = CHROM POS ID REF ALT FILTER QUAL
 #NSFP_FIELDS ?= ExAC_Adj_AF 1000Gp3_AF ESP6500_AA_AF ESP6500_EA_AF \
 #	clinvar_rs clinvar_clnsig \
 #	Uniprot_acc_Polyphen2 Uniprot_id_Polyphen2 Polyphen2_HVAR_pred \
@@ -578,7 +584,7 @@ endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 FACETS_SNP_PILEUP_MIN_DEPTH ?= 50
 FACETS_SNP_PILEUP_MAX_DEPTH ?= 3000
-FACETS_WINDOW_SIZE ?= 100
+FACETS_WINDOW_SIZE ?= 10
 endif
 
 FACETS_SNP_PILEUP_MINMAPQ ?= 1

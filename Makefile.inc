@@ -100,11 +100,11 @@ ifneq ($(wildcard $(SAMPLE_SET_FILE)),)
 endif
 
 ifneq ($(wildcard $(SAMPLE_SPLIT_FILE)),)
-  A = $(shell cut -f1 $(SAMPLE_SPLIT_FILE))
-  B = $(shell cut -f2 $(SAMPLE_SPLIT_FILE))
+  A = $(shell sed '/^\#/d' $(SAMPLE_SPLIT_FILE) | cut -f1)
+  B = $(shell sed '/^\#/d' $(SAMPLE_SPLIT_FILE) | cut -f2)
   $(foreach i,$(shell seq 1 $(words $(A))),$(eval split.$(word $i,$(A)) += $(word $i,$(B))))
   UNSPLIT_SAMPLES = $(B)
-  SPLIT_SAMPLES = $(shell cut -f1 $(SAMPLE_SPLIT_FILE) | sort | uniq)
+  SPLIT_SAMPLES = $(shell sed '/^\#/d' $(SAMPLE_SPLIT_FILE) | cut -f1 | sort | uniq)
 endif
 
 ALL_SAMPLES = $(SAMPLE_PAIRS) $(SAMPLES)
@@ -155,25 +155,18 @@ INIT_MEM = module purge; $(MKDIRS); umask $(UMASK); $(call REQ_MEM,$1,$2);
 INIT_PARALLEL_MEM = module purge; $(MKDIRS); umask $(UMASK); $(call REQ_PARALLEL_MEM,$1,$2,$3);
 
 # openMPI
-#MPIRUN = /opt/bin/mpirun
 MPIRUN = /scicore/soft/apps/OpenMPI/1.8.4-GCC-4.8.4/bin/mpirun
 MPI_ENV = openmpi
 REQ_MPI_MEM = SGE_RREQ="$(SGE_RREQ) $(call MEM_BY_CORE,$2) -pe $(MPI_ENV) $(1)"
 INIT_MPI_MEM = $(MKDIRS); umask $(UMASK); $(call REQ_MPI_MEM,$1,$2,$3); $(MPIRUN) -np $1
 
-#QRSH = /common/sge/bin/lx-amd64/qrsh
 QRSH = /scicore/soft/UGE/current/bin/lx-amd64/qrsh
-#LAUNCH = $(INIT) $(QRSH) -N X$(@F) -V -cwd -q $(QUEUE) -now n -notify
-#LAUNCH_PARALLEL_MEM = $(INIT) $(LAUNCH) -pe $(PARALLEL_ENV) $1 $(call MEM_FREE,$2,$3)
-#LAUNCH_MEM = $(INIT) $(LAUNCH) $(call MEM_FREE,$1,$2)
-#LAUNCH = $(INIT) $(QRSH) -N X$(@F) -V -cwd -now n -notify
 LAUNCH = $(INIT) $(QRSH) -N X$(@F) -cwd -now n -notify
 LAUNCH_PARALLEL_MEM = $(INIT) $(LAUNCH) -pe $(PARALLEL_ENV) $1 $(call MEM_BY_CORE,$2) $(call RUN_TIME $3)
 LAUNCH_MEM = $(INIT) $(LAUNCH) $(call MEM_BY_CORE,$1)
 
 # launch read script from stdin
 QSUB_PRIORITY ?= 0
-#override QSUB_ARGS = -V -wd $(PWD) -now n -notify -o $(LOG) -j y -S $(SHELL) -p $(QSUB_PRIORITY) -b n
 override QSUB_ARGS = -wd $(PWD) -now n -notify -o $(LOG) -j y -S $(SHELL) -p $(QSUB_PRIORITY) -b n
 QMAKE_BIN = /scicore/soft/UGE/current/bin/lx-amd64/qmake
 QMAKE_QUEUE = $(QMAKE_BIN) -q $1
