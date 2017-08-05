@@ -204,7 +204,7 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 		$(SNP_SIFT_OPTS) $(CLINVAR) $< > $@ && $(RM) $^"))
 
 %.exac_nontcga.vcf : %.vcf %.vcf.idx 
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,00:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,02:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
 		$(SNP_SIFT_OPTS) -info ExAC_AF $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
 
 %.mut_taste.vcf : %.vcf

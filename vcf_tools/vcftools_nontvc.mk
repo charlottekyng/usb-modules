@@ -17,7 +17,7 @@ $(foreach pair,$(SAMPLE_PAIRS),$(eval $(call som-ad-ft-tumor-normal,$(tumor.$(pa
 define sufam
 ifeq ($3,$2)
 vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
-        $$(INIT) ln -f $$< $$@
+	$$(INIT) ln -f $$< $$@
 else
 vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
 	$$(call LSCRIPT_MEM,22G,03:59:59,"$$(LOAD_JAVA8_MODULE); $$(call COMBINE_VARIANTS,21G) \
@@ -58,6 +58,4 @@ endef
 $(foreach set,$(SAMPLE_SETS),\
 	$(foreach tumor,$(wordlist 1,$(shell expr $(words $(subst _,$( ),$(set))) - 1),$(subst _,$( ),$(set))),\
 		$(eval $(call sufam,$(tumor),$(lastword $(subst _,$( ),$(set))),$(subst $(tumor)_,,$(set))))))
-
-
 endif
