@@ -163,17 +163,12 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(CLINVAR) $< > $@ && $(RM) $^"))
 
 %.exac_nontcga.vcf : %.vcf %.vcf.idx 
-<<<<<<< HEAD
-	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,9G,02:29:29,"$(LOAD_SNP_EFF_MODULE); $(SNP_SIFT) annotate \
-		$(SNP_SIFT_OPTS) -info ExAC_AF $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
-=======
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
 		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INFO_FIELDS) $(EXAC_NONTCGA) $< > $@ && $(RM) $^"))
 
 %.exac_nonpsych.vcf : %.vcf %.vcf.idx
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
 		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INFO_FIELDS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
->>>>>>> 3e0919981f3a6c5935c1e0a81a95ab5bb91da129
 
 #%.mut_taste.vcf : %.vcf
 #	$(INIT) $(call CHECK_VCF,$<,$@,$(MUTATION_TASTER) $< > $@ 2> $(LOG))

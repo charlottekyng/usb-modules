@@ -77,8 +77,4 @@ endef #define sufam
 $(foreach set,$(SAMPLE_SETS),\
 	$(foreach tumor,$(wordlist 1,$(shell expr $(words $(subst _,$( ),$(set))) - 1),$(subst _,$( ),$(set))),\
 		$(eval $(call sufam,$(tumor),$(lastword $(subst _,$( ),$(set))),$(subst $(tumor)_,,$(set))))))
-<<<<<<< HEAD
-endif
-=======
 endif #ifdef SAMPLE_PAIRS
->>>>>>> 3e0919981f3a6c5935c1e0a81a95ab5bb91da129
