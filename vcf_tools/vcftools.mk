@@ -100,6 +100,9 @@ endif
 %.post_bcftools.vcf : %.vcf
 	$(INIT) grep -v "##contig" $< | $(VCF_SORT) $(REF_DICT) - > $@
 
+%.sorted.vcf : %.vcf
+	$(INIT) $(VCF_SORT) $(REF_DICT) $< > $@
+
 ############ ANNOTATION #########
 
 %.eff.vcf : %.vcf %.vcf.idx
