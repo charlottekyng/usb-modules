@@ -74,9 +74,9 @@ vcf/$1_$2.%/isec/0001.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp1.vcf vcf/$1_$2.%.
 	$$(BCFTOOLS) isec -O v -p $$(dir $$@) $$(word 3,$$^) $$(word 4,$$^)"))
 
 vcf/$1_$2.%/TSVC_variants.vcf.gz : vcf/$1_$2.%/isec/0001.sorted.vcf bam/$1.bam bam/$1.bam.bai
-	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_VSHORT),"$$(TVC) \
+	$$(call LSCRIPT_PARALLEL_MEM,2,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(TVC) \
 	-s $$< -i $$(word 2,$$^) -r $$(REF_FASTA) -o $$(@D) \
-	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) \
+	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) -N 2\
 	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -p $(TVC_SENSITIVE_JSON)")
 
 vcf/$1_$2.%/isec2/0002.vcf : vcf/$1_$2.%/TSVC_variants.biallelic_ft.vcf vcf/$1_$2.%/isec/0001.vcf vcf/$1_$2.%/TSVC_variants.biallelic_ft.vcf.gz vcf/$1_$2.%/isec/0001.vcf.gz vcf/$1_$2.%/TSVC_variants.biallelic_ft.vcf.gz.tbi vcf/$1_$2.%/isec/0001.vcf.gz.tbi
