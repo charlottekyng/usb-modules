@@ -44,7 +44,7 @@ endif # def SAMPLE_SET_PAIRS
 define chr-variants
 gatk/chr_vcf/%.$1.variants.vcf : bam/%.bam bam/%.bai
 	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
-	$$(call GATK,HaplotypeCaller,$$(RESOURCE_REQ_MEDIUM_MEM)) $$(HAPLOTYPE_CALLER_OPTS) \
+	$$(call GATK37,HaplotypeCaller,$$(RESOURCE_REQ_MEDIUM_MEM)) $$(HAPLOTYPE_CALLER_OPTS) \
 	-L $1 -I $$< -o $$@")
 endef
 $(foreach chr,$(CHROMOSOMES),$(eval $(call chr-variants,$(chr))))

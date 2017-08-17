@@ -23,6 +23,8 @@ define som-ad-ft-tumor-normal
 vcf/$1_$2.%.som_ad_ft.vcf : vcf/$1_$2.%.vcf
 	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
 		$$(call GATK,VariantFiltration,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) -V $$< -o $$@ \
+		--filterExpression 'QUAL < 60' \
+		--filterName lowQual \
 		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"FAO\") < $(MIN_TUMOR_AD)' \
 		--filterName tumorVarAD_raw \
 		--filterExpression 'vc.getGenotype(\"$1\").getAnyAttribute(\"AO\") < $(MIN_TUMOR_AD)' \
@@ -71,11 +73,11 @@ vcf/$1_$2.%/isec/0001.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp1.vcf vcf/$1_$2.%.
 	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_BCFTOOLS_MODULE); \
 	$$(BCFTOOLS) isec -O v -p $$(dir $$@) $$(word 3,$$^) $$(word 4,$$^)"))
 
-vcf/$1_$2.%/TSVC_variants.vcf.gz : vcf/$1_$2.%/isec/0001.vcf bam/$1.bam bam/$1.bam.bai
-	$$(call LSCRIPT_PARALLEL_MEM,4,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(TVC) \
-	-s $$< -i $$(word 2,$$^) -r $$(REF_FASTA) -o $$(@D) -N 4 \
-	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) \
-	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED)")
+vcf/$1_$2.%/TSVC_variants.vcf.gz : vcf/$1_$2.%/isec/0001.sorted.vcf bam/$1.bam bam/$1.bam.bai
+	$$(call LSCRIPT_PARALLEL_MEM,2,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(TVC) \
+	-s $$< -i $$(word 2,$$^) -r $$(REF_FASTA) -o $$(@D) \
+	$$(if $$(TARGETS_FILE_INTERVALS),-b $$(TARGETS_FILE_INTERVALS)) -m $$(TVC_MOTIF) -N 2\
+	-t $$(TVC_ROOT_DIR) --primer-trim-bed $$(PRIMER_TRIM_BED) -p $(TVC_SENSITIVE_JSON)")
 
 vcf/$1_$2.%/isec2/0002.vcf : vcf/$1_$2.%/TSVC_variants.biallelic_ft.vcf vcf/$1_$2.%/isec/0001.vcf vcf/$1_$2.%/TSVC_variants.biallelic_ft.vcf.gz vcf/$1_$2.%/isec/0001.vcf.gz vcf/$1_$2.%/TSVC_variants.biallelic_ft.vcf.gz.tbi vcf/$1_$2.%/isec/0001.vcf.gz.tbi
 	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_BCFTOOLS_MODULE); \

@@ -383,7 +383,9 @@ PICARD_JAR ?= $(JAR_DIR)/picard-tools-2.4.1/picard.jar
 PICARD = $(JAVA) -Xmx$$(2) -jar $(PICARD_JAR) $$(1) $(PICARD_OPTS)
 
 GATK_JAR ?= $(JAR_DIR)/GenomeAnalysisTK-3.6/GenomeAnalysisTK-3.6.jar
+GATK_JAR_37 ?= $(JAR_DIR)/GenomeAnalysisTK-3.7/GenomeAnalysisTK-3.7.jar
 GATK ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR) -S LENIENT -T $$(1) -filterNoBases
+GATK37 ?= $(JAVA) -Xmx$$(2) -jar $(GATK_JAR_37) -S LENIENT -T $$(1) -filterNoBases
 
 GENOTYPE_WITH_CHR2 = ?= false
 BAM_CHR2_BASE_RECAL ?= false
@@ -444,9 +446,10 @@ FIX_TVC_VCF = $(PERL) usb-modules/variant_callers/fix_vcf_scripts/fix_tvc_vcf.pl
 GATK_HARD_FILTER_SNPS ?= true
 GATK_POOL_SNP_RECAL ?= false
 
-VARIANT_CALL_THRESHOLD = 50
+VARIANT_CALL_THRESHOLD = 30
 VARIANT_EMIT_THRESHOLD = 10
-HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -stand_emit_conf $(VARIANT_EMIT_THRESHOLD) -R $(REF_FASTA)
+HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -R $(REF_FASTA)
+#HAPLOTYPE_CALLER_OPTS = --dbsnp $(DBSNP) -stand_call_conf $(VARIANT_CALL_THRESHOLD) -stand_emit_conf $(VARIANT_EMIT_THRESHOLD) -R $(REF_FASTA)
 
 VARIANT_RECAL_TRUTH_SENSITIVITY_LEVEL = 99.0
 VARIANT_RECAL_ANNOTATIONS = QD MQRankSum FS MQ ReadPosRankSum

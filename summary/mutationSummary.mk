@@ -9,7 +9,7 @@ LOGDIR = log/summary.$(NOW)
 PHONY : mutation_summary
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
-CALLER_PREFIX ?= mutect strelka_indel
+CALLER_PREFIX ?= mutect strelka_indels
 endif
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 CALLER_PREFIX ?= tvc_snps tvc_indels

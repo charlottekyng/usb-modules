@@ -12,13 +12,13 @@ LOGDIR ?= log/vcf.$(NOW)
 
 
 %.vcf.idx : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_IGVTOOLS_MODULE); $(IGVTOOLS) index $< && sleep 10")
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_IGVTOOLS_MODULE); $(IGVTOOLS) index $< && sleep 5")
 
 %.vcf.gz : %.vcf
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_TABIX_MODULE) && $(BGZIP) -c -f $< >$@ && sleep 10")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_TABIX_MODULE) && $(BGZIP) -c -f $< >$@ && sleep 5")
 
 %.vcf.gz.tbi : %.vcf.gz
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_TABIX_MODULE); $(TABIX) $< && sleep 10")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_TABIX_MODULE); $(TABIX) $< && sleep 5")
 
 ############ FILTERS #########
 
@@ -99,6 +99,9 @@ endif
 
 %.post_bcftools.vcf : %.vcf
 	$(INIT) grep -v "##contig" $< | $(VCF_SORT) $(REF_DICT) - > $@
+
+%.sorted.vcf : %.vcf
+	$(INIT) $(VCF_SORT) $(REF_DICT) $< > $@
 
 ############ ANNOTATION #########
 
@@ -312,8 +315,27 @@ hotspots/%.opl_tab.txt : hotspots/%.vcf
 	sed -i \"1s/GEN\[\$$i\]/\$$S/g;\" $@; \
 	done")
 
+sufamscreen/%.opl_tab.txt : sufamscreen/%.vcf
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
+	format_fields=\$$(grep '^##FORMAT=<ID=' $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | sed 's/.*ID=//; s/,.*//;' | tr '\n' ' '); \
+	N=\$$(expr \$$(grep '^#CHROM' $< | wc -w) - 10); \
+	fields='$(VCF_FIELDS)'; \
+	for f in \$$format_fields; do \
+		for i in \$$(seq 0 \$$N); do \
+			fields+=' 'GEN[\$$i].\$$f; \
+		done; \
+	done; \
+	fields+=' '\$$(grep '^##INFO=<ID=' $< | grep -v '=REF,' | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | \
+		sed 's/.*ID=//; s/,.*//; s/\bANN\b/$(ANN_FIELDS)/; ' | tr '\n' ' '); \
+	$(LOAD_PERL_MODULE); $(VCF_EFF_ONE_PER_LINE) < $< | sed 's/dbNSFP_GERP++/dbNSFP_GERP/g' | \
+		$(SNP_SIFT) extractFields - \$$fields > $@; \
+	for i in \`seq 0 \$$N\`; do \
+	S=\$$(grep '^#CHROM' $< | cut -f \$$((\$$i + 10))); \
+	sed -i \"1s/GEN\[\$$i\]/\$$S/g;\" $@; \
+	done")
+
 %.tab.txt : %.opl_tab.txt
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VHIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_PERL_MODULE); $(VCF_JOIN_EFF) < $< > $@")
 	
 %.pass.txt : %.txt
 	$(INIT) head -1 $< > $@ && awk '$$6 == "PASS" { print }' $< >> $@ || true
