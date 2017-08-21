@@ -149,10 +149,10 @@ REQ_PARALLEL_MEM = SGE_RREQ="$(SGE_RREQ) $(call MEM_BY_CORE,$2) -pe $(PARALLEL_E
 REQ_MEM = SGE_RREQ="$(SGE_RREQ) $(call MEM_BY_CORE,$1) $(call RUN_TIME,$1)"
 UMASK = 002
 #ACTIVATE_JRFLAB_MODULES_ENV = unset PYTHONPATH; source $(JRFLAB_MODULES_ENV)/bin/activate $(JRFLAB_MODULES_ENV)
-INIT = module purge; $(MKDIRS); umask $(UMASK); set -o pipefail; ####echo $(ACTIVATE_JRFLAB_MODULES_ENV);
+INIT = module purge; umask $(UMASK); $(MKDIRS); set -o pipefail; ####echo $(ACTIVATE_JRFLAB_MODULES_ENV);
 INIT_NOCLUSTER = echo "module purge; umask $(UMASK); set -o pipefail"; #####$(ACTIVATE_JRFLAB_MODULES_ENV);";
-INIT_MEM = module purge; $(MKDIRS); umask $(UMASK); $(call REQ_MEM,$1,$2);
-INIT_PARALLEL_MEM = module purge; $(MKDIRS); umask $(UMASK); $(call REQ_PARALLEL_MEM,$1,$2,$3);
+INIT_MEM = module purge; umask $(UMASK); $(MKDIRS); $(call REQ_MEM,$1,$2);
+INIT_PARALLEL_MEM = module purge; umask $(UMASK); $(MKDIRS); $(call REQ_PARALLEL_MEM,$1,$2,$3);
 
 # openMPI
 MPIRUN = /scicore/soft/apps/OpenMPI/1.8.4-GCC-4.8.4/bin/mpirun

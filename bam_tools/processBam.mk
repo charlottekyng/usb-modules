@@ -50,11 +50,10 @@ endif
 index : $(addsuffix .bai,$(BAMS))
 
 %.bam.bai : %.bam
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< && ln -f $@ $*.bai")
-#$(call LSCRIPT_CHECK_MEM,3G,05:29:59,"$(LOAD_SAMTOOLS_MODULE); $(SAMTOOLS) index $< && ln -f $@ $*.bai")
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SAMTOOLS_MODULE); sleep 5; $(SAMTOOLS) index $< && ln -f $@ $*.bai")
 
 %.bai : %.bam.bai
-	$(INIT) ln -f $@ $<
+	$(INIT) sleep 5; ln -f $@ $<
 
 # limit coverage
 #%.dcov.bam : %.bam
