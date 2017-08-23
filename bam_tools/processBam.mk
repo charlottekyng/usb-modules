@@ -77,6 +77,10 @@ index : $(addsuffix .bai,$(BAMS))
 		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
+%.reordered.bam : %.bam $(REF_DICT)
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+		$(call PICARD,ReorderSam,$(RESOURCE_REQ_HIGHMEM)) I=$< O=$@ REFERENCE=$(REF_FASTA) && $(RM) $<")
+
 %.sorted.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
 		$(call PICARD,SortSam,$(RESOURCE_REQ_HIGHMEM)) I=$< O=$@ SO=coordinate VERBOSITY=ERROR && $(RM) $<")
