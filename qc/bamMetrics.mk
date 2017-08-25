@@ -16,7 +16,7 @@ ifeq ($(CAPTURE_METHOD),BAITS)
 bam_metrics : hs_metrics oxog flagstats alignment_summary_metrics #dup
 endif
 ifeq ($(CAPTURE_METHOD),PCR)
-bam_metrics : amplicon_metrics flagstats alignment_summary_metrics
+bam_metrics : amplicon_metrics flagstats alignment_summary_metrics per_base_depth
 endif
 ifeq ($(CAPTURE_METHOD),RNA)
 bam_metrics : rna_metrics flagstats alignment_summary_metrics
@@ -25,7 +25,8 @@ endif
 
 hs_metrics : $(shell rm -f metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt) metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt
 amplicon_metrics : $(shell rm -f metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt) metrics/all.amplicon_metrics.txt metrics/all.interval_amplicon_metrics.txt
-wgs_metrics : $(foreach sample,$(SAMPLES), metrics/$(sample).wgs_metrics.txt)
+per_base_depth : $(foreach sample,$(SAMPLES),metrics/$(sample).per_base_depth.txt)
+wgs_metrics : $(foreach sample,$(SAMPLES),metrics/$(sample).wgs_metrics.txt)
 rna_metrics : $(shell rm -f metrics/all.hs_metrics.txt metrics/all.interval_hs_metrics.txt) metrics/all.rnaseq_metrics.txt metrics/all.normalized_coverage.rnaseq_metrics.txt
 #metrics/all.rnaseq_report/index.html
 flagstats : $(shell rm -f metrics/all.flagstats.txt) metrics/all.flagstats.txt
@@ -57,8 +58,12 @@ metrics/%.amplicon_metrics.txt metrics/%.interval_amplicon_metrics.txt : bam/%.b
 	$(SAMTOOLS) view -H $< | grep '^@SQ' > \$$TMP && grep -P \"\t\" $(TARGETS_FILE_INTERVALS) | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$1$(,)\$$2+1$(,)\$$3$(,)\"+\"$(,)NR }' >> \$$TMP; \
 	$(call PICARD,CollectTargetedPcrMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$< OUTPUT=$@ AMPLICON_INTERVALS=\$$TMP TARGET_INTERVALS=\$$TMP \
-	PER_TARGET_COVERAGE=metrics/$*.interval_amplicon_metrics.txt COVERAGE_CAP=50000")
+	PER_TARGET_COVERAGE=metrics/$*.interval_amplicon_metrics.txt COVERAGE_CAP=500000")
 
+metrics/%.per_base_depth.txt : bam/%.bam bam/%.bam.bai
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_BEDTOOLS_MODULE); \
+	$(BEDTOOLS) coverage -d -b $< -a $(TARGETS_FILE_INTERVALS_MERGED) > $@")
+ 
 define amplicon-metrics-pools
 POOLNAME=$$(shell basename $2)
 metrics/$1.amplicon_metrics_$$(POOLNAME).txt : bam/$1.bam bam/$1.bam.bai $2
@@ -67,7 +72,7 @@ metrics/$1.amplicon_metrics_$$(POOLNAME).txt : bam/$1.bam bam/$1.bam.bai $2
 	$$(SAMTOOLS) view -H $$< | grep '^@SQ' > \$$$$TMP && grep -P \"\t\" $2 | \
 	awk 'BEGIN {OFS = \"\t\"} { print \$$$$1$$(,)\$$$$2+1$$(,)\$$$$3$$(,)\"+\"$$(,)NR }' >> \$$$$TMP; \
 	$$(call PICARD,CollectTargetedPcrMetrics,$$(RESOURCE_REQ_MEDIUM_MEM)) INPUT=$$< OUTPUT=$$@ AMPLICON_INTERVALS=\$$$$TMP TARGET_INTERVALS=\$$$$TMP \
-	COVERAGE_CAP=50000")
+	COVERAGE_CAP=500000")
 endef
 $(if $(TARGETS_FILE_INTERVALS_POOLS),\
 	$(foreach pool,$(TARGETS_FILE_INTERVALS_POOLS),\
