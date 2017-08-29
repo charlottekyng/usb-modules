@@ -1,0 +1,50 @@
+###############################################################
+## What to do when you get a set of Ion Torrent genomic data ##
+###############################################################
+
+# assuming the new project is called PROJ
+PROJ_DIR=/scicore/home/terracci/GROUP/data/PROJ
+
+# make a project directory under /scicore/home/terracci/GROUP/data
+mkdir $PROJ_DIR
+cd $PROJ_DIR
+
+# get usb-modules code from github
+git clone git@github.com:charlottekyng/usb-modules.git; 
+
+# move the Makefile_template to $PROJ
+mv usb-modules/Makefile_template Makefile
+
+# rename the bam files to <sample_name>.bam and put them in $PROJ_DIR/unprocessed_bam
+mkdir $PROJ_DIR/unprocessed_bam
+cd $PROJ_DIR/unprocessed_bam
+# dump the files in the directory
+
+# make samples.txt
+ls *bam | perl -p -e "s/\.bam//g;" > ../samples.txt
+
+# make sample_sets.txt
+# this file should be one patient per row
+# each row should consist of the tumor samples, tab-delimited, 
+# followed by the matched normal sample as the last name on the row
+
+# now fix read groups to ensure downstream processing do not fall over
+make fix_rg
+
+# generate some sequencing statistics
+make bam_metrics
+
+# genotype to make sure there are no mismatched samples
+make genotype
+
+# call somatic mutations
+make tvc_somatic
+
+# screen hotspots (for TERT) and for QC
+make hotspot_screen
+
+# make an Excel table of the mutations
+make mutation_summary
+
+### or do everything at once, if nothing falls over, this will do everything sequentially
+make fix_rg bam_metrics genotype tvc_somatic hotspot_screen mutation_summary
