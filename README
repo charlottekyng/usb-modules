@@ -22,6 +22,7 @@ cd $PROJ_DIR/unprocessed_bam
 
 # make samples.txt
 ls *bam | perl -p -e "s/\.bam//g;" > ../samples.txt
+cd ..
 
 # make sample_sets.txt
 # this file should be one patient per row
