@@ -1,0 +1,12 @@
+### BASIC SETTINGS FOR PROJECT MAKEFILE ###
+### see usb-modules/config.inc for full options ###
+### for options related reference genome and target panels, see files in usb-modules/genome_inc
+
+SEQ_PLATFORM = IONTORRENT
+REF = hg19_ionref
+PANEL = HCC
+CAPTURE_METHOD = PCR
+
+NUM_ATTEMPTS = 1
+
+include usb-modules/Makefile
