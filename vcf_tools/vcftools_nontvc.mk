@@ -6,7 +6,7 @@
 %.dp_ft.vcf : %.vcf
 	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,VariantFiltration,$(RESOURCE_REQ_MEDIUM_MEM)) \
-		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH)' --filterName Depth && $(RM) $< $<.idx")
+		-R $(REF_FASTA) -V $< -o $@ --filterExpression 'DP < $(MIN_NORMAL_DEPTH) || DP == \".\"' --filterName DepthO")
 
 
 ifdef SAMPLE_PAIRS

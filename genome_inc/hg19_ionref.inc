@@ -7,18 +7,29 @@ ifeq ($(PANEL),CHPv2)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.merged.bed
 endif
 ifeq ($(PANEL),CCP)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.hotspots.bed
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.merged.bed
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.dbsnp_138.vcf
+endif
+ifeq ($(PANEL),CCPv3)
+TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.bed
+TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.bed
+PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.merged.bed
+DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.dbsnp_138.vcf
 endif
 ifeq ($(PANEL),EXOME)
 TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.merged.bed
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.common.vcf
 endif
@@ -29,6 +40,7 @@ TARGETS_FILE_INTERVALS_POOLS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.merged.bed
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 endif
@@ -38,6 +50,7 @@ TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD1095
 TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
 TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.genes.txt
 PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.merged.bed
 DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
 DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
 endif
