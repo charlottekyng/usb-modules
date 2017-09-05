@@ -171,7 +171,7 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 
 %.exac_nonpsych.vcf : %.vcf %.vcf.idx
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
-		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) -info $(EXAC_INFO_FIELDS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
+		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
 
 #%.mut_taste.vcf : %.vcf
 #	$(INIT) $(call CHECK_VCF,$<,$@,$(MUTATION_TASTER) $< > $@ 2> $(LOG))

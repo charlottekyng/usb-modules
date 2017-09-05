@@ -13,7 +13,7 @@ VPATH ?= bam
 VARIANT_TYPES ?= gatk_snps gatk_indels
 PHONY += gatk
 
-gatk : gatk_vcfs gatk_tables
+gatk : gatk_vcfs $(if $(findstring NONE,$(PANEL)),,gatk_tables)
 gatk_vcfs : $(foreach type,$(VARIANT_TYPES),$(call VCFS,$(type)) $(addsuffix .idx,$(call VCFS,$(type))))
 gatk_tables : $(foreach type,$(VARIANT_TYPES),$(call TABLES,$(type)))
 gatk_reports : $(foreach type,$(VARIANT_TYPES),reports/$(type).dp_ft.grp)
