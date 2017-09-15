@@ -4,7 +4,9 @@ suppressPackageStartupMessages(library("xlsx"));
 
 optList <- list(
         make_option("--outFile", default = NULL, help = "output file"),
-	make_option("--outputFormat", default = "EXCEL", help = "output Format, EXCEL or TXT")
+	make_option("--outputFormat", default = "EXCEL", help = "output Format, EXCEL or TXT"),
+	make_option("--makeChocolateBar", default = F, help = "include chocolate bar"),
+	make_option("--makeMutationHeatmap", default = F, help = "include mutation heatmap")
         )
 parser <- OptionParser(usage = "%prog vcf.file", option_list = optList);
 arguments <- parse_args(parser, positional_arguments = T);

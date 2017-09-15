@@ -36,17 +36,19 @@ EXCEL_MAX_EXAC_AF ?= 1
 
 ifeq ($(findstring EXCEL,$(MUTATION_SUMMARY_FORMAT)),EXCEL)
 mutation_summary : $(shell rm -f summary/mutation_summary.xlsx) summary/mutation_summary.xlsx
+endif
+ifeq ($(findstring TXT,$(MUTATION_SUMMARY_FORMAT)),TXT)
+mutation_summary : $(foreach prefix,$(CALLER_PREFIX),$(shell rm -f summary/mutation_summary_$(prefix).txt) summary/mutation_summary_$(prefix).txt)
+endif
 
+ALLTABLES_NS_SYNON_HS_LNC_PROM = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot_lincRNA_upstream.txt)
 ALLTABLES_NS_SYNON_HS_LNC = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt)
 ALLTABLES_NS_SYNON_HS = $(foreach prefix,$(CALLER_PREFIX),alltables/allTN.$(call SOMATIC_VCF_SUFFIXES,$(prefix)).tab.nonsynonymous_synonymous_hotspot.txt)
 
 summary/mutation_summary.xlsx : $(if $(findstring false,$(INCLUDE_LINCRNA_IN_SUMMARY)),$(ALLTABLES_NS_SYNON_HS),$(ALLTABLES_NS_SYNON_HS_LNC))
 	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_R_MODULE); \
 	$(RSCRIPT) usb-modules/summary/mutation_summary_excel.R --outFile $@ $^")
-endif
 
-ifeq ($(findstring TXT,$(MUTATION_SUMMARY_FORMAT)),TXT)
-mutation_summary : $(foreach prefix,$(CALLER_PREFIX),$(shell rm -f summary/mutation_summary_$(prefix).txt) summary/mutation_summary_$(prefix).txt)
 
 define mut_sum_txt
 summary/mutation_summary_$1.txt : $$(if $$(findstring false,$$(INCLUDE_LINCRNA_IN_SUMMARY)),alltables/allTN.$$(call SOMATIC_VCF_SUFFIXES,$1).tab.nonsynonymous_synonymous_hotspot.txt,alltables/allTN.$$(call SOMATIC_VCF_SUFFIXES,$1).tab.nonsynonymous_synonymous_hotspot_lincRNA.txt)
@@ -54,4 +56,3 @@ summary/mutation_summary_$1.txt : $$(if $$(findstring false,$$(INCLUDE_LINCRNA_I
 	$$(RSCRIPT) usb-modules/summary/mutation_summary_excel.R --outFile $$@ --outputFormat TXT $$<")
 endef
 $(foreach prefix,$(CALLER_PREFIX),$(eval $(call mut_sum_txt,$(prefix))))
-endif

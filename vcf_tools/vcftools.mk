@@ -385,7 +385,15 @@ endif
 	$(INIT) head -1 $< > $@ && awk -v col_imp=$$col_imp -v col_eff=$$col_eff -v col_biotype=$$col_biotype -v col_filter=$$col_filter \
 	'(match($$col_imp, /MODERATE/) || match($$col_imp, /HIGH/) || (match($$col_imp, /LOW/) && match($$col_eff, /synonymous_variant/)) || (match($$col_biotype, /lincRNA/) && match($$col_eff, /non_coding_exon/)) || match($$col_filter, /HOTSPOT/))' $< >> $@
 
-
+%.nonsynonymous_synonymous_hotspot_lincRNA_upstream.txt : %.txt
+	col_imp=$$(head -1 $< | tr '\t' '\n' | grep -n "IMPACT" | sed 's/:.*//'); \
+	col_eff=$$(head -1 $< | tr '\t' '\n' | grep -n "EFFECT" | sed 's/:.*//'); \
+	col_biotype=$$(head -1 $< | tr '\t' '\n' | grep -n "BIOTYPE" | sed 's/:.*//'); \
+	col_filter=$$(head -1 $< | tr '\t' '\n' | grep -n "FILTER"); \
+	$(INIT) head -1 $< > $@ && awk -v col_imp=$$col_imp -v col_eff=$$col_eff -v col_biotype=$$col_biotype -v col_filter=$$col_filter \
+	'(match($$col_imp, /MODERATE/) || match($$col_imp, /HIGH/) || (match($$col_imp, /LOW/) && match($$col_eff, /synonymous_variant/)) || \
+	(match($$col_biotype, /lincRNA/) && match($$col_eff, /non_coding_exon/)) || match($$col_filter, /HOTSPOT/)) \
+	(match($$col_eff, /upstream_gene_variant/) && match($$col_imp, /MODIFIER/))' $< >> $@
 
 
 
