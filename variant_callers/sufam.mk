@@ -17,7 +17,7 @@ VPATH ?= bam
 
 all : $(shell rm -rf sufamscreen/all.sufamscreen.eff.tab.txt) sufamscreen/all.sufamscreen.eff.tab.txt
 
-sufamscreen/all.sufamscreen.eff.tab.txt : $(foreach sample,$(SAMPLES),sufamscreen/$(sample).sufamscreen.tab.txt)
+sufamscreen/all.sufamscreen.eff.tab.txt : $(foreach sample,$(SAMPLES),sufamscreen/$(sample).sufamscreen.eff.tab.txt)
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_R_MODULE); $(RSCRIPT) $(RBIND) --sampleName $< $^ > $@")
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)

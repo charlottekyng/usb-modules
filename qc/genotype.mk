@@ -29,7 +29,7 @@ $(foreach chr,$(CHROMOSOMES),$(eval $(call snps-chr,$(chr))))
 ifeq ($(findstring true,$(GENOTYPE_WITH_CHR2)),true)
 genotype/snps.vcf : genotype/snps.2.vcf
 else
-genotype/snps.vcf : $(foreach chr,$(CHROMOSOMES),genotype/snps.$chr.vcf)
+genotype/snps.vcf : $(foreach chr,$(CHROMOSOMES),genotype/snps.$(chr).vcf)
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_VVHIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
 		$(call GATK,CombineVariants,$(RESOURCE_REQ_VVHIGHMEM)) \
 		$(foreach vcf,$^,--variant $(vcf) ) -o $@ --genotypemergeoption UNSORTED -R $(REF_FASTA)")
