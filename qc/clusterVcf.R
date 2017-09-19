@@ -9,7 +9,8 @@ options(error = quote(dump.frames("testdump", TRUE)))
 
 optList <- list(
                 make_option("--genome", default = 'b37', help = "genome build [default %default]"),
-                make_option("--outPrefix", default = NULL, help = "output prefix [default %default]"))
+                make_option("--outPrefix", default = NULL, help = "output prefix [default %default]"),
+		make_option("--clusterType", default = "hetDiffHom", help = "hetDiffHom or hetSameHom, should het be treated the same as hom?"))
 
 parser <- OptionParser(usage = "%prog vcf.files", option_list = optList);
 arguments <- parse_args(parser, positional_arguments = T);
@@ -33,7 +34,9 @@ gt <- geno(vcf)$GT
 X <- matrix(0, nrow = nrow(gt), ncol = ncol(gt), dimnames = list(rownames(gt), colnames(gt)))
 X[gt == "0/0"] <- 0
 X[gt == "0/1"] <- 1
-X[gt == "1/1"] <- 2
+if (opt$clusterType=="hetDiffHom") {
+	X[gt == "1/1"] <- 2 
+} else { X[gt == "1/1"] <- 1 }
 X[!gt %in% c("0/0", "0/1", "1/1")] <- NA
 #plot(hclust(dist(t(X), method = 'manhattan')))
 
@@ -45,13 +48,13 @@ null <- plot(hclust(dist(t(gt)), method = 'ward.D2'))
 dev.off()
 
 fn <- paste(opt$outPrefix, ".heatmap.ward.pdf", sep = '')
-pdf(fn, height = 50, width = 50)
+pdf(fn, height = 5+(ncol(gt)/5), width = 5+(ncol(gt)/5))
 null <- heatmap.2(as.matrix(dist(t(gt))), hclustfun=function(x){hclust(x, method='ward.D2')}, 
 	scale = 'none', trace = 'none', keysize = 0.3, cexRow = 1, cexCol = 1, margins = c(40,40))
 dev.off()
 
 fn <- paste(opt$outPrefix, ".heatmap.completelink.pdf", sep = '')
-pdf(fn, height = 50, width = 50)
+pdf(fn, height = 5+(ncol(gt)/5), width = 5+(ncol(gt)/5))
 null <- heatmap.2(as.matrix(dist(t(gt))),
         scale = 'none', trace = 'none', keysize = 0.3, cexRow = 1, cexCol = 1, margins = c(40,40))
 dev.off()

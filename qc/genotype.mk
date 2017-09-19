@@ -47,7 +47,8 @@ genotype/snps_filtered.vcf : genotype/snps.vcf
 	$(INIT) grep '^#' $< > $@ && grep -e '0/1' -e '1/1' $< >> $@
 
 genotype/%.clust.png : genotype/%.vcf
-	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_R_MODULE); $(CLUSTER_VCF) --outPrefix genotype/$* $<")
+	$(call LSCRIPT_MEM,22G,03:59:59,"$(LOAD_R_MODULE); $(CLUSTER_VCF) --outPrefix genotype/$* \
+		$(if $(findstring RNA,$(CAPTURE_METHOD)),--clusterType hetSameHom) $<")
 
 include usb-modules/vcf_tools/vcftools.mk
 include usb-modules/variant_callers/TVC.mk
