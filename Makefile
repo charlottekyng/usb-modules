@@ -73,9 +73,9 @@ TARGETS += star
 star :
 	$(call RUN_MAKE,usb-modules/aligners/starAligner.mk)
 
-TARGETS += hisat2
-hisat : 
-	$(call RUN_MAKE,usb-modules/aligners/hisat2Aligner.mk)
+#TARGETS += hisat2
+#hisat2 : 
+#	$(call RUN_MAKE,usb-modules/aligners/hisat2Aligner.mk)
 
 TARGETS += cufflinks
 cufflinks : 
@@ -247,7 +247,7 @@ TARGETS += extract_fastq
 extract_fastq :
 	$(call RUN_MAKE,modules/fastq_tools/extractFastq.mk)
 
-TARGETS += titan
+///TARGETS += titan
 titan :
 	$(call RUN_MAKE,modules/copy_number/titan.mk)
 
@@ -364,5 +364,9 @@ sufam_screen :
 TARGETS += rsem
 rsem :
 	$(call RUN_MAKE,usb-modules/rnaseq/rsem.mk)
+
+TARGETS += ballgown
+ballgown:
+	$(call RUN_MAKE,usb-modules/rnaseq/ballgown.mk)
 
 .PHONY : $(TARGETS)

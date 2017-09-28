@@ -374,14 +374,20 @@ STAR_FUSION_MIN_ALT_PCT_JUNC ?= 5
 HISAT2_MODULE ?= HISAT2/2.0.4-goolf-1.7.20
 LOAD_HISAT2_MODULE ?= module load $(HISAT2_MODULE)
 HISAT2 ?= hisat2
-HISAT_NUM_CORES ?= 8
-HISAT_OPTS = -q -p $(HISAT_NUM_CORES) -x $(HISAT_REF)
-ifeq ($(SEQ_PLATFORM),true)
-        HISAT_OPTS += --fr
-endif
-ifeq ($(PHRED64),true)
-        HISAT_OPTS += --phred64
-endif
+HISAT2_NUM_CORES ?= 8
+HISAT2_OPTS = -p $(HISAT2_NUM_CORES) -x $(HISAT2_REF) --dta 
+#ifeq ($(SEQ_PLATFORM),true)
+#        HISAT_OPTS += --fr
+#endif
+#ifeq ($(PHRED64),true)
+#        HISAT_OPTS += --phred64
+#endif
+
+STRINGTIE_MODULE ?= StringTie/1.3.3-goolf-1.7.20
+LOAD_STRINGTIE_MODULE ?= module load $(STRINGTIE_MODULE)
+STRINGTIE ?= stringtie
+STRINGTIE_NUM_CORES ?= 8
+STRINGTIE_OPTS = -p $(STRINGTIE_NUM_CORES)
 
 
 

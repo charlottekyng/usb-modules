@@ -119,10 +119,7 @@ DGV_FILE = $(ANN_DIR)/DGV_GRCh37_hg19_variants_2016-05-15.txt
 #REF_HOUSEKEEPING_GENE_BED = $(ANN_DIR)/share/reference/hg19.HouseKeepingGenes.bed
 #ENSEMBL_TXDB = $(ANN_DIR)/hsapiens_ensembl_biomart.sqlite
 
-STAR_GENOME_DIR = $(REF_DIR)/genome_index/star_b37
-STAR_CTAT_DIR = $(ANN_DIR)/GRCh37_gencode_v19_CTAT_lib
-
-RSEM_INDEX = $(REF_DIR)/genome_index/rsem_b37/rsem_index
+GENCODE_GTF = $(ANN_DIR)/Homo_sapiens.GRCh37.82.chr_patch_hapl_scaff.gtf
 
 RIBOSOMAL_INTERVALS ?= $(ANN_DIR)/ribosomalRNA.interval_list
 GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
@@ -132,6 +129,13 @@ GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
 ### TOOL-SPECIFIC REF ###
 
 GISTIC_REF ?= /scicore/home/terracci/GROUP/usr_nobackup/local/gistic_2.0.23/refgenefiles/hg19.UCSC.add_miR.140312.refgene.mat
+
+STAR_GENOME_DIR = $(REF_DIR)/genome_index/star_b37
+STAR_CTAT_DIR = $(ANN_DIR)/GRCh37_gencode_v19_CTAT_lib
+
+RSEM_INDEX = $(REF_DIR)/genome_index/rsem_b37/rsem_index
+
+HISAT2_REF = $(REF_DIR)/genome_index/hisat2_b37/genome_snp_tran
 
 #CHIMERASCAN_REF ?= $(REF_DIR)/chimerascan_index
 #BOWTIE_REF = $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37
@@ -180,7 +184,6 @@ MUTSIGCV_SEQ_REF_DIR ?= $(MUTSIGCV_REF_DIR)/chr_files_hg19/
 
 #ANNOVAR_DB = $(HOME)/share/usr/annovar/humandb
 
-#HISAT_REF = $(HOME)/share/reference/hisat/grch37_snp_tran/genome_snp_tran
 endif
 B37_INC = true
 

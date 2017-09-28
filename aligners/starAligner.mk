@@ -11,7 +11,7 @@ override BAM_NO_SORT := true
 override BAM_FIX_RG := true
 override BAM_DUP_TYPE := markdup
 
-$(info BAM_FIX_RG $(BAM_FIX_RG))
+#$(info BAM_FIX_RG $(BAM_FIX_RG))
 include usb-modules/aligners/align.inc
 
 BAMS = $(foreach sample,$(SAMPLES),bam/$(sample).bam)
