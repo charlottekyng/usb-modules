@@ -674,6 +674,11 @@ DESEQ_PHENO_FILE ?= pheno.txt
 #CUFFLINKS ?= $(HOME)/share/usr/bin/cufflinks-2.2.1
 #CUFFCMP ?= $(HOME)/share/usr/bin/cuffcompare-2.2.1
 
+RSEM_MODULE ?= RSEM/1.2.31-goolf-1.7.20
+LOAD_RSEM_MODULE ?= module load $(RSEM_MODULE)
+RSEM_CALC_EXPR ?= rsem-calculate-expression
+RSEM_OPTIONS ?= --alignments --no-bam-output -p 8 --forward-prob 0
+
 ##################################
 ########## Fusions ###############
 ##################################

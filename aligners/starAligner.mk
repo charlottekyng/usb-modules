@@ -43,10 +43,11 @@ star/secondpass/$1.star.bam : fastq/$1.1.fastq.gz $(if $(findstring true,$(PAIRE
 	--outSAMprimaryFlag AllBestScore --outSAMtype BAM SortedByCoordinate \
 	--outReadsUnmapped None --outMultimapperOrder Random --outSAMattrIHstart 0 \
 	--chimSegmentMin 12 --chimJunctionOverhangMin 12 --chimSegmentReadGapMax parameter 3 \
-	--quantMode GeneCounts && mv star/secondpass/$1.Aligned.sortedByCoord.out.bam star/secondpass/$1.star.bam")
+	--quantMode GeneCounts TranscriptomeSAM && mv star/secondpass/$1.Aligned.sortedByCoord.out.bam star/secondpass/$1.star.bam")
 
 star/secondpass/$1.Chimeric.out.junction : star/secondpass/$1.star.bam
 star/secondpass/$1.ReadsPerGene.out.tab : star/secondpass/$1.star.bam
+star/secondpass/$1.Aligned.toTranscriptome.out.bam : star/secondpass/$1.star.bam
 endef
 $(foreach sample,$(SAMPLES),\
 	$(eval $(call align-star-secondpass,$(sample))))

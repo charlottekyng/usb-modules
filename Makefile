@@ -361,4 +361,8 @@ TARGETS += sufam_screen
 sufam_screen :
 	$(call RUN_MAKE,usb-modules/variant_callers/sufam.mk)
 
+TARGETS += rsem
+rsem :
+	$(call RUN_MAKE,usb-modules/rnaseq/rsem.mk)
+
 .PHONY : $(TARGETS)
