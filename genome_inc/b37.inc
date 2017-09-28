@@ -122,7 +122,7 @@ DGV_FILE = $(ANN_DIR)/DGV_GRCh37_hg19_variants_2016-05-15.txt
 STAR_GENOME_DIR = $(REF_DIR)/genome_index/star_b37
 STAR_CTAT_DIR = $(ANN_DIR)/GRCh37_gencode_v19_CTAT_lib
 
-RSEM_INDEX = $(REF_DIR)/genome_index/rsem_b37
+RSEM_INDEX = $(REF_DIR)/genome_index/rsem_b37/rsem_index
 
 RIBOSOMAL_INTERVALS ?= $(ANN_DIR)/ribosomalRNA.interval_list
 GENE_REF_FLAT = $(ANN_DIR)/refFlat.txt
