@@ -12,8 +12,8 @@ cd $PROJ_DIR
 # get usb-modules code from github
 git clone git@github.com:charlottekyng/usb-modules.git; 
 
-# move the Makefile_template to $PROJ
-mv usb-modules/Makefile_template Makefile
+# copy the Makefile_template to $PROJ (don't move or the file would disappear from the repo)
+cp usb-modules/Makefile_template Makefile
 
 # rename the bam files to <sample_name>.bam and put them in $PROJ_DIR/unprocessed_bam
 mkdir $PROJ_DIR/unprocessed_bam
