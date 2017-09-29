@@ -1,58 +1,60 @@
 ifndef HG19_IONREF_INC
 REF = hg19_ionref
 REF_DIR = /scicore/home/terracci/GROUP/ref_nobackup
+ANN_DIR ?= $(REF_DIR)/annotation_data/$(REF)
+BED_DIR ?= $(REF_DIR)/target_beds/$(REF)
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 ifeq ($(PANEL),CHPv2)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.unmerged.bed
-TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq_CancerHotspotPanelv2.106003.designed.merged.bed
+TARGETS_FILE_INTERVALS ?= $(BED_DIR)/AmpliSeq_CancerHotspotPanelv2.106003.designed.bed
+TARGETS_FILE_MUTATIONS ?= $(BED_DIR)/AmpliSeq_CancerHotspotPanelv2.106003.mutations.bed
+PRIMER_TRIM_BED ?= $(BED_DIR)/AmpliSeq_CancerHotspotPanelv2.106003.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED ?= $(BED_DIR)/AmpliSeq_CancerHotspotPanelv2.106003.designed.merged.bed
 endif
 ifeq ($(PANEL),CCP)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.hotspots.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.unmerged.bed
-TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.designed.merged.bed
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeq.CCP.20131001.dbsnp_138.vcf
+TARGETS_FILE_INTERVALS ?= $(BED_DIR)/AmpliSeq.CCP.20131001.designed.bed
+TARGETS_FILE_MUTATIONS ?= $(BED_DIR)/AmpliSeq.CCP.20131001.hotspots.bed
+PRIMER_TRIM_BED ?= $(BED_DIR)/AmpliSeq.CCP.20131001.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED ?= $(BED_DIR)/AmpliSeq.CCP.20131001.designed.merged.bed
+DBSNP_TARGETS_INTERVALS ?= $(BED_DIR)/AmpliSeq.CCP.20131001.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(BED_DIR)/AmpliSeq.CCP.20131001.dbsnp_138.vcf
 endif
 ifeq ($(PANEL),CCPv3)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.unmerged.bed
-TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.designed.merged.bed
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/OCAv3.20170110.dbsnp_138.vcf
+TARGETS_FILE_INTERVALS ?= $(BED_DIR)/OCAv3.20170110.designed.bed
+TARGETS_FILE_MUTATIONS ?= $(BED_DIR)/OCAv3.20170110.designed.bed
+PRIMER_TRIM_BED ?= $(BED_DIR)/OCAv3.20170110.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED ?= $(BED_DIR)/OCAv3.20170110.designed.merged.bed
+DBSNP_TARGETS_INTERVALS ?= $(BED_DIR)/OCAv3.20170110.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(BED_DIR)/OCAv3.20170110.dbsnp_138.vcf
 endif
 ifeq ($(PANEL),EXOME)
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.designed.bed
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.unmerged.bed
-TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds_ionref/hg19/AmpliSeqExome.20131001.designed.merged.bed
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqExome.20131001.dbsnp_138.common.vcf
+TARGETS_FILE_INTERVALS ?= $(BED_DIR)/AmpliSeqExome.20131001.designed.bed
+TARGETS_FILE_MUTATIONS ?= $(BED_DIR)/AmpliSeqExome.20131001.designed.bed
+PRIMER_TRIM_BED ?= $(BED_DIR)/AmpliSeqExome.20131001.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED ?= $(BED_DIR)/AmpliSeqExome.20131001.designed.merged.bed
+DBSNP_TARGETS_INTERVALS ?= $(BED_DIR)/AmpliSeqExome.20131001.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(BED_DIR)/AmpliSeqExome.20131001.dbsnp_138.common.vcf
 endif
 ifeq ($(PANEL),HCC)
 INCLUDE_LINCRNA_IN_SUMMARY ?= true
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
-TARGETS_FILE_INTERVALS_POOLS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed_pool1.bed $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed_pool2.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
-TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.merged.bed
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
+TARGETS_FILE_INTERVALS ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_INTERVALS_POOLS ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed_pool1.bed $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed_pool2.bed
+TARGETS_FILE_MUTATIONS ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.bed
+TARGETS_FILE_GENES ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.genes.txt
+PRIMER_TRIM_BED ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.designed.merged.bed
+DBSNP_TARGETS_INTERVALS ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(BED_DIR)/AmpliSeqHCC_WG_IAD97706_v2.20160511.dbsnp_138.vcf
 endif
 ifeq ($(PANEL),BREAST)
 INCLUDE_LINCRNA_IN_SUMMARY ?= true
-TARGETS_FILE_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
-TARGETS_FILE_MUTATIONS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.bed
-TARGETS_FILE_GENES = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.genes.txt
-PRIMER_TRIM_BED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.unmerged.bed
-TARGETS_FILE_INTERVALS_MERGED = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167_Designed.merged.bed
-DBSNP_TARGETS_INTERVALS = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
-DBSNP_TARGETS_INTERVALS_COMMON = $(REF_DIR)/target_beds/hg19_ionref/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
+TARGETS_FILE_INTERVALS ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167_Designed.bed
+TARGETS_FILE_MUTATIONS ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167_Designed.bed
+TARGETS_FILE_GENES ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167.genes.txt
+PRIMER_TRIM_BED ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167_Designed.unmerged.bed
+TARGETS_FILE_INTERVALS_MERGED ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167_Designed.merged.bed
+DBSNP_TARGETS_INTERVALS ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
+DBSNP_TARGETS_INTERVALS_COMMON ?= $(BED_DIR)/AmpliSeqBRCA_IAD109552_167.dbsnp_138.vcf
 endif
 endif
 
@@ -79,8 +81,6 @@ ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 endif
 
 ### ANNOTATION SETS ####
-
-ANN_DIR ?= $(REF_DIR)/annotation_data/hg19_ionref
 
 #CONTEST_REF_VCF ?= $(ANN_DIR)/hg19_population_stratified_af_hapmap_3.3.vcf
 
@@ -118,14 +118,14 @@ SNP_TXT = $(ANN_DIR)/b37_snp137.SingleDiNucl.1based.nochr.txt
 
 ### TOOL-SPECIFIC REF ###
 
-GISTIC_REF ?= $(HOME)/share/usr/gistic_2_0_21/refgenefiles/hg19.mat
-CHIMERASCAN_REF ?= $(REF_DIR)/chimerascan_index
-BOWTIE_REF = $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37
+#GISTIC_REF ?= $(HOME)/share/usr/gistic_2_0_21/refgenefiles/hg19.mat
+#CHIMERASCAN_REF ?= $(REF_DIR)/chimerascan_index
+#BOWTIE_REF = $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37
 
-MAPSPLICE_REF_DIR = $(REF_DIR)/GATK_bundle/2.3/mapsplice_ref/chr
-MAPSPLICE_REF_BASENAME = $(REF_DIR)/GATK_bundle/2.3/mapsplice_ref/hg19
+#MAPSPLICE_REF_DIR = $(REF_DIR)/GATK_bundle/2.3/mapsplice_ref/chr
+#MAPSPLICE_REF_BASENAME = $(REF_DIR)/GATK_bundle/2.3/mapsplice_ref/hg19
 
-DB_NSFP ?= $(REF_DIR)/snpeff/GRCh37/dbNSFP-v2.9.txt.gz
+#DB_NSFP ?= $(REF_DIR)/snpeff/GRCh37/dbNSFP-v2.9.txt.gz
 
 #TOPHAT_REF = GRCh37
 #GENES_GTF = $(REF_DIR)/Homo_sapiens/Ensembl/$(TOPHAT_REF)/Annotation/Genes/genes.gtf
@@ -139,7 +139,7 @@ DB_NSFP ?= $(REF_DIR)/snpeff/GRCh37/dbNSFP-v2.9.txt.gz
 
 #REF_2BIT ?= $(REF_DIR)/GATK_bundle/2.3/human_g1k_v37.2bit
 
-MAP_BIGWIG ?= $(REF_DIR)/wgEncodeCrgMapabilityAlign100mer.nochr.bigWig
+#MAP_BIGWIG ?= $(REF_DIR)/wgEncodeCrgMapabilityAlign100mer.nochr.bigWig
 
 REF_NAME := 1000GenomesPilot-NCBI37
 REF_DATE := 20100517
@@ -154,13 +154,13 @@ SNP_EFF_GENOME = GRCh37.75
 #HMMCOPY_MAP_WIG = $(REF_DIR)/map_hg19.wig
 
 
-INTEGRATE_ANN = $(REF_DIR)/annot.ucsc.txt
-INTEGRATE_BWTS = $(REF_DIR)/GATK_bundle/2.3/bwts
-ONCOTATOR_DB ?= $(REF_DIR)/oncotator_v1_ds_Jan262014
+#INTEGRATE_ANN = $(REF_DIR)/annot.ucsc.txt
+#INTEGRATE_BWTS = $(REF_DIR)/GATK_bundle/2.3/bwts
+#ONCOTATOR_DB ?= $(REF_DIR)/oncotator_v1_ds_Jan262014
 
-ANNOVAR_DB = $(HOME)/share/usr/annovar/humandb
+#ANNOVAR_DB = $(HOME)/share/usr/annovar/humandb
 
-HISAT_REF = $(HOME)/share/reference/hisat/grch37_snp_tran/genome_snp_tran
+#HISAT_REF = $(HOME)/share/reference/hisat/grch37_snp_tran/genome_snp_tran
 
 endif
 HG19_IONREF_INC = true
