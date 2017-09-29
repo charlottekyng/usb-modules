@@ -2,7 +2,7 @@
 ifndef GRCM38_INC
 REF = GRCm38
 
-REF_DIR = $(HOME)/ref_nobackup
+REF_DIR = /scicore/home/terracci/GROUP/ref_nobackup
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 ifeq ($(PANEL),AGILENT_ALLEXON_MOUSE)
@@ -48,7 +48,7 @@ RIBOSOMAL_INTERVALS = $(REF_DIR)/annotation_data/GRCm38/ribosomalRNA.interval_li
 
 #### TOOL SPECIFIC OPTIONS ####
 
-STAR_GENOME_DIR = /scicore/home/terracci/ngkiuy/ref_nobackup/genome_index/star_GRCm38
+STAR_GENOME_DIR = $(REF_DIR)/genome_index/star_GRCm38
 
 
 endif
