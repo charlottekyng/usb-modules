@@ -15,7 +15,7 @@ tvc_tables : $(foreach type,$(VARIANT_TYPES),$(call TABLES,$(type)))
 MUT_CALLER = tvc
 
 tvc/dbsnp/%/TSVC_variants.vcf : bam/%.bam
-	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(TVC) \
+	$(call LSCRIPT_PARALLEL_MEM,4,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(TVC) \
 	-s $(DBSNP_TARGETS_INTERVALS) -i $< -r $(REF_FASTA) -o $(@D) -N 4 -p $(TVC_SOMATIC_JSON) \
 	$(if $(TARGETS_FILE_INTERVALS),-b $(TARGETS_FILE_INTERVALS)) -m $(TVC_MOTIF) \
 	-t $(TVC_ROOT_DIR) --primer-trim-bed $(PRIMER_TRIM_BED)")
