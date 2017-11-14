@@ -27,6 +27,11 @@ STRAND_SPECIFICITY ?= NONE
 # possible values: CANCER, PSYCH
 ANALYSIS_TYPE ?= CANCER 
 
+# Normal samples to use for pooled_norm and panel_of_normals: particularly useful for when samples are being added...
+PANEL_OF_NORMAL_SAMPLES ?= $(NORMAL_SAMPLES)
+POOLED_NORM_SAMPLES ?= $(NORMAL_SAMPLES)
+
+
 ## process FASTQs before alignment
 TRIM_LENGTH ?= 150
 # trim is fixed length trim, cutadapt
@@ -603,7 +608,7 @@ endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 FACETS_SNP_PILEUP_MIN_DEPTH ?= 50
-FACETS_SNP_PILEUP_MAX_DEPTH ?= 3000
+FACETS_SNP_PILEUP_MAX_DEPTH ?= 5000
 FACETS_WINDOW_SIZE ?= 10
 FACETS_CVAL1 ?= 75 100
 endif

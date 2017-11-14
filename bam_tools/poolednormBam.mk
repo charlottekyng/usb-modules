@@ -5,8 +5,6 @@ LOGDIR ?= log/poolednorm_bam.$(NOW)
 
 poolednorm_bam : bam/poolednorm.bam $(addsuffix .bai,bam/poolednorm.bam)
 
-POOLED_NORM_SAMPLES ?= $(NORMAL_SAMPLES)
-
 
 unprocessed_bam/poolednorm.bam : $(foreach normal,$(POOLED_NORM_SAMPLES),bam/$(normal).downsampled.bam) $(addsuffix .bai,$(foreach normal,$(POOLED_NORM_SAMPLES),bam/$(normal).downsampled.bam))
 	$(MKDIR) unprocessed_bam; $(call LSCRIPT_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_SAMTOOLS_MODULE); \

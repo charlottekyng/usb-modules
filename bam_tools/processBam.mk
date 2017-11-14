@@ -74,7 +74,7 @@ index : $(addsuffix .bai,$(BAMS))
 # recalibrate base quality
 %.recal_report.grp : %.bam %.bai
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
-		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_MEDIUM_MEM)) \
+		$(call GATK,BaseRecalibrator,$(RESOURCE_REQ_HIGHMEM)) \
 		-R $(REF_FASTA) $(BAM_BASE_RECAL_OPTS) -I $< -o $@")
 
 %.reordered.bam : %.bam $(REF_DICT)
