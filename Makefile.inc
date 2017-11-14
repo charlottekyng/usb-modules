@@ -36,6 +36,8 @@
 SAMPLE_SET_FILE ?= sample_sets.txt
 SAMPLE_FILE ?= samples.txt
 SAMPLE_SPLIT_FILE ?= samples.split.txt # generate using scripts/prepareFastq.sh [remove underscores from sample names]
+SAMPLE_PON_FILE ?= samples.pon.txt
+SAMPLE_POOLEDNORM_FILE ?= samples.poolednorm.txt
 
 #include usb-modules/genome_inc/$(REF).inc
 #include usb-modules/config.inc
@@ -46,6 +48,12 @@ PROJECT_NAME = $(shell pwd | sed 's:.*/projects/::; s:.*/data/::; s:.*kinglab/::
 
 ifneq ($(wildcard $(SAMPLE_FILE)),)
   SAMPLES ?= $(shell sed '/^\#/d' $(SAMPLE_FILE))
+endif
+ifneq ($(wildcard $(SAMPLE_PON_FILE)),)
+  PANEL_OF_NORMAL_SAMPLES ?= $(shell sed '/^\#/d' $(SAMPLE_PON_FILE))
+endif
+ifneq ($(wildcard $(SAMPLE_POOLEDNORM_FILE)),)
+  POOLED_NORM_SAMPLES ?= $(shell sed '/^\#/d' $(SAMPLE_POOLEDNORM_FILE))
 endif
 
 get_tumors = $(wordlist 1,$(shell expr $(words $1) - 1),$1)
