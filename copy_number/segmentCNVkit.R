@@ -34,7 +34,7 @@ if (length(arguments$args) < 1) {
 chroms <- c(1:22, "X")
 
 cn <- lapply(cnFile, read.table, header=T, as.is=T)
-#cn <- lapply(cn, function(x){x[,"adjusted_log_ratio"] <- x[,"adjusted_log_ratio"]-median(x[,"adjusted_log_ratio"]); x})
+cn <- lapply(cn, function(x) {x$log2 <- scale(x$log2, scale=F); x})
 cn <- do.call("rbind", cn)
 #cn <- read.table(cnFile, header=T, as.is=T)
 cn[,1] <- gsub("chr", "", cn[,1])
@@ -45,7 +45,7 @@ if (length(rm) > 0) { cn <- cn[keep,]}
 cn[which(cn[,1]=="X"),1] <- 23
 cn[,1] <- as.numeric(cn[,1])
 cn <- cn[order(cn[,1], cn[,2], cn[,3]),]
-cn <- cbind(name = paste(cn[,1], cn[,2], cn[,3], sep="_"), cn[,c(1:3,7)])
+cn <- cbind(name = paste(cn[,1], cn[,2], cn[,3], sep="_"), cn[,c(1:3,6)])
 cn <- cn[which(!duplicated(cn$name)),]
 cgh <- make_cghRaw(cn)
 normalized <- normalize(cgh, smoothOutliers=T, trim=0.025, smooth.region=opt$smoothRegion, outlier.SD.scale=opt$outlierSDscale)

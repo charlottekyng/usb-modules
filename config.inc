@@ -617,7 +617,6 @@ FACETS_MIN_NHET ?= 15
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
 
 FACETS_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCN.R
-FACETS_FILL_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsFillGeneCN.R
 FACETS_GENE_CN_OPTS = $(if $(TARGETS_FILE_GENES),--genesFile $(TARGETS_FILE_GENES))
 
 FACETS_PLOT_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCNPlot.R
@@ -637,8 +636,18 @@ CBS_SEG_SMOOTHS ?= 5 10
 CBS_SEG_ALPHAS ?= 0.01 0.0001 0.000001 0.0000000001
 
 VARSCAN_GENE_CN = $(RSCRIPT) usb-modules/copy_number/varscanCNVGeneCN.R
-VARSCAN_GENE_CN_OPTS = $(if $(GENES_FILE),--genesFile $(GENES_FILE))
-CBS_MPILEUP_OPTS = -q 1 $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVALS))
+VARSCAN_GENE_CN_OPTS = $(FACETS_GENE_CN_OPTS)
+
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
+VARSCAN_CNV_MAX_SEG_SIZE = 100
+CBS_MPILEUP_OPTS = -q 1
+endif
+
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+VARSCAN_CNV_MAX_SEG_SIZE = 1000
+CBS_MPILEUP_OPTS = -q 1 -d 20000
+endif
+# $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVALS))
 
 #################################
 ########## MutSigCV #############
