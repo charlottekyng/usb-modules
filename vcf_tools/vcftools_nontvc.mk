@@ -33,7 +33,7 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf
 else
 vcf/$3.%.sufam.tmp : $$(foreach tumor,$$(wordlist 1,$$(shell expr $$(words $$(subst _,$$( ),$3)) - 1),$$(subst _,$$( ),$3)),vcf/$$(tumor)_$$(lastword $$(subst _,$$( ),$3)).%.vcf)
 	$$(call LSCRIPT_MEM,$$(RESOURCE_REQ_HIGHMEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_JAVA8_MODULE); \
-		$$(call GATK,CombineVariants),$$(RESOURCE_REQ_HIGHMEM)) \
+		$$(call GATK,CombineVariants,$$(RESOURCE_REQ_HIGHMEM)) \
 		$$(foreach vcf,$$^,--variant $$(vcf) ) -o $$@ --genotypemergeoption UNSORTED -R $$(REF_FASTA)")
 
 ifeq ($$(findstring varscan,$$(MUT_CALLER)),varscan)
