@@ -694,7 +694,7 @@ DESEQ_PHENO_FILE ?= pheno.txt
 RSEM_MODULE ?= RSEM/1.2.31-goolf-1.7.20
 LOAD_RSEM_MODULE ?= module load $(RSEM_MODULE)
 RSEM_CALC_EXPR ?= rsem-calculate-expression
-RSEM_OPTIONS ?= --alignments --no-bam-output -p 8 --forward-prob 0
+RSEM_OPTIONS ?= --alignments --no-bam-output -p 4 --forward-prob 0
 
 ##################################
 ########## Fusions ###############
