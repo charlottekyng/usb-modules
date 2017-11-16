@@ -61,7 +61,7 @@ vcf/$1_$2.%.sufam.vcf : vcf/$1_$2.%.vcf vcf/$3.%.sufam.tmp bam/$1.bam bam/$2.bam
 		$$(call GATK,SelectVariants,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) \
 		--variant $$(word 2,$$^) --discordance $$(word 1,$$^) -o $$@.tmp1 && \
 		$$(call GATK,HaplotypeCaller,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) -I $$(word 3,$$^) -I $$(word 4,$$^) \
-		--downsampling_type NONE --dbsnp $(DBSNP_TARGETS_INTERVALS) \
+		--downsampling_type NONE --dbsnp $$(DBSNP_TARGETS_INTERVALS) \
 		--genotyping_mode GENOTYPE_GIVEN_ALLELES --output_mode EMIT_ALL_SITES -alleles $$@.tmp1 -o $$@.tmp2 && \
 		$$(FIX_GATK_VCF) $$@.tmp2 > $$@.tmp3 && mv $$@.tmp3 $$@.tmp2 && \
 		$$(call GATK,VariantFiltration,$$(RESOURCE_REQ_MEDIUM_MEM)) -R $$(REF_FASTA) -V $$@.tmp2 -o $$@.tmp3 \
