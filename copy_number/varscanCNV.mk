@@ -67,7 +67,7 @@ ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 define varscan-segment
 varscan/segment/$1_$2.segment.Rdata : $$(foreach pool,$$(TARGETS_FILE_INTERVALS_POOLS),varscan/copycall/$1_$2.$$(notdir $$(pool)).copycall)
 	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"$$(LOAD_R_MODULE); \
-	$$(CBS_SEGMENTCNV) --alpha $$(CBS_SEG_ALPHA) --smoothRegion $$(CBS_SEG_SMOOTH) \
+	$$(CBS_SEGMENTCNV) --alpha $$(CBS_SEG_ALPHA) --smoothRegion $$(CBS_SEG_SMOOTH) --trim $$(CBS_TRIM) --clen $$(CBS_CLEN) \
 	--undoSD $$(CBS_SEG_SD) $$(if $$(CENTROMERE_TABLE),--centromereFile=$$(CENTROMERE_TABLE)) --prefix=$$(@D)/$1_$2 $$^")
 endef
 $(foreach pair,$(SAMPLE_PAIRS),\
