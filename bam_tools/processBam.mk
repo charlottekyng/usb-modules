@@ -99,7 +99,7 @@ index : $(addsuffix .bai,$(BAMS))
 
 %.splitntrim.bam : %.bam
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_MEDIUM),"$(LOAD_JAVA8_MODULE); \
-	$(call GATK,SplitNCigarReads,$(RESOURCE_REQ_HIGHMEM)) -I $< -o $@ \
+	$(call GATK,SplitNCigarReads,$(RESOURCE_REQ_MEDIUM_MEM)) -I $< -o $@ \
 	-rf ReassignOneMappingQuality -RMQF 255 -RMQT 60 -U ALLOW_N_CIGAR_READS -R $(REF_FASTA) && $(RM) $<")
 
 # clean sam files

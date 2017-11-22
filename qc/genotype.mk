@@ -13,7 +13,6 @@ VPATH ?= bam
 .PHONY : all
 
 CLUSTER_VCF = $(RSCRIPT) usb-modules/qc/clusterVcf.R
-
 all : genotype/snps_filtered.sdp_ft.clust.png
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
