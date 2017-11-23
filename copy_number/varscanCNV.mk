@@ -47,7 +47,7 @@ $(foreach pair,$(SAMPLE_PAIRS),\
 endif
 
 varscan/copycall/%.copycall : varscan/copynum/%.copynumber
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"n=`awk '{ total += \$$7 } END { print total / NR }' $<`; \
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"n=`awk '{ total += \$$7 } END { printf \"\%.6f\"$(,) total / NR }' $<`; \
 	if [ \$$(bc <<< \"\$$n > 0\") -eq 1 ]; then \
 		recenter_opt=\"--recenter-up \$$n\"; \
 	else \
