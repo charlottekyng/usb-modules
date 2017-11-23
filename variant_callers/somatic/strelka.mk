@@ -20,7 +20,7 @@ MUT_CALLER = strelka
 
 define strelka-tumor-normal
 strelka/$1_$2/Makefile : bam/$1.bam bam/$2.bam
-	$$(call LSCRIPT_NAMED,strelka_$1_$2,"rm -rf $$(@D) && $$(LOAD_PERL_MODULE) && $$(CONFIGURE_STRELKA) --tumor=$$< --normal=$$(<<) \
+	$$(call LSCRIPT_NAMED_MEM,strelka_$1_$2,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_VSHORT),"rm -rf $$(@D) && $$(LOAD_PERL_MODULE) && $$(CONFIGURE_STRELKA) --tumor=$$< --normal=$$(<<) \
 		--ref=$$(REF_FASTA) --config=$$(STRELKA_CONFIG) --output-dir=$$(@D)")
 
 #$$(INIT) qmake -inherit -q jrf.q -- -j 20 -C $$< > $$(LOG) && touch $$@
