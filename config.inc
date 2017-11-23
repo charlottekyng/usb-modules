@@ -696,6 +696,7 @@ DESEQ_PHENO_FILE ?= pheno.txt
 RSEM_MODULE ?= RSEM/1.2.31-goolf-1.7.20
 LOAD_RSEM_MODULE ?= module load $(RSEM_MODULE)
 RSEM_CALC_EXPR ?= rsem-calculate-expression
+RSEM_GEN_DATA_MATRIX ?= rsem-generate-data-matrix
 RSEM_OPTIONS ?= --alignments --no-bam-output -p 4 --forward-prob 0
 
 ##################################

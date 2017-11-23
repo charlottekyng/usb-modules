@@ -7,7 +7,7 @@ LOGDIR ?= log/rsem.$(NOW)
 .SECONDARY:
 .PHONY: rsem
 
-rsem : $(foreach sample,$(SAMPLES),rsem/$(sample).genes.results)
+rsem : $(foreach sample,$(SAMPLES),rsem/$(sample).genes.results) rsem/all.genes.results
 
 define rsem-calc-expression
 rsem/$1.genes.results : star/secondpass/$1.Aligned.toTranscriptome.out.bam 
@@ -17,6 +17,10 @@ rsem/$1.genes.results : star/secondpass/$1.Aligned.toTranscriptome.out.bam
 endef
 $(foreach sample,$(SAMPLES),\
 	$(eval $(call rsem-calc-expression,$(sample))))
+
+rsem/all.genes.results : $(foreach sample,$(SAMPLES),rsem/$(sample).genes.results)
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_RSEM_MODULE); \
+	$(RSEM_GEN_DATA_MATRIX) $^ > $@")
 
 include usb-modules/bam_tools/processBam.mk
 include usb-modules/aligners/align.mk
