@@ -8,11 +8,11 @@ LOGDIR ?= log/facets_poolednorm.$(NOW)
 .DELETE_ON_ERROR:
 .PHONY : facets_poolednorm
 
-facets_poolednorm : $(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),facets/cncf_poolednorm_$(cval1)/$(sample)_poolednorm.out))
+facets_poolednorm : $(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),facets/cncf_poolednorm_$(cval1)/$(sample)_poolednorm.out) facets/cncf_poolednorm_$(cval1)/summary.txt facets/cncf_poolednorm_$(cval1)/geneCN.filled.txt)
 
 ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 define snp-pileup-tumor-poolednorm
-facets/snp_pileup/$1_poolednorm.bc.gz : bam/$1.bam bam/poolednorm.bam $$(if $$(findstring true,$$(FACETS_GATK_VARIANTS)),facets/base_pos/$1.gatk.dbsnp.vcf,$$(FACETS_TARGETS_INTERVALS))
+facets/snp_pileup/$1_poolednorm.bc.gz : bam/$1.bam bam/poolednorm.bam $$(if $$(findstring true,$$(FACETS_GATK_VARIANTS)),facets/base_pos/$1.gatk.dbsnp.vcf,$$(FACETS_TARGETS_INTERVALS)) bam/$1.bam.bai bam/poolednorm.bam.bai
 	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_LOWMEM),$$(RESOURCE_REQ_SHORT),"$$(FACETS_SNP_PILEUP) \
 	-A -d $$(FACETS_SNP_PILEUP_MAX_DEPTH) -g -q $$(FACETS_SNP_PILEUP_MINMAPQ) \
 	-Q $$(FACETS_SNP_PILEUP_MINBASEQ) -r $$(FACETS_SNP_PILEUP_MIN_DEPTH)$$(,)0 \
@@ -43,8 +43,22 @@ facets/cncf_poolednorm_$1/$2_poolednorm.out : facets/snp_pileup/$2_poolednorm.bc
 	--maxNDepth $$(FACETS_SNP_PILEUP_MAX_DEPTH) --snp_nbhd $$(FACETS_WINDOW_SIZE) --minGC $$(FACETS_MINGC) --maxGC $$(FACETS_MAXGC) --unmatched TRUE \
 	--cval1 $1 --genome $$(REF) --min_nhet $$(FACETS_MIN_NHET) \
 	--outPrefix $$* $$<")
+
+facets/cncf_poolednorm_$1/$2_poolednorm.Rdata : facets/cncf_poolednorm_$1/$2_poolednorm.out
+facets/cncf_poolednorm_$1/$2_poolednorm.cncf.txt : facets/cncf_poolednorm_$1/$2_poolednorm.out
+
 endef
 $(foreach cval1,$(FACETS_CVAL1),$(foreach sample,$(SAMPLES),$(eval $(call facets-cval1-sample,$(cval1),$(sample)))))
+
+define facets-merge-poolednorm
+facets/cncf_poolednorm_$1/summary.txt : $$(foreach sample,$$(SAMPLES),facets/cncf_poolednorm_$1/$$(sample)_poolednorm.out)
+	$$(INIT) paste $$^ > $$@;
+
+facets/cncf_poolednorm_$1/geneCN.filled.txt : $$(foreach sample,$$(SAMPLES),facets/cncf_poolednorm_$1/$$(sample)_poolednorm.cncf.txt)
+	$$(call LSCRIPT_CHECK_MEM,$$(RESOURCE_REQ_MEDIUM_MEM),$$(RESOURCE_REQ_SHORT),"$$(LOAD_R_MODULE); \
+	$$(FACETS_GENE_CN) $$(FACETS_GENE_CN_OPTS) --outFile $$@ $$^")
+endef
+$(foreach cval1,$(FACETS_CVAL1),$(eval $(call facets-merge-poolednorm,$(cval1))))
 
 #--cval2 $(FACETS_CVAL2) --pre_cval $(FACETS_PRE_CVAL)
 include usb-modules/copy_number/facets.mk

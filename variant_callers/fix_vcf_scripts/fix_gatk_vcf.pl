@@ -48,6 +48,7 @@ while (my $l = <>) {
 		$line[8] = join ':', @format;
 		if ($ad ne "") {
 		for (my $i = 9; $i < scalar @line; $i++) {
+			next if ($line[$i] eq "./.");
 			my @fields = split /:/, $line[$i];
 			my @ads = split /,/, $fields[$ad];
 			my $dps = $fields[$dp];

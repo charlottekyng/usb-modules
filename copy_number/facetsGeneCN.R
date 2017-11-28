@@ -92,6 +92,7 @@ if (length(arguments$args) < 1) {
 #cat(paste("Filtering to", nrow(genes), "records\n"))
 
 genes <- read.delim(opt$genesFile, as.is=T, check.names=F)
+genes$chrom <- gsub("chr", "", genes$chrom)
 
 genesGR <- genes %$% GRanges(seqnames = chrom, ranges = IRanges(start, end), band = band, hgnc = hgnc)
 			
@@ -120,10 +121,14 @@ mm <- lapply(facetsFiles, function(f) {
 	noise <- median(abs(out2$jointseg$cnlr-  unlist(apply(out2$out[,c("cnlr.median", "num.mark")], 1, function(x) {rep(x[1], each=x[2])}))))
 
 	lrr <- sort(out2$jointseg$cnlr)
-	if (noise <= 0.2) { lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))]
-	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
-	} else { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]}
+#	if (noise <= 0.2) { lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))]
+#	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
+#	} else { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]}
 
+#	if (noise <= 0.2) { lrr <- lrr[round(0.3*length(lrr)):round(0.7*length(lrr))]
+#	} else if ( noise <= 0.3 ) { lrr <- lrr[round(0.275*length(lrr)):round(0.725*length(lrr))]
+#	} else { 
+lrr <- lrr[round(0.25*length(lrr)):round(0.75*length(lrr))] 
 	df$GL2 <- 0
 	df$GL2[df$cnlr.median < median(lrr)-(2.5*sd(lrr))] <- -1
 	df$GL2[df$cnlr.median < median(lrr)-(7*sd(lrr))] <- -2
@@ -143,8 +148,8 @@ mm <- left_join(genes, join_all(mm, type = 'full', by="hgnc")) %>% arrange(as.in
 
 seg_sample <- seg_chr <- seg_band <- seg_start <- seg_end <- seg_cnlr <- seg_genes <- seg_type <- seg_GLtype <- NA
 for (i in grep("GL", colnames(mm))) {
-	for(chr in c(1:22,"X")) {
-		tt <- mm[which(mm$chrom==chr),c(1:5,i)]
+	for(chr in intersect(c(1:22,"X"), unique(mm$chrom))) {
+		tt <- mm[which(mm$chrom==chr),c(1:5,i), drop=F]
 		tt[which(is.na(tt[,6])),6] <- -1000
 		rr <- rle(tt[,6]); 
 		if (rr$values[1]== -1000) {
@@ -157,9 +162,9 @@ for (i in grep("GL", colnames(mm))) {
 			if (rr$values[idx-1]== rr$values[idx+1]) { rr$values[idx] <- rr$values[idx-1]}
 			else {rr$values[idx] <- 0}
 		}
-		mm[which(mm$chrom==chr),i] <- unlist(apply(cbind(rr$value,rr$length), 1, function(x){rep(x[1],x[2])}))
+		mm[which(mm$chrom==chr),i] <- as.vector(unlist(apply(cbind(rr$value,rr$length), 1, function(x){rep(x[1],x[2])})))
 
-		tt <- mm[which(mm$chrom==chr),c(1:5,i)]
+		tt <- mm[which(mm$chrom==chr),c(1:5,i), drop=F]
 		rr <- rle(tt[,6]); 
 		if (length(rr$length)>1) {
 			cs <- cumsum(rr$lengths)

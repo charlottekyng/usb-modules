@@ -27,6 +27,11 @@ STRAND_SPECIFICITY ?= NONE
 # possible values: CANCER, PSYCH
 ANALYSIS_TYPE ?= CANCER 
 
+# Normal samples to use for pooled_norm and panel_of_normals: particularly useful for when samples are being added...
+PANEL_OF_NORMAL_SAMPLES ?= $(NORMAL_SAMPLES)
+POOLED_NORM_SAMPLES ?= $(NORMAL_SAMPLES)
+
+
 ## process FASTQs before alignment
 TRIM_LENGTH ?= 150
 # trim is fixed length trim, cutadapt
@@ -598,12 +603,12 @@ ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
 FACETS_SNP_PILEUP_MIN_DEPTH ?= 25
 FACETS_SNP_PILEUP_MAX_DEPTH ?= 1000
 FACETS_WINDOW_SIZE ?= 200
-FACETS_CVAL1 ?= 75 100 200 300 400
+FACETS_CVAL1 ?= 75 100 200
 endif
 
 ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
 FACETS_SNP_PILEUP_MIN_DEPTH ?= 50
-FACETS_SNP_PILEUP_MAX_DEPTH ?= 3000
+FACETS_SNP_PILEUP_MAX_DEPTH ?= 5000
 FACETS_WINDOW_SIZE ?= 10
 FACETS_CVAL1 ?= 75 100
 endif
@@ -617,11 +622,7 @@ FACETS_MIN_NHET ?= 15
 FACETS = $(RSCRIPT) usb-modules/copy_number/runFacets.R
 
 FACETS_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCN.R
-FACETS_FILL_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsFillGeneCN.R
 FACETS_GENE_CN_OPTS = $(if $(TARGETS_FILE_GENES),--genesFile $(TARGETS_FILE_GENES))
-                                     #     --mysqlHost $(EMBL_MYSQLDB_HOST) --mysqlPort $(EMBL_MYSQLDB_PORT) \
-                                     #     --mysqlUser $(EMBL_MYSQLDB_USER) --mysqlPassword $(EMBL_MYSQLDB_PW) \
-                                     #     --mysqlDb $(EMBL_MYSQLDB_DB)
 
 FACETS_PLOT_GENE_CN = $(RSCRIPT) usb-modules/copy_number/facetsGeneCNPlot.R
 FACETS_PLOT_GENE_CN_OPTS = --sampleColumnPostFix '_EM'
@@ -633,6 +634,8 @@ CBS_SEGMENTCNV = $(RSCRIPT) usb-modules/copy_number/segmentVarscanCNV.R
 CBS_SEG_SD ?= 2
 CBS_SEG_SMOOTH ?= 10
 CBS_SEG_ALPHA ?= 0.000001
+CBS_TRIM ?= 0.025
+CBS_CLEN ?= 10
 
 CBS_MULTIPARAM_SEGMENT ?= false
 CBS_SEG_SDS ?= 1.5 2 2.5 3
@@ -640,8 +643,18 @@ CBS_SEG_SMOOTHS ?= 5 10
 CBS_SEG_ALPHAS ?= 0.01 0.0001 0.000001 0.0000000001
 
 VARSCAN_GENE_CN = $(RSCRIPT) usb-modules/copy_number/varscanCNVGeneCN.R
-VARSCAN_GENE_CN_OPTS = $(if $(GENES_FILE),--genesFile $(GENES_FILE))
-CBS_MPILEUP_OPTS = -q 1 $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVALS))
+VARSCAN_GENE_CN_OPTS = $(FACETS_GENE_CN_OPTS)
+
+ifeq ($(findstring ILLUMINA,$(SEQ_PLATFORM)),ILLUMINA)
+VARSCAN_CNV_MAX_SEG_SIZE = 100
+CBS_MPILEUP_OPTS = -q 1
+endif
+
+ifeq ($(findstring IONTORRENT,$(SEQ_PLATFORM)),IONTORRENT)
+VARSCAN_CNV_MAX_SEG_SIZE = 1000
+CBS_MPILEUP_OPTS = -q 1 -d 20000
+endif
+# $(if $(TARGETS_FILE_INTERVALS),-l $(TARGETS_FILE_INTERVALS))
 
 #################################
 ########## MutSigCV #############
@@ -683,7 +696,8 @@ DESEQ_PHENO_FILE ?= pheno.txt
 RSEM_MODULE ?= RSEM/1.2.31-goolf-1.7.20
 LOAD_RSEM_MODULE ?= module load $(RSEM_MODULE)
 RSEM_CALC_EXPR ?= rsem-calculate-expression
-RSEM_OPTIONS ?= --alignments --no-bam-output -p 8 --forward-prob 0
+RSEM_GEN_DATA_MATRIX ?= usb-modules/rnaseq/rsem-generate-data-matrix.pl
+RSEM_OPTIONS ?= --alignments --no-bam-output -p 4 --forward-prob 0
 
 ##################################
 ########## Fusions ###############

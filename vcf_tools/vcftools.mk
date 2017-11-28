@@ -12,13 +12,13 @@ LOGDIR ?= log/vcf.$(NOW)
 
 
 %.vcf.idx : %.vcf
-	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_IGVTOOLS_MODULE); $(IGVTOOLS) index $< && sleep 5")
+	$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(RM) $@ && $(LOAD_IGVTOOLS_MODULE); $(IGVTOOLS) index $< && sleep 5")
 
 %.vcf.gz : %.vcf
 	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_TABIX_MODULE) && $(BGZIP) -c -f $< >$@ && sleep 5")
 
 %.vcf.gz.tbi : %.vcf.gz
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_TABIX_MODULE); $(TABIX) $< && sleep 5")
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_LOWMEM),$(RESOURCE_REQ_VSHORT),"sleep 5 && $(LOAD_TABIX_MODULE); $(TABIX) -f $< && sleep 5")
 
 ############ FILTERS #########
 

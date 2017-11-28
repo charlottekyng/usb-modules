@@ -76,6 +76,7 @@ endif
 ifeq ($(PANEL),NONE)
 RESOURCE_REQ ?= high
 BAM_CHR2_BASE_RECAL = true
+DBSNP_TARGETS_INTERVALS ?= $(ANN_DIR)/dbsnp_138.b37_snps_monoallelic.vcf
 endif
 
 endif

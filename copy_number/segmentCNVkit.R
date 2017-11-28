@@ -9,8 +9,6 @@ options(warn = -1, error = quote({ traceback(); q('no', status = 1) }))
 optList <- list(
                 make_option("--centromereFile", default = NULL, type = "character", action = "store", help ="centromere file"),
                 make_option("--alpha", default = 0.000001, type = "double", action = "store", help ="alpha"),
-		make_option("--trim", default = 0.025, type="double", action = "store", help = "trim"),
-		make_option("--clen", default = 10, type="double", action = "store", help = "clen"),
                 make_option("--smoothRegion", default = 10, type = "double", action = "store", help ="smooth region"),
                 make_option("--outlierSDscale", default = 2.5, type = "double", action = "store", help ="outlier SD scale"),
                 make_option("--undoSD", default = 2, type = "double", action = "store", help ="undo SD"),
@@ -36,7 +34,7 @@ if (length(arguments$args) < 1) {
 chroms <- c(1:22, "X")
 
 cn <- lapply(cnFile, read.table, header=T, as.is=T)
-#cn <- lapply(cn, function(x){x[,"adjusted_log_ratio"] <- x[,"adjusted_log_ratio"]-median(x[,"adjusted_log_ratio"]); x})
+cn <- lapply(cn, function(x) {x$log2 <- scale(x$log2, scale=F); x})
 cn <- do.call("rbind", cn)
 #cn <- read.table(cnFile, header=T, as.is=T)
 cn[,1] <- gsub("chr", "", cn[,1])
@@ -47,11 +45,11 @@ if (length(rm) > 0) { cn <- cn[keep,]}
 cn[which(cn[,1]=="X"),1] <- 23
 cn[,1] <- as.numeric(cn[,1])
 cn <- cn[order(cn[,1], cn[,2], cn[,3]),]
-cn <- cbind(name = paste(cn[,1], cn[,2], cn[,3], sep="_"), cn[,c(1:3,7)])
+cn <- cbind(name = paste(cn[,1], cn[,2], cn[,3], sep="_"), cn[,c(1:3,6)])
 cn <- cn[which(!duplicated(cn$name)),]
 cgh <- make_cghRaw(cn)
-normalized <- normalize(cgh, smoothOutliers=T, trim=opt$trim, smooth.region=opt$smoothRegion, outlier.SD.scale=opt$outlierSDscale)
-segmented <- segmentData(normalized, relSDlong=3, undo.splits="sdundo", undo.SD=opt$undoSD, alpha=opt$alpha, trim=opt$trim, clen=opt$clen)
+normalized <- normalize(cgh, smoothOutliers=T, trim=0.025, smooth.region=opt$smoothRegion, outlier.SD.scale=opt$outlierSDscale)
+segmented <- segmentData(normalized, relSDlong=3, undo.splits="sdundo", undo.SD=opt$undoSD, alpha=opt$alpha, trim=0.025)
 
 fn <- paste(opt$prefix, '.segment.Rdata', sep = '')
 save(segmented, file = fn)
