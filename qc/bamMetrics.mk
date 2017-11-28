@@ -80,7 +80,7 @@ $(if $(TARGETS_FILE_INTERVALS_POOLS),\
 			$(eval $(call amplicon-metrics-pools,$(sample),$(pool))))))			
 
 metrics/%.wgs_metrics.txt : bam/%.bam bam/%.bam.bai
-	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_SHORT),"$(LOAD_JAVA8_MODULE); \
+	$(call LSCRIPT_MEM,$(RESOURCE_REQ_MEDIUM_MEM),$(RESOURCE_REQ_LONG),"$(LOAD_JAVA8_MODULE); \
 		$(call PICARD,CollectWgsMetrics,$(RESOURCE_REQ_MEDIUM_MEM)) \
 		INPUT=$< OUTPUT=$@ COUNT_UNPAIRED=true")
 

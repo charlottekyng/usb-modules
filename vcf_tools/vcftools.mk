@@ -173,6 +173,10 @@ $(foreach sample,$(SAMPLES),$(eval $(call hrun-sample,$(sample))))
 	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_VSHORT),"$(LOAD_SNP_EFF_MODULE); \
 		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(EXAC_NONPSYCH) $< > $@ && $(RM) $^"))
 
+%.cadd.vcf : %.vcf %.vcf.idx
+	$(call CHECK_VCF,$<,$@,$(call LSCRIPT_CHECK_MEM,$(RESOURCE_REQ_HIGHMEM),$(RESOURCE_REQ_SHORT),"$(LOAD_SNP_EFF_MODULE); \
+		$(SNP_SIFT) annotate $(SNP_SIFT_OPTS) $(CADD) $< > $@ && $(RM) $^"))
+
 #%.mut_taste.vcf : %.vcf
 #	$(INIT) $(call CHECK_VCF,$<,$@,$(MUTATION_TASTER) $< > $@ 2> $(LOG))
 

@@ -25,7 +25,7 @@ bwamem : $(BWA_BAMS) $(addsuffix .bai,$(BWA_BAMS))
 $(info BAM_SUFFIX-BWA is $(BAM_SUFFIX))
 
 bam/%.bam : bwamem/bam/%.bwamem.$(BAM_SUFFIX)
-	$(call LSCRIPT," ln -f $(<) $(@)")
+	ln -f $< $@
 
 #$(call align-split-fastq,name,split-name,fastqs)
 define align-split-fastq
