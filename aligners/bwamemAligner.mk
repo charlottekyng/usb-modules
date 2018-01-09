@@ -26,7 +26,6 @@ $(info BAM_SUFFIX-BWA is $(BAM_SUFFIX))
 
 bam/%.bam : bwamem/bam/%.bwamem.$(BAM_SUFFIX)
 	$(INIT) ln -f $< $@
-#	$(call LSCRIPT," ln -f $(<) $(@)")
 
 #$(call align-split-fastq,name,split-name,fastqs)
 define align-split-fastq

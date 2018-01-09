@@ -11,7 +11,7 @@
 #include project_config.inc
 #endif
 
-include usb-modules/config.inc
+#include usb-modules/config.inc
 
 export
 
